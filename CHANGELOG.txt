@@ -7,6 +7,8 @@
 * Fixed null objects crashing connections with NullPointerExceptions - null values are now represented by Null.NULL when being sent.  They are converted back when read.
 ~ ExtendedMap's generic type parameters no longer exist.  They are fixed and cannot be changed.
 
+~ Changed Maven groupId and package names from com.lutz.networking to com.github.lutzblox
+
 ========[  KEY  ]========
 Additions (+)
 Removals (-)
