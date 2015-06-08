@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.lutz.networking.listeners.NetworkListener;
 import com.lutz.networking.packets.Packet;
+import com.lutz.networking.sockets.Connection;
 
 /**
  * A class that holds listeners for sides of a connection
@@ -42,14 +43,31 @@ public class Listenable {
 	 * Fires the {@code onRecieve()} method in all of the attached
 	 * {@code NetworkListener} objects
 	 * 
+	 * @param connection
+	 *            The {@code Connection} responsible for the {@code Packet}
 	 * @param packet
 	 *            The {@code Packet} to pass to the listeners
 	 */
-	public void fireListenerOnReceive(Packet packet) {
+	public void fireListenerOnReceive(Connection connection, Packet packet) {
 
 		for (NetworkListener l : getNetworkListeners()) {
 
-			l.onReceive(packet);
+			l.onReceive(connection, packet);
+		}
+	}
+
+	/**
+	 * Fires the {@code onTimeout()} method in all of the attached
+	 * {@code NetworkListener} objects
+	 * 
+	 * @param connection
+	 *            The {@code Connection} responsible for the timeout
+	 */
+	public void fireListenerOnTimeout(Connection connection) {
+
+		for (NetworkListener l : getNetworkListeners()) {
+
+			l.onTimeout(connection);
 		}
 	}
 }

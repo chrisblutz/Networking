@@ -6,6 +6,7 @@ import java.util.List;
 import com.lutz.networking.exceptions.NetworkException;
 import com.lutz.networking.packets.datatypes.DataType;
 import com.lutz.networking.packets.datatypes.DataTypes;
+import com.lutz.networking.packets.datatypes.wrappers.Null;
 import com.lutz.networking.utils.ExtendedMap;
 
 /**
@@ -68,7 +69,7 @@ public class Packet {
 	public static final PacketData EMPTY_PACKET = new PacketData(
 			"packet-empty", true);
 
-	private ExtendedMap<Class<?>, String, Object> data = new ExtendedMap<Class<?>, String, Object>();
+	private ExtendedMap data = new ExtendedMap();
 
 	private boolean isVital = false;
 
@@ -126,7 +127,7 @@ public class Packet {
 	 */
 	public void putData(String key, Object value) {
 
-		data.put(value.getClass(), key, value);
+		data.put(value != null ? value.getClass() : Null.class, key, value);
 	}
 
 	/**
@@ -339,7 +340,7 @@ public class Packet {
 
 					} else {
 
-						new NetworkException(
+						new NullPointerException(
 								"The data type abbreviation '"
 										+ declParts[0].replace("$(nl);", "\n")
 												.replace("$(cr);", "\r")

@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class Connection {
 
 	private Thread listener;
 
-	private State state;
+	private State state, nextState = null;
 
 	private List<Packet> dropped = new ArrayList<Packet>();
 
@@ -40,7 +41,9 @@ public class Connection {
 	private Packet waiting = null;
 
 	private boolean running = false, serverSide = false, firstReceive = true,
-			firstSend = true;
+			firstSend = true, shouldRespond = false, remoteClosed = false;
+
+	private int readTimeout = 8000;
 
 	private char nextChar = '\0';
 
@@ -87,6 +90,7 @@ public class Connection {
 		listener.setName("Packet Listener: "
 				+ (serverSide ? "Server" : "Client") + " on IP " + getIp());
 		running = true;
+		shouldRespond = serverSide ? false : true;
 		listener.start();
 	}
 
@@ -95,8 +99,12 @@ public class Connection {
 	 * 
 	 * @param p
 	 *            The {@code Packet} to send
+	 * @param expectResponse
+	 *            Whether or not the {@code Connection} should wait for a
+	 *            response (decides whether or not to timeout the {@code read()}
+	 *            calls
 	 */
-	public void sendPacket(Packet p) {
+	public void sendPacket(Packet p, boolean expectResponse) {
 
 		if (waiting != null) {
 
@@ -114,6 +122,7 @@ public class Connection {
 		}
 
 		waiting = p;
+		this.shouldRespond = expectResponse;
 	}
 
 	/**
@@ -163,16 +172,45 @@ public class Connection {
 	 */
 	public boolean isRemoteClosed() {
 
-		try {
+		return remoteClosed;
+	}
 
-			socket.getOutputStream().write("::REMCL\n".getBytes());
+	/**
+	 * Makes the {@code Connection} set itself back to the {@code Receiving}
+	 * state
+	 */
+	public void setToReceive() {
 
-		} catch (Exception e) {
+		this.nextState = State.RECEIVING;
+	}
 
-			return true;
-		}
+	/**
+	 * Makes the {@code Connection} set itself back to the {@code Sending} state
+	 */
+	public void setToSend() {
 
-		return false;
+		this.nextState = State.SENDING;
+	}
+
+	/**
+	 * Sets the timeout on reading from the {@code Connection}
+	 * 
+	 * @param timeout
+	 *            The timeout in milliseconds
+	 */
+	public void setReadTimeout(int timeout) {
+
+		this.readTimeout = timeout;
+	}
+
+	/**
+	 * Gets the timeout on reading from the {@code Connection}
+	 * 
+	 * @return The timeout in milliseconds
+	 */
+	public int getReadTimeout() {
+
+		return readTimeout;
 	}
 
 	/**
@@ -222,7 +260,15 @@ public class Connection {
 
 							out.println(p.toString());
 
-							state = State.RECEIVING;
+							if (nextState != null) {
+
+								state = nextState;
+								nextState = null;
+
+							} else {
+
+								state = State.RECEIVING;
+							}
 
 							firstSend = false;
 
@@ -232,13 +278,29 @@ public class Connection {
 
 							waiting = null;
 
-							state = State.RECEIVING;
+							if (nextState != null) {
+
+								state = nextState;
+								nextState = null;
+
+							} else {
+
+								state = State.RECEIVING;
+							}
 
 						} else if (waiting == null && vitalDropped.size() > 0) {
 
 							out.println(vitalDropped.get(0).toString());
 
 							vitalDropped.remove(0);
+
+						} else {
+
+							if (nextState != null) {
+
+								state = nextState;
+								nextState = null;
+							}
 						}
 					}
 
@@ -258,13 +320,36 @@ public class Connection {
 
 						try {
 
+							if (shouldRespond) {
+
+								shouldRespond = false;
+								socket.setSoTimeout(readTimeout);
+
+							} else {
+
+								socket.setSoTimeout(0);
+							}
+
 							if (!socket.isClosed()
 									&& (inTemp = reader.readLine()) != null) {
 
 								read.append(inTemp);
+
+							} else if (inTemp == null) {
+
+								remoteClosed = true;
 							}
 
-						} catch (SocketException e) {
+						} catch (Exception e) {
+
+							if (e instanceof SocketTimeoutException) {
+
+								listenable.fireListenerOnTimeout(this);
+
+							} else if (!(e instanceof SocketException)) {
+
+								e.printStackTrace();
+							}
 						}
 
 						String readStr = read.toString();
@@ -300,9 +385,17 @@ public class Connection {
 
 								} else {
 
-									listenable.fireListenerOnReceive(p);
+									listenable.fireListenerOnReceive(this, p);
 
-									state = State.SENDING;
+									if (nextState != null) {
+
+										state = nextState;
+										nextState = null;
+
+									} else {
+
+										state = State.SENDING;
+									}
 								}
 							}
 						}
@@ -323,6 +416,10 @@ public class Connection {
 
 					close = false;
 				}
+
+			} else if (e instanceof IOException) {
+
+				remoteClosed = true;
 			}
 
 			if (close) {

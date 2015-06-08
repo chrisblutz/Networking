@@ -30,7 +30,7 @@ public class MultipleClientsTest extends TestCase {
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -41,13 +41,17 @@ public class MultipleClientsTest extends TestCase {
 
 				return data;
 			}
+
+			@Override
+			public void onTimeout(Connection connection) {
+			}
 		});
 
 		final Client client1 = new Client("localhost", 12346);
 		client1.addNetworkListener(new ClientListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -57,13 +61,17 @@ public class MultipleClientsTest extends TestCase {
 
 				finished1 = true;
 			}
+
+			@Override
+			public void onTimeout(Connection connection) {
+			}
 		});
 
 		final Client client2 = new Client("localhost", 12346);
 		client2.addNetworkListener(new ClientListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -72,6 +80,10 @@ public class MultipleClientsTest extends TestCase {
 				System.out.println("Client 2: Successfully received packet!");
 
 				finished2 = true;
+			}
+
+			@Override
+			public void onTimeout(Connection connection) {
 			}
 		});
 

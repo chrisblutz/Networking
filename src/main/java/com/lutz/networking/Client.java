@@ -92,6 +92,18 @@ public class Client extends ClientListenable {
 		return open && !socket.isClosed();
 	}
 
+	/** Makes the {@code Client} set itself back to the {@code Receiving} state */
+	public void setToReceive() {
+
+		this.connection.setToReceive();
+	}
+
+	/** Makes the {@code Client} set itself back to the {@code Sending} state */
+	public void setToSend() {
+
+		this.connection.setToSend();
+	}
+
 	/**
 	 * Attempts to close the connection to the server
 	 * 
@@ -112,7 +124,7 @@ public class Client extends ClientListenable {
 	 * 
 	 * @return The {@code Connection} object for this Client
 	 */
-	public Connection getConnecion() {
+	public Connection getConnection() {
 
 		return connection;
 	}
@@ -123,12 +135,16 @@ public class Client extends ClientListenable {
 	 * 
 	 * @param p
 	 *            The {@code Packet} to send
+	 * @param expectResponse
+	 *            Whether or not the {@code Connection} should wait for a
+	 *            response (decides whether or not to timeout the {@code read()}
+	 *            calls
 	 */
-	public void sendPacket(Packet p) {
+	public void sendPacket(Packet p, boolean expectResponse) {
 
 		if (isOpen() && connection != null) {
 
-			connection.sendPacket(p);
+			connection.sendPacket(p, expectResponse);
 		}
 	}
 }

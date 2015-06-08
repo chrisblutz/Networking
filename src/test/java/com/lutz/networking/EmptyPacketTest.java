@@ -13,13 +13,13 @@ public class EmptyPacketTest extends TestCase {
 	private boolean finished = false, errored = false;
 	private String errorMessage = "";
 
-	public EmptyPacketTest(String name){
-		
+	public EmptyPacketTest(String name) {
+
 		super(name);
 	}
-	
-	public static TestSuite suite(){
-		
+
+	public static TestSuite suite() {
+
 		return new TestSuite(EmptyPacketTest.class);
 	}
 
@@ -29,7 +29,7 @@ public class EmptyPacketTest extends TestCase {
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -40,13 +40,17 @@ public class EmptyPacketTest extends TestCase {
 
 				return data;
 			}
+
+			@Override
+			public void onTimeout(Connection connection) {
+			}
 		});
 
 		final Client client = new Client("localhost", 12345);
 		client.addNetworkListener(new ClientListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -56,6 +60,10 @@ public class EmptyPacketTest extends TestCase {
 						.println("Client: Successfully received empty packet!");
 
 				finished = true;
+			}
+
+			@Override
+			public void onTimeout(Connection connection) {
 			}
 		});
 

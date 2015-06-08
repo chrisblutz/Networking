@@ -8,30 +8,28 @@ import com.lutz.networking.listeners.ServerListener;
 import com.lutz.networking.packets.Packet;
 import com.lutz.networking.sockets.Connection;
 
-public class FailedClientTest extends TestCase {
+public class TimeoutTest extends TestCase {
 
-	private boolean errored = false, closedClient = false;
+	private boolean finished = false, errored = false;
 	private String errorMessage = "";
 
-	public FailedClientTest(String name) {
+	public TimeoutTest(String name) {
 
 		super(name);
 	}
 
 	public static TestSuite suite() {
 
-		return new TestSuite(FailedClientTest.class);
+		return new TestSuite(TimeoutTest.class);
 	}
 
-	public void testFailedClient() {
+	public void testTimeout() {
 
-		final Server server = new Server(12348, "FailedClientTest");
+		final Server server = new Server(12351, "TimeoutTest");
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
 			public void onReceive(Connection connection, Packet packet) {
-				
-				server.sendPacket(new Packet(), false);
 			}
 
 			@Override
@@ -48,7 +46,7 @@ public class FailedClientTest extends TestCase {
 			}
 		});
 
-		final Client client = new Client("localhost", 12348);
+		final Client client = new Client("localhost", 12351);
 		client.addNetworkListener(new ClientListener() {
 
 			@Override
@@ -57,12 +55,16 @@ public class FailedClientTest extends TestCase {
 
 			@Override
 			public void onConnect(Packet packet) {
-				
-				client.sendPacket(new Packet(), false);
+
+				client.sendPacket(new Packet(), true);
 			}
 
 			@Override
 			public void onTimeout(Connection connection) {
+
+				System.out.println("Connection to server timed out!");
+
+				finished = true;
 			}
 		});
 
@@ -76,28 +78,7 @@ public class FailedClientTest extends TestCase {
 
 			client.connect();
 
-			System.out.println("Waiting...");
-
-			while (true) {
-
-				try {
-
-					Thread.sleep(100);
-
-				} catch (InterruptedException e) {
-				}
-
-				if (server.getConnections().length >= 1) {
-
-					break;
-				}
-			}
-
-			System.out.println("Closing client... (Note: If the check rate for failed clients is low for the server, you may see a bit of a delay here.  Be patient.)");
-			
-			client.close();
-			
-			closedClient = true;
+			System.out.println("Waiting for timeout...");
 
 		} catch (Exception e) {
 
@@ -105,6 +86,8 @@ public class FailedClientTest extends TestCase {
 
 			errored = true;
 			errorMessage = e.getClass().getName();
+
+			finished = true;
 		}
 
 		while (true) {
@@ -116,7 +99,7 @@ public class FailedClientTest extends TestCase {
 			} catch (InterruptedException e) {
 			}
 
-			if (closedClient && server.getConnections().length==0) {
+			if (finished) {
 
 				break;
 			}
@@ -124,6 +107,7 @@ public class FailedClientTest extends TestCase {
 
 		try {
 
+			client.close();
 			server.close();
 
 		} catch (Exception e) {

@@ -18,7 +18,7 @@ public abstract class DataType {
 	 * <br>
 	 * Notes:<br>
 	 * - Even though the method receives an {@code Object} as a parameter,
-	 * you can safely assume that it's class is or is a subclass of the result
+	 * you can safely assume that its class is or is a subclass of the result
 	 * of {@code getTypeClass()}
 	 */
 	public abstract String writeType(Object toWrite);

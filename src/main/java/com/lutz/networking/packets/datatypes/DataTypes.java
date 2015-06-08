@@ -10,11 +10,12 @@ import com.lutz.networking.packets.datatypes.defaults.DoubleType;
 import com.lutz.networking.packets.datatypes.defaults.FloatType;
 import com.lutz.networking.packets.datatypes.defaults.IntegerType;
 import com.lutz.networking.packets.datatypes.defaults.LongType;
+import com.lutz.networking.packets.datatypes.defaults.NullType;
 import com.lutz.networking.packets.datatypes.defaults.ShortType;
 import com.lutz.networking.packets.datatypes.defaults.StringType;
 
 public class DataTypes {
-	
+
 	private static Map<Class<?>, DataType> dataTypes = new HashMap<Class<?>, DataType>();
 
 	/**
@@ -49,6 +50,11 @@ public class DataTypes {
 	 */
 	public static DataType getDataType(Class<?> c) {
 
+		if (c == null) {
+
+			return dataTypes.get(null);
+		}
+
 		if (dataTypes.containsKey(c)) {
 
 			return dataTypes.get(c);
@@ -77,9 +83,9 @@ public class DataTypes {
 
 		return null;
 	}
-	
+
 	/** Register default data types */
-	public static void registerDefaults(){
+	public static void registerDefaults() {
 
 		DataTypes.registerDataType(new ShortType());
 		DataTypes.registerDataType(new IntegerType());
@@ -90,6 +96,7 @@ public class DataTypes {
 		DataTypes.registerDataType(new CharType());
 		DataTypes.registerDataType(new BooleanType());
 		DataTypes.registerDataType(new ByteType());
+		DataTypes.registerDataType(new NullType());
 	}
 
 	static {

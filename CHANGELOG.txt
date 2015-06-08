@@ -1,0 +1,14 @@
+========[ 1.0.1 ]========
++ Added database server/client
++ Added timeout option to Connections
+~ The sendPacket() methods of Connection now takes a boolean called expectResponse.  This tells the Connection if it should set the timeout on the next read call or not.  If a response is expected, the timeout is set.  If one is not expected, no timeout is set to prevent unnecessary exceptions being thrown.
+~ Changed method of detecting if the remote socket is closed to rely on interactions through the Connection by the programmer, rather than automated calls to write(), as these interfered with the timeout.  Whenever the programmer writes a socket or the Connection receives a socket, it will check.
+~ A Connection object is now passed to the onReceive() method of NetworkListeners
+* Fixed null objects crashing connections with NullPointerExceptions - null values are now represented by Null.NULL when being sent.  They are converted back when read.
+~ ExtendedMap's generic type parameters no longer exist.  They are fixed and cannot be changed.
+
+========[  KEY  ]========
+Additions (+)
+Removals (-)
+Changes (~)
+Bugfixes (*)

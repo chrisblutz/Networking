@@ -265,6 +265,30 @@ public class Server extends ServerListenable {
 	}
 
 	/**
+	 * Makes the {@code Server}'s {@code Connections} set themselves back to the
+	 * {@code Receiving} state
+	 */
+	public void setToReceive() {
+
+		for (Connection c : connections) {
+
+			c.setToReceive();
+		}
+	}
+
+	/**
+	 * Makes the {@code Server}'s {@code Connections} set themselves back to the
+	 * {@code Sending} state
+	 */
+	public void setToSend() {
+
+		for (Connection c : connections) {
+
+			c.setToSend();
+		}
+	}
+
+	/**
 	 * Attempts to close this {@code Server} and disconnect all {@code Clients}
 	 * 
 	 * @throws IOException
@@ -320,8 +344,12 @@ public class Server extends ServerListenable {
 	 * 
 	 * @param p
 	 *            The {@code Packet} to send
+	 * @param expectResponse
+	 *            Whether or not the {@code Connection} should wait for a
+	 *            response (decides whether or not to timeout the {@code read()}
+	 *            calls
 	 */
-	public void sendPacket(Packet p) {
+	public void sendPacket(Packet p, boolean expectResponse) {
 
 		if (isOpen() && !hasFailed()) {
 
@@ -329,7 +357,7 @@ public class Server extends ServerListenable {
 
 				if (c != null) {
 
-					c.sendPacket(p);
+					c.sendPacket(p, expectResponse);
 				}
 			}
 		}

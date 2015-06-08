@@ -1,19 +1,26 @@
 package com.lutz.networking.utils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ExtendedMap<T, K, O> {
+import com.lutz.networking.packets.datatypes.wrappers.Null;
 
-	private Map<T, Map<K, O>> data = new HashMap<T, Map<K, O>>();
+public class ExtendedMap {
 
-	public void put(T type, K key, O object) {
+	private Map<Class<?>, Map<String, Object>> data = new ConcurrentHashMap<Class<?>, Map<String, Object>>();
+
+	public void put(Class<?> type, String key, Object object) {
+
+		if (object == null) {
+
+			object = Null.NULL;
+		}
 
 		if (!data.containsKey(type)) {
 
-			data.put(type, new HashMap<K, O>());
+			data.put(type, new ConcurrentHashMap<String, Object>());
 		}
 
 		checkDuplicateKey(key);
@@ -21,9 +28,9 @@ public class ExtendedMap<T, K, O> {
 		data.get(type).put(key, object);
 	}
 
-	private void checkDuplicateKey(K key) {
+	private void checkDuplicateKey(String key) {
 
-		for (T type : typeSet()) {
+		for (Class<?> type : typeSet()) {
 
 			if (getType(type).containsKey(key)) {
 
@@ -32,34 +39,34 @@ public class ExtendedMap<T, K, O> {
 		}
 	}
 
-	public void putAll(ExtendedMap<T, K, O> m) {
+	public void putAll(ExtendedMap m) {
 
-		for (T type : m.typeSet()) {
+		for (Class<?> type : m.typeSet()) {
 
-			for (K key : m.keySet(type)) {
+			for (String key : m.keySet(type)) {
 
 				put(type, key, m.get(type, key));
 			}
 		}
 	}
 
-	public void putAll(Map<T, Map<K, O>> m) {
+	public void putAll(Map<Class<?>, Map<String, Object>> m) {
 
-		for (T type : m.keySet()) {
+		for (Class<?> type : m.keySet()) {
 
-			for (K key : m.get(type).keySet()) {
+			for (String key : m.get(type).keySet()) {
 
 				put(type, key, m.get(type).get(key));
 			}
 		}
 	}
 
-	public boolean containsType(T type) {
+	public boolean containsType(Class<?> type) {
 
 		return data.containsKey(type);
 	}
 
-	public boolean containsKey(T type, K key) {
+	public boolean containsKey(Class<?> type, String key) {
 
 		if (data.containsKey(type)) {
 
@@ -69,9 +76,9 @@ public class ExtendedMap<T, K, O> {
 		return false;
 	}
 
-	public boolean containsKey(K key) {
+	public boolean containsKey(String key) {
 
-		for (T type : typeSet()) {
+		for (Class<?> type : typeSet()) {
 
 			if (getType(type).containsKey(key)) {
 
@@ -82,7 +89,7 @@ public class ExtendedMap<T, K, O> {
 		return false;
 	}
 
-	public void removeType(T type) {
+	public void removeType(Class<?> type) {
 
 		if (data.containsKey(type)) {
 
@@ -90,7 +97,7 @@ public class ExtendedMap<T, K, O> {
 		}
 	}
 
-	public void removeKeyInType(T type, K key) {
+	public void removeKeyInType(Class<?> type, String key) {
 
 		if (data.containsKey(type)) {
 
@@ -111,7 +118,7 @@ public class ExtendedMap<T, K, O> {
 		return data.isEmpty();
 	}
 
-	public boolean isEmpty(T type) {
+	public boolean isEmpty(Class<?> type) {
 
 		if (data.containsKey(type)) {
 
@@ -126,7 +133,7 @@ public class ExtendedMap<T, K, O> {
 		return data.size();
 	}
 
-	public int size(T type) {
+	public int size(Class<?> type) {
 
 		if (data.containsKey(type)) {
 
@@ -136,7 +143,7 @@ public class ExtendedMap<T, K, O> {
 		return 0;
 	}
 
-	public void clear(T type) {
+	public void clear(Class<?> type) {
 
 		if (data.containsKey(type)) {
 
@@ -144,7 +151,7 @@ public class ExtendedMap<T, K, O> {
 		}
 	}
 
-	public Map<K, O> getType(T type) {
+	public Map<String, Object> getType(Class<?> type) {
 
 		if (data.containsKey(type)) {
 
@@ -154,38 +161,56 @@ public class ExtendedMap<T, K, O> {
 		return null;
 	}
 
-	public O get(T type, K key) {
+	public Object get(Class<?> type, String key) {
 
 		if (data.containsKey(type)) {
 
 			if (data.get(type).containsKey(key)) {
 
-				return data.get(type).get(key);
+				Object o = data.get(type).get(key);
+
+				if (o == Null.NULL) {
+
+					return null;
+
+				} else {
+
+					return o;
+				}
 			}
 		}
 
 		return null;
 	}
 
-	public O get(K key) {
+	public Object get(String key) {
 
-		for (T type : typeSet()) {
+		for (Class<?> type : typeSet()) {
 
 			if (getType(type).containsKey(key)) {
 
-				return getType(type).get(key);
+				Object o = getType(type).get(key);
+
+				if (o == Null.NULL) {
+
+					return null;
+
+				} else {
+
+					return o;
+				}
 			}
 		}
 
 		return null;
 	}
 
-	public Set<T> typeSet() {
+	public Set<Class<?>> typeSet() {
 
 		return data.keySet();
 	}
 
-	public Set<K> keySet(T type) {
+	public Set<String> keySet(Class<?> type) {
 
 		if (data.containsKey(type)) {
 
@@ -195,12 +220,12 @@ public class ExtendedMap<T, K, O> {
 		return null;
 	}
 
-	public Set<Entry<T, Map<K, O>>> entrySet() {
+	public Set<Entry<Class<?>, Map<String, Object>>> entrySet() {
 
 		return data.entrySet();
 	}
 
-	public Set<Entry<K, O>> entrySet(T type) {
+	public Set<Entry<String, Object>> entrySet(Class<?> type) {
 
 		if (data.containsKey(type)) {
 

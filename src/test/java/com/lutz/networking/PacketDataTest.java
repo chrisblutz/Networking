@@ -13,13 +13,13 @@ public class PacketDataTest extends TestCase {
 	private boolean finished = false, errored = false;
 	private String errorMessage = "";
 
-	public PacketDataTest(String name){
-		
+	public PacketDataTest(String name) {
+
 		super(name);
 	}
-	
-	public static TestSuite suite(){
-		
+
+	public static TestSuite suite() {
+
 		return new TestSuite(PacketDataTest.class);
 	}
 
@@ -29,7 +29,7 @@ public class PacketDataTest extends TestCase {
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -42,13 +42,17 @@ public class PacketDataTest extends TestCase {
 
 				return data;
 			}
+
+			@Override
+			public void onTimeout(Connection connection) {
+			}
 		});
 
 		final Client client = new Client("localhost", 12347);
 		client.addNetworkListener(new ClientListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 			}
 
 			@Override
@@ -65,6 +69,10 @@ public class PacketDataTest extends TestCase {
 				}
 
 				finished = true;
+			}
+
+			@Override
+			public void onTimeout(Connection connection) {
 			}
 		});
 

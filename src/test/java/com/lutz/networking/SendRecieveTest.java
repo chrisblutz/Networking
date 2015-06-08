@@ -30,7 +30,7 @@ public class SendRecieveTest extends TestCase {
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 
 				System.out.println("Server: Successfully received packet!");
 
@@ -38,7 +38,7 @@ public class SendRecieveTest extends TestCase {
 
 					timesSent++;
 
-					server.sendPacket(new Packet());
+					server.sendPacket(new Packet(), true);
 				}
 			}
 
@@ -52,13 +52,22 @@ public class SendRecieveTest extends TestCase {
 
 				return data;
 			}
+
+			@Override
+			public void onTimeout(Connection connection) {
+				
+				errored = true;
+				errorMessage = "Connection timed out!";
+				
+				finished = true;
+			}
 		});
 
 		final Client client = new Client("localhost", 12349);
 		client.addNetworkListener(new ClientListener() {
 
 			@Override
-			public void onReceive(Packet packet) {
+			public void onReceive(Connection connection, Packet packet) {
 
 				System.out.println("Client: Successfully received packet!");
 
@@ -66,7 +75,7 @@ public class SendRecieveTest extends TestCase {
 
 					timesSent++;
 
-					client.sendPacket(new Packet());
+					client.sendPacket(new Packet(), true);
 				}
 			}
 
@@ -79,8 +88,17 @@ public class SendRecieveTest extends TestCase {
 
 					timesSent++;
 
-					client.sendPacket(new Packet());
+					client.sendPacket(new Packet(), true);
 				}
+			}
+
+			@Override
+			public void onTimeout(Connection connection) {
+				
+				errored = true;
+				errorMessage = "Connection timed out!";
+				
+				finished = true;
 			}
 		});
 
