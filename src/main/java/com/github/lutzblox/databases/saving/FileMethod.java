@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.github.lutzblox.Listenable;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
@@ -21,7 +22,7 @@ public class FileMethod implements SaveMethod {
 	}
 
 	@Override
-	public ExtendedMap load() {
+	public ExtendedMap load(Listenable l) {
 
 		ExtendedMap map = new ExtendedMap();
 
@@ -99,7 +100,7 @@ public class FileMethod implements SaveMethod {
 
 			} catch (Exception e) {
 
-				e.printStackTrace();
+				l.report(e);
 			}
 		}
 
@@ -107,7 +108,7 @@ public class FileMethod implements SaveMethod {
 	}
 
 	@Override
-	public void save(ExtendedMap data) {
+	public void save(ExtendedMap data, Listenable l) {
 
 		String toWrite = "";
 
@@ -161,7 +162,7 @@ public class FileMethod implements SaveMethod {
 
 		} catch (Exception e) {
 
-			e.printStackTrace();
+			l.report(e);
 		}
 	}
 }

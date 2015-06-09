@@ -19,4 +19,18 @@ public class NetworkException extends RuntimeException {
 
 		super(message);
 	}
+
+	/**
+	 * Creates a new {@code NetworkException} with the specified message and
+	 * cause
+	 * 
+	 * @param message
+	 *            The message for the {@code Exception}
+	 * @param cause
+	 *            The cause for the {@code Exception}
+	 */
+	public NetworkException(String message, Throwable cause) {
+
+		super(message, cause);
+	}
 }

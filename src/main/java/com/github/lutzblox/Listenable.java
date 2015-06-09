@@ -3,6 +3,7 @@ package com.github.lutzblox;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.NetworkListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
@@ -15,6 +16,45 @@ import com.github.lutzblox.sockets.Connection;
 public class Listenable {
 
 	protected List<NetworkListener> lists = new ArrayList<NetworkListener>();
+	protected List<ErrorReporter> reporters = new ArrayList<ErrorReporter>();
+
+	/**
+	 * Attached a {@code ErrorListener} to this {@code Listenable}
+	 * 
+	 * @param reporter
+	 *            The {@code ErrorReporter} to add
+	 */
+	public void addErrorReporter(ErrorReporter reporter) {
+
+		reporters.add(reporter);
+	}
+
+	/**
+	 * Gets all of the {@code ErrorReporters} attached to this
+	 * {@code Listenable}
+	 * 
+	 * @return An {@code ErrorReporter[]} containing all {@code ErrorReporters}
+	 *         attached to this {@code Listenable}
+	 */
+	public ErrorReporter[] getErrorReporters() {
+
+		return reporters.toArray(new ErrorReporter[] {});
+	}
+
+	/**
+	 * Reports an error ({@code Throwable}) through the {@code ErrorReporters}
+	 * attached to this {@code Listenable}
+	 * 
+	 * @param t
+	 *            The {@code Throwable} to report
+	 */
+	public void report(Throwable t) {
+
+		for (ErrorReporter reporter : getErrorReporters()) {
+
+			reporter.report(t);
+		}
+	}
 
 	/**
 	 * Attaches a {@code NetworkListener} to this {@code Listenable}

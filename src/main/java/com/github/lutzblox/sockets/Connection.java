@@ -16,6 +16,7 @@ import java.util.List;
 import com.github.lutzblox.ClientListenable;
 import com.github.lutzblox.Listenable;
 import com.github.lutzblox.ServerListenable;
+import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.states.State;
 
@@ -45,8 +46,6 @@ public class Connection {
 
 	private int readTimeout = 8000;
 
-	private char nextChar = '\0';
-
 	/**
 	 * Creates a new {@code Connection} with the specified parameters
 	 * 
@@ -58,8 +57,8 @@ public class Connection {
 	 * @param state
 	 *            The beginning {@code State} of this {@code Connection}
 	 * @param serverSide
-	 *            Whether or not this {@code Connection} represents a server
-	 *            connection
+	 *            Whether or not this {@code Connection} represents a
+	 *            server-side connection
 	 */
 	public Connection(Listenable listenable, Socket socket, State state,
 			boolean serverSide) {
@@ -82,9 +81,10 @@ public class Connection {
 			@Override
 			public void uncaughtException(Thread arg0, Throwable arg1) {
 
-				System.err.println(arg0.getName() + " has errored: "
-						+ arg1.getClass().getName());
-				arg1.printStackTrace();
+				NetworkException ex = new NetworkException(arg0.getName()
+						+ " has errored!", arg1);
+
+				Connection.this.listenable.report(ex);
 			}
 		});
 		listener.setName("Packet Listener: "
@@ -348,23 +348,18 @@ public class Connection {
 
 							} else if (!(e instanceof SocketException)) {
 
-								e.printStackTrace();
+								listenable.report(e);
 							}
 						}
 
 						String readStr = read.toString();
 
-						if (nextChar != '\0') {
-
-							readStr = nextChar + readStr;
-						}
-
 						if (!readStr.equals("::REMCL")) {
 
 							if (!readStr.toString().equals("")) {
 
-								final Packet p = Packet
-										.getPacketFromString(readStr.toString());
+								final Packet p = Packet.getPacketFromString(
+										readStr.toString(), listenable);
 
 								if (p.getData().length == 1) {
 
@@ -424,7 +419,7 @@ public class Connection {
 
 			if (close) {
 
-				e.printStackTrace();
+				listenable.report(e);
 
 				running = false;
 				listener.interrupt();

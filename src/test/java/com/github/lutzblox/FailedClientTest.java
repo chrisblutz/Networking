@@ -3,6 +3,7 @@ package com.github.lutzblox;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
@@ -26,6 +27,7 @@ public class FailedClientTest extends TestCase {
 	public void testFailedClient() {
 
 		final Server server = new Server(12348, "FailedClientTest");
+		server.addErrorReporter(ErrorReporterFactory.newInstance());
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
@@ -49,6 +51,7 @@ public class FailedClientTest extends TestCase {
 		});
 
 		final Client client = new Client("localhost", 12348);
+		client.addErrorReporter(ErrorReporterFactory.newInstance());
 		client.addNetworkListener(new ClientListener() {
 
 			@Override
@@ -57,6 +60,8 @@ public class FailedClientTest extends TestCase {
 
 			@Override
 			public void onConnect(Packet packet) {
+				
+				System.out.println("Sending packet expecting response to trigger timeout...");
 				
 				client.sendPacket(new Packet(), false);
 			}

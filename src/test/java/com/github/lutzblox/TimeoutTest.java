@@ -3,6 +3,7 @@ package com.github.lutzblox;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
@@ -26,6 +27,7 @@ public class TimeoutTest extends TestCase {
 	public void testTimeout() {
 
 		final Server server = new Server(12351, "TimeoutTest");
+		server.addErrorReporter(ErrorReporterFactory.newInstance());
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
@@ -47,6 +49,7 @@ public class TimeoutTest extends TestCase {
 		});
 
 		final Client client = new Client("localhost", 12351);
+		client.addErrorReporter(ErrorReporterFactory.newInstance());
 		client.addNetworkListener(new ClientListener() {
 
 			@Override
@@ -78,7 +81,7 @@ public class TimeoutTest extends TestCase {
 
 			client.connect();
 
-			System.out.println("Waiting for timeout...");
+			System.out.println("Waiting for timeout... (This should take "+((double) client.getConnection().getReadTimeout()/1000)+" seconds)");
 
 		} catch (Exception e) {
 

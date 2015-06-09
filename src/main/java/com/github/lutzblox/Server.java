@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 
@@ -149,7 +150,7 @@ public class Server extends ServerListenable {
 
 				} catch (Exception e) {
 
-					e.printStackTrace();
+					Server.this.report(e);
 
 					failed = true;
 
@@ -159,7 +160,7 @@ public class Server extends ServerListenable {
 
 					} catch (IOException e1) {
 
-						e1.printStackTrace();
+						Server.this.report(e1);
 					}
 				}
 			}
@@ -169,9 +170,10 @@ public class Server extends ServerListenable {
 			@Override
 			public void uncaughtException(Thread arg0, Throwable arg1) {
 
-				System.err.println(arg0.getName() + " has errored: "
-						+ arg1.getClass().getName());
-				arg1.printStackTrace();
+				NetworkException ex = new NetworkException(arg0.getName()
+						+ " has errored!", arg1);
+
+				Server.this.report(ex);
 			}
 		});
 		incoming.setName("Incoming Connection Monitor: Server '"
@@ -214,7 +216,7 @@ public class Server extends ServerListenable {
 
 					failed = true;
 
-					e.printStackTrace();
+					Server.this.report(e);
 
 					try {
 
@@ -222,7 +224,7 @@ public class Server extends ServerListenable {
 
 					} catch (IOException e1) {
 
-						e1.printStackTrace();
+						Server.this.report(e1);
 					}
 				}
 			}
@@ -232,9 +234,10 @@ public class Server extends ServerListenable {
 			@Override
 			public void uncaughtException(Thread arg0, Throwable arg1) {
 
-				System.err.println(arg0.getName() + " has errored: "
-						+ arg1.getClass().getName());
-				arg1.printStackTrace();
+				NetworkException ex = new NetworkException(arg0.getName()
+						+ " has errored!", arg1);
+
+				Server.this.report(ex);
 			}
 		});
 		checkFailed.setName("Failed Client Monitor: Server '" + getServerName()

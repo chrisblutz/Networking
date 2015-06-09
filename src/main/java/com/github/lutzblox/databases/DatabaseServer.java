@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.github.lutzblox.Server;
 import com.github.lutzblox.databases.saving.SaveMethod;
+import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
@@ -60,7 +61,7 @@ public class DatabaseServer {
 
 				} else if (packet.hasData(PutRequest.PUT_REQUEST_KEY_KEY)
 						&& packet.hasData(PutRequest.PUT_REQUEST_VALUE_KEY)) {
-					
+
 					String key = (String) packet
 							.getData(PutRequest.PUT_REQUEST_KEY_KEY);
 					Object value = packet
@@ -70,7 +71,7 @@ public class DatabaseServer {
 
 					if (saveMethod != null) {
 
-						saveMethod.save(data);
+						saveMethod.save(data, server);
 					}
 
 					connection.setToReceive();
@@ -117,7 +118,7 @@ public class DatabaseServer {
 
 		if (saveMethod != null) {
 
-			data.putAll(saveMethod.load());
+			data.putAll(saveMethod.load(server));
 		}
 	}
 
@@ -125,7 +126,7 @@ public class DatabaseServer {
 
 		if (saveMethod != null) {
 
-			saveMethod.save(data);
+			saveMethod.save(data, server);
 		}
 	}
 
@@ -157,6 +158,41 @@ public class DatabaseServer {
 	public void clear() {
 
 		data.clear();
+	}
+
+	/**
+	 * Attached a {@code ErrorListener} to this {@code DatabaseServer}
+	 * 
+	 * @param reporter
+	 *            The {@code ErrorReporter} to add
+	 */
+	public void addErrorReporter(ErrorReporter reporter) {
+
+		server.addErrorReporter(reporter);
+	}
+
+	/**
+	 * Gets all of the {@code ErrorReporters} attached to this
+	 * {@code DatabaseServer}
+	 * 
+	 * @return An {@code ErrorReporter[]} containing all {@code ErrorReporters}
+	 *         attached to this {@code DatabaseServer}
+	 */
+	public ErrorReporter[] getErrorReporters() {
+
+		return server.getErrorReporters();
+	}
+
+	/**
+	 * Reports an error ({@code Throwable}) through the {@code ErrorReporters}
+	 * attached to this {@code DatabaseServer}
+	 * 
+	 * @param t
+	 *            The {@code Throwable} to report
+	 */
+	public void report(Throwable t) {
+
+		server.report(t);
 	}
 
 	public void start() throws IOException {

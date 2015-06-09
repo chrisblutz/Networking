@@ -3,6 +3,7 @@ package com.github.lutzblox.packets;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lutzblox.Listenable;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
@@ -300,9 +301,11 @@ public class Packet {
 	 * 
 	 * @param toParse
 	 *            The {@code String} to parse
+	 * @param l
+	 *            The {@code Listenable} that received this {@code Packet}
 	 * @return The parsed {@code Packet}
 	 */
-	public static Packet getPacketFromString(String toParse) {
+	public static Packet getPacketFromString(String toParse, Listenable l) {
 
 		Packet p = new Packet();
 
@@ -340,28 +343,31 @@ public class Packet {
 
 					} else {
 
-						new NullPointerException(
+						NullPointerException ex = new NullPointerException(
 								"The data type abbreviation '"
 										+ declParts[0].replace("$(nl);", "\n")
 												.replace("$(cr);", "\r")
 												.replace("$(vl);", "|")
 												.toUpperCase()
-										+ "' does not have a DataType registered for it.")
-								.printStackTrace();
+										+ "' does not have a DataType registered for it.");
+
+						l.report(ex);
 					}
 
 				} else {
 
-					new NetworkException(
-							"The packet information could not be read!")
-							.printStackTrace();
+					NetworkException ex = new NetworkException(
+							"The packet information could not be read!");
+
+					l.report(ex);
 				}
 
 			} else {
 
-				new NetworkException(
-						"The packet information could not be read!")
-						.printStackTrace();
+				NetworkException ex = new NetworkException(
+						"The packet information could not be read!");
+
+				l.report(ex);
 			}
 		}
 

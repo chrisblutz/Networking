@@ -5,6 +5,7 @@ import junit.framework.TestSuite;
 
 import com.github.lutzblox.databases.DatabaseClient;
 import com.github.lutzblox.databases.DatabaseServer;
+import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 
 public class DatabaseTest extends TestCase {
 
@@ -24,8 +25,10 @@ public class DatabaseTest extends TestCase {
 	public void testDatabase() {
 
 		final DatabaseServer server = new DatabaseServer(12350, "DatabaseTest");
+		server.addErrorReporter(ErrorReporterFactory.newInstance());
 
 		final DatabaseClient client = new DatabaseClient("localhost", 12350);
+		client.addErrorReporter(ErrorReporterFactory.newInstance());
 
 		try {
 

@@ -3,6 +3,7 @@ package com.github.lutzblox;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
@@ -27,6 +28,7 @@ public class SendRecieveTest extends TestCase {
 	public void testSendReceive() {
 
 		final Server server = new Server(12349, "SendRecieveTest");
+		server.addErrorReporter(ErrorReporterFactory.newInstance());
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
@@ -64,6 +66,7 @@ public class SendRecieveTest extends TestCase {
 		});
 
 		final Client client = new Client("localhost", 12349);
+		client.addErrorReporter(ErrorReporterFactory.newInstance());
 		client.addNetworkListener(new ClientListener() {
 
 			@Override

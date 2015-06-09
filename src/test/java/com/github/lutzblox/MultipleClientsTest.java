@@ -3,6 +3,7 @@ package com.github.lutzblox;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
@@ -27,6 +28,7 @@ public class MultipleClientsTest extends TestCase {
 	public void testMultipleClients() {
 		
 		final Server server = new Server(12346, "MultipleClientsTest");
+		server.addErrorReporter(ErrorReporterFactory.newInstance());
 		server.addNetworkListener(new ServerListener() {
 
 			@Override
@@ -48,6 +50,7 @@ public class MultipleClientsTest extends TestCase {
 		});
 
 		final Client client1 = new Client("localhost", 12346);
+		client1.addErrorReporter(ErrorReporterFactory.newInstance());
 		client1.addNetworkListener(new ClientListener() {
 
 			@Override
@@ -68,6 +71,7 @@ public class MultipleClientsTest extends TestCase {
 		});
 
 		final Client client2 = new Client("localhost", 12346);
+		client2.addErrorReporter(ErrorReporterFactory.newInstance());
 		client2.addNetworkListener(new ClientListener() {
 
 			@Override

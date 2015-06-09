@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import com.github.lutzblox.Client;
+import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
@@ -45,6 +47,14 @@ public class DatabaseClient {
 
 			@Override
 			public void onTimeout(Connection connection) {
+
+				NetworkException ex = new NetworkException(
+						"The database server took too long to respond!");
+
+				client.report(ex);
+
+				recentValue = null;
+				updated = true;
 			}
 		});
 	}
@@ -155,6 +165,41 @@ public class DatabaseClient {
 		client.sendPacket(p, false);
 
 		client.setToSend();
+	}
+
+	/**
+	 * Attached a {@code ErrorListener} to this {@code DatabaseClient}
+	 * 
+	 * @param reporter
+	 *            The {@code ErrorReporter} to add
+	 */
+	public void addErrorReporter(ErrorReporter reporter) {
+
+		client.addErrorReporter(reporter);
+	}
+
+	/**
+	 * Gets all of the {@code ErrorReporters} attached to this
+	 * {@code DatabaseClient}
+	 * 
+	 * @return An {@code ErrorReporter[]} containing all {@code ErrorReporters}
+	 *         attached to this {@code DatabaseClient}
+	 */
+	public ErrorReporter[] getErrorReporters() {
+
+		return client.getErrorReporters();
+	}
+
+	/**
+	 * Reports an error ({@code Throwable}) through the {@code ErrorReporters}
+	 * attached to this {@code DatabaseClient}
+	 * 
+	 * @param t
+	 *            The {@code Throwable} to report
+	 */
+	public void report(Throwable t) {
+
+		client.report(t);
 	}
 
 	public void connect() throws UnknownHostException, IOException {
