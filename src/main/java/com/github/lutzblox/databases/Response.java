@@ -16,7 +16,7 @@ public class Response {
 	 * Creates a new database {@code Response} to send across a
 	 * {@code DatabaseServer}
 	 * 
-	 * @param dataKey
+	 * @param value
 	 *            The value of the data to respond with
 	 */
 	public Response(Object value) {

@@ -44,7 +44,7 @@ public class ServerListenable extends Listenable {
 	 * 
 	 * @param c
 	 *            The {@code Connection} that was connected
-	 * @param packet
+	 * @param data
 	 *            The {@code Packet} to pass to the listener
 	 */
 	public Packet fireListenerOnConnect(Connection c, Packet data) {
