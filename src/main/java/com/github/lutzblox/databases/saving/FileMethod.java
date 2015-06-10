@@ -12,10 +12,21 @@ import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
 import com.github.lutzblox.utils.ExtendedMap;
 
+/**
+ * A {@code SaveMethod} that saves database information to a file
+ * 
+ * @author Christopher Lutz
+ */
 public class FileMethod implements SaveMethod {
 
 	private File file;
 
+	/**
+	 * Creates a new {@code FileMethod} that saves to the specified file
+	 * 
+	 * @param file
+	 *            The {@code File} to save to
+	 */
 	public FileMethod(File file) {
 
 		this.file = file;

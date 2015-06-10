@@ -6,17 +6,35 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-public class StreamErrorReporter extends ErrorReporter implements Closeable, Flushable {
+/**
+ * An {@code ErrorReporter} that writes errors to an {@code OutputStream}
+ * 
+ * @author Christopher Lutz
+ */
+public class StreamErrorReporter extends ErrorReporter implements Closeable,
+		Flushable {
 
 	private OutputStream stream;
 	private PrintStream printStream;
 
+	/**
+	 * Creates a new {@code StreamErrorReporter} that writes to the specified
+	 * {@code OutputStream}
+	 * 
+	 * @param stream
+	 *            The stream to write to
+	 */
 	public StreamErrorReporter(OutputStream stream) {
 
 		this.stream = stream;
 		this.printStream = new PrintStream(stream);
 	}
 
+	/**
+	 * Gets the output stream used to write errors
+	 * 
+	 * @return The reporting stream
+	 */
 	public OutputStream getOutputStream() {
 
 		return stream;

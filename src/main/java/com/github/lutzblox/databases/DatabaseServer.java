@@ -10,6 +10,12 @@ import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.utils.ExtendedMap;
 
+/**
+ * This class represents the client-side portion of a database server <-> client
+ * relationship.
+ * 
+ * @author Christopher Lutz
+ */
 public class DatabaseServer {
 
 	public static final String DATABASE_NAME_KEY = "database-name";
@@ -20,21 +26,69 @@ public class DatabaseServer {
 
 	private SaveMethod saveMethod = null;
 
+	/**
+	 * Create a new {@code DatabaseServer} instance with the specified
+	 * parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code DatabaseServer} on
+	 * @param databaseName
+	 *            The name of this {@code DatabaseServer}
+	 */
 	public DatabaseServer(int port, String databaseName) {
 
 		this(new Server(port, databaseName));
 	}
 
+	/**
+	 * Create a new {@code DatabaseServer} instance with the specified
+	 * parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code DatabaseServer} on
+	 * @param databaseName
+	 *            The name of this {@code DatabaseServer}
+	 * @param maxConnections
+	 *            The maximum number of {@code Client} connections to be
+	 *            accepted by this Server
+	 */
 	public DatabaseServer(int port, String databaseName, int maxConnections) {
 
 		this(new Server(port, databaseName, maxConnections));
 	}
 
+	/**
+	 * Create a new {@code DatabaseServer} instance with the specified
+	 * parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code DatabaseServer} on
+	 * @param databaseName
+	 *            The name of this {@code DatabaseServer}
+	 * @param failCheck
+	 *            The loop delay in milliseconds to check for {@code Clients}
+	 *            that have disconnected or errored
+	 */
 	public DatabaseServer(int port, String databaseName, long failCheck) {
 
 		this(new Server(port, databaseName, failCheck));
 	}
 
+	/**
+	 * Create a new {@code DatabaseServer} instance with the specified
+	 * parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code DatabaseServer} on
+	 * @param databaseName
+	 *            The name of this {@code DatabaseServer}
+	 * @param maxConnections
+	 *            The maximum number of {@code Client} connections to be
+	 *            accepted by this {@code DatabaseServer}
+	 * @param failCheck
+	 *            The loop delay in milliseconds to check for {@code Clients}
+	 *            that have disconnected or errored
+	 */
 	public DatabaseServer(int port, String databaseName, int maxConnections,
 			long failCheck) {
 
@@ -104,16 +158,30 @@ public class DatabaseServer {
 		});
 	}
 
+	/**
+	 * Sets the {@code SaveMethod} used by this {@code DatabaseServer} to save
+	 * data
+	 * 
+	 * @param method
+	 *            The {@code SaveMethod} to use
+	 */
 	public void setSaveMethod(SaveMethod method) {
 
 		this.saveMethod = method;
 	}
 
+	/**
+	 * Gets the {@code SaveMethod} used by this {@code DatabaseServer} to save
+	 * data
+	 * 
+	 * @return The {@code SaveMethod} used
+	 */
 	public SaveMethod getSaveMethod() {
 
 		return saveMethod;
 	}
 
+	/** Loads database data through the {@code SaveMethod} */
 	public void loadDatabase() {
 
 		if (saveMethod != null) {
@@ -122,6 +190,7 @@ public class DatabaseServer {
 		}
 	}
 
+	/** Saves database data through the {@code SaveMethod} */
 	public void saveDatabase() {
 
 		if (saveMethod != null) {
@@ -130,34 +199,88 @@ public class DatabaseServer {
 		}
 	}
 
+	/**
+	 * Gets the port that this {@code DatabaseServer} will open onto
+	 * 
+	 * @return This {@code DatabaseServer}'s port
+	 */
 	public int getPort() {
 
 		return server.getPort();
 	}
 
+	/**
+	 * Gets the name attached to this {@code DatabaseServer}
+	 * 
+	 * @return The database name of this {@code DatabaseServer}
+	 */
 	public String getDatabaseName() {
 
 		return server.getServerName();
 	}
 
+	/**
+	 * Puts a value into the database
+	 * 
+	 * @param key
+	 *            The key of the data
+	 * @param value
+	 *            The value of the data
+	 */
 	public void putData(String key, Object value) {
 
 		data.put(value.getClass(), key, value);
 	}
 
+	/**
+	 * Checks if the database contains a value with the specified key
+	 * 
+	 * @param key
+	 *            The key to check for
+	 * @return Whether or not the database contains a value for the specified
+	 *         key
+	 */
 	public boolean hasData(String key) {
 
 		return data.containsKey(key);
 	}
 
+	/**
+	 * Gets the value associated with the specified key
+	 * 
+	 * @param key
+	 *            The key to find the value for
+	 * @return The value for the key
+	 */
 	public Object getData(String key) {
 
 		return data.get(key);
 	}
 
+	/** Clears the data from the database */
 	public void clear() {
 
 		data.clear();
+	}
+
+	/**
+	 * Checks if this {@code DatabaseServer} is currently open
+	 * 
+	 * @return Whether or not this {@code DatabaseServer} is open
+	 */
+	public boolean isOpen() {
+
+		return server.isOpen();
+	}
+
+	/**
+	 * Checks if this {@code DatabaseServer} has failed/errored
+	 * 
+	 * @return Whether or not this {@code DatabaseServer} has failed/errored
+	 */
+	public boolean hasFailed() {
+
+		return server.hasFailed();
 	}
 
 	/**
@@ -195,11 +318,26 @@ public class DatabaseServer {
 		server.report(t);
 	}
 
+	/**
+	 * Attempts to open this {@code DatabaseServer} onto the specified port
+	 * 
+	 * @throws IOException
+	 *             If an I/O error occurs while starting the
+	 *             {@code DatabaseServer}
+	 */
 	public void start() throws IOException {
 
 		server.start();
 	}
 
+	/**
+	 * Attempts to close this {@code DatabaseServer} and disconnect all
+	 * {@code Clients}
+	 * 
+	 * @throws IOException
+	 *             If an I/O error occurs while shutting down this
+	 *             {@code DatabaseServer}
+	 */
 	public void close() throws IOException {
 
 		server.close();

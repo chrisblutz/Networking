@@ -84,7 +84,7 @@ public class Server extends ServerListenable {
 	 *            The name of this {@code Server}
 	 * @param maxConnections
 	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this Server
+	 *            accepted by this {@code Server}
 	 * @param failCheck
 	 *            The loop delay in milliseconds to check for {@code Clients}
 	 *            that have disconnected or errored
