@@ -5,7 +5,7 @@
 <h5>Server</h5>
 <p>To set up the server side of a connection, create a new Server object and give it a port and a name:</p>
 <pre>Server server = new Server(port, name);</pre>
-<p>The Server constructor can also take several more arguments, such as maximum connections possible and a loop delay (in milliseconds) for checking for failed client connections (to remove them from the Server object):</p
+<p>The Server constructor can also take several more arguments, such as maximum connections possible and a loop delay (in milliseconds) for checking for failed client connections (to remove them from the Server object):</p>
 <pre>
 Server server = new Server(port, name, maxConnections);
 Server server = new Server(port, name, failCheck);
