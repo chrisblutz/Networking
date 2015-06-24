@@ -28,7 +28,7 @@
 					<extensions>true</extensions>
 					<configuration>
 						<checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
-						<checkinComment>Updating javadoc for ${project.name} ${project.version} (Published by Maven)</checkinComment>
+						<checkinComment>Updating javadoc pages(Automatically published by Maven)</checkinComment>
 						<content>${project.build.directory}/docs</content>
 						<skipDeletedFiles>true</skipDeletedFiles>
 						<pubScmUrl>scm:git:git@github.com:LutzBlox/Networking.git</pubScmUrl>
