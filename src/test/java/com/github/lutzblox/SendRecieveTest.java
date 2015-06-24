@@ -63,6 +63,10 @@ public class SendRecieveTest extends TestCase {
 				
 				finished = true;
 			}
+
+			@Override
+			public void onClientFailure(Connection c) {
+			}
 		});
 
 		final Client client = new Client("localhost", 12349);
@@ -156,6 +160,7 @@ public class SendRecieveTest extends TestCase {
 		if (errored) {
 
 			System.out.println("Errored - " + errorMessage);
+			fail();
 
 		} else {
 

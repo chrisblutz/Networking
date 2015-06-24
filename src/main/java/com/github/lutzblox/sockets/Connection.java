@@ -18,6 +18,8 @@ import com.github.lutzblox.Listenable;
 import com.github.lutzblox.ServerListenable;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.packets.PacketReader;
+import com.github.lutzblox.packets.PacketWriter;
 import com.github.lutzblox.states.State;
 
 /**
@@ -33,7 +35,7 @@ public class Connection {
 
 	private Thread listener;
 
-	private State state, nextState = null;
+	private State mainState, state, nextState = null;
 
 	private List<Packet> dropped = new ArrayList<Packet>();
 
@@ -45,6 +47,9 @@ public class Connection {
 			firstSend = true, shouldRespond = false, remoteClosed = false;
 
 	private int readTimeout = 8000;
+
+	private PacketReader packetReader;
+	private PacketWriter packetWriter;
 
 	/**
 	 * Creates a new {@code Connection} with the specified parameters
@@ -65,8 +70,12 @@ public class Connection {
 
 		this.listenable = listenable;
 		this.socket = socket;
+		this.mainState = state;
 		this.state = state;
 		this.serverSide = serverSide;
+
+		packetReader = new PacketReader();
+		packetWriter = new PacketWriter();
 
 		listener = new Thread() {
 
@@ -237,6 +246,30 @@ public class Connection {
 
 			while (running && socket.isConnected() && !socket.isClosed()) {
 
+				if (mainState == State.MUTUAL) {
+
+					if (!socket.isClosed() && socket.isConnected()) {
+
+						if (firstSend && serverSide) {
+
+							state = State.SENDING;
+
+						} else if (new InputStreamReader(
+								socket.getInputStream()).ready()) {
+
+							state = State.RECEIVING;
+
+						} else if (waiting != null) {
+
+							state = State.SENDING;
+
+						} else {
+
+							state = State.MUTUAL;
+						}
+					}
+				}
+
 				if (state == State.SENDING) {
 
 					if (!socket.isClosed() && socket.isConnected()
@@ -258,7 +291,13 @@ public class Connection {
 								p.putData(Packet.EMPTY_PACKET);
 							}
 
-							out.println(p.toString());
+							out.println(packetWriter
+									.getPacketAsWriteableString(p));
+
+							for (Throwable t : packetWriter.getErrors()) {
+
+								listenable.report(t);
+							}
 
 							if (nextState != null) {
 
@@ -274,7 +313,13 @@ public class Connection {
 
 						} else if (waiting != null) {
 
-							out.println(waiting.toString());
+							out.println(packetWriter
+									.getPacketAsWriteableString(waiting));
+
+							for (Throwable t : packetWriter.getErrors()) {
+
+								listenable.report(t);
+							}
 
 							waiting = null;
 
@@ -290,7 +335,14 @@ public class Connection {
 
 						} else if (waiting == null && vitalDropped.size() > 0) {
 
-							out.println(vitalDropped.get(0).toString());
+							out.println(packetWriter
+									.getPacketAsWriteableString(vitalDropped
+											.get(0)));
+
+							for (Throwable t : packetWriter.getErrors()) {
+
+								listenable.report(t);
+							}
 
 							vitalDropped.remove(0);
 
@@ -358,8 +410,13 @@ public class Connection {
 
 							if (!readStr.toString().equals("")) {
 
-								final Packet p = Packet.getPacketFromString(
-										readStr.toString(), listenable);
+								final Packet p = packetReader
+										.getPacketFromString(readStr);
+
+								for (Throwable t : packetReader.getErrors()) {
+
+									listenable.report(t);
+								}
 
 								if (p.getData().length == 1) {
 
@@ -414,15 +471,29 @@ public class Connection {
 
 			} else if (e instanceof IOException) {
 
-				remoteClosed = true;
+				if (socket.isClosed()
+						|| e.getMessage().equalsIgnoreCase("socket closed")) {
+
+					close = false;
+
+				} else {
+
+					remoteClosed = true;
+				}
 			}
 
 			if (close) {
 
 				listenable.report(e);
 
-				running = false;
-				listener.interrupt();
+				try {
+
+					close();
+
+				} catch (Exception e1) {
+
+					listenable.report(e1);
+				}
 			}
 		}
 	}

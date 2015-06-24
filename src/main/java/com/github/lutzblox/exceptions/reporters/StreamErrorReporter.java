@@ -40,18 +40,21 @@ public class StreamErrorReporter extends ErrorReporter implements Closeable,
 		return stream;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void report(String toReport) {
 
 		printStream.println(toReport);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void flush() throws IOException {
 
 		printStream.flush();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException {
 

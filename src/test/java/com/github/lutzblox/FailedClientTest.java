@@ -48,6 +48,10 @@ public class FailedClientTest extends TestCase {
 			@Override
 			public void onTimeout(Connection connection) {
 			}
+
+			@Override
+			public void onClientFailure(Connection c) {
+			}
 		});
 
 		final Client client = new Client("localhost", 12348);
@@ -142,6 +146,7 @@ public class FailedClientTest extends TestCase {
 		if (errored) {
 
 			System.out.println("Errored - " + errorMessage);
+			fail();
 
 		} else {
 

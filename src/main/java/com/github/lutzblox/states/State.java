@@ -17,5 +17,10 @@ public enum State {
 	 * The state used for {@code Connections} while they are waiting to send a
 	 * {@code Packet}
 	 */
-	SENDING;
+	SENDING,
+	/**
+	 * The state used for {@code Connections} when they can either send or
+	 * receive {@code Packets}
+	 */
+	MUTUAL;
 }

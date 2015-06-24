@@ -233,6 +233,38 @@ public class DatabaseClient {
 	}
 
 	/**
+	 * Deletes a value from the database
+	 * 
+	 * @param key
+	 *            The key of the data
+	 */
+	public void deleteValue(String key) {
+
+		Packet p = new Packet();
+		p.putData(DeleteRequest.DELETE_REQUEST_KEY_KEY, key);
+
+		client.sendPacket(p, false);
+
+		client.setToSend();
+	}
+
+	/**
+	 * Deletes a value from the database
+	 * 
+	 * @param deleteRequest
+	 *            The {@code DeleteRequest} to add
+	 */
+	public void deleteValue(DeleteRequest deleteRequest) {
+
+		Packet p = new Packet();
+		p.putData(DeleteRequest.DELETE_REQUEST_KEY_KEY, deleteRequest.getDataKey());
+
+		client.sendPacket(p, false);
+
+		client.setToSend();
+	}
+
+	/**
 	 * Sends a command to the {@code DatabaseServer}
 	 * 
 	 * @param command
@@ -265,7 +297,7 @@ public class DatabaseClient {
 	}
 
 	/**
-	 * Attached a {@code ErrorListener} to this {@code DatabaseClient}
+	 * Attaches an {@code ErrorListener} to this {@code DatabaseClient}
 	 * 
 	 * @param reporter
 	 *            The {@code ErrorReporter} to add

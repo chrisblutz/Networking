@@ -14,6 +14,11 @@ import com.github.lutzblox.packets.datatypes.defaults.NullType;
 import com.github.lutzblox.packets.datatypes.defaults.ShortType;
 import com.github.lutzblox.packets.datatypes.defaults.StringType;
 
+/**
+ * A class that deals with registering and handling {@code DataTypes}
+ * 
+ * @author Christopher Lutz
+ */
 public class DataTypes {
 
 	private static Map<Class<?>, DataType> dataTypes = new HashMap<Class<?>, DataType>();

@@ -6,7 +6,7 @@
 	<packaging>jar</packaging>
 	<version>1.0.1-SNAPSHOT</version>
 	<name>Networking</name>
-	<url>https://github.com/LutzBlox/Networking</url>
+	<url>http://lutzblox.github.io/Networking</url>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

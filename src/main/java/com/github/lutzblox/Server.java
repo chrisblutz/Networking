@@ -139,9 +139,12 @@ public class Server extends ServerListenable {
 
 						if (connections.size() < maxConnect) {
 
-							Connection connection = new Connection(Server.this,
+							Connection connection = new Connection(
+									Server.this,
 									socket.accept(),
-									com.github.lutzblox.states.State.SENDING,
+									Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING
+											: Server.this
+													.getDefaultConnectionState(),
 									true);
 
 							connections.add(connection);
@@ -209,6 +212,7 @@ public class Server extends ServerListenable {
 						for (Connection c : toRem) {
 
 							connections.remove(c);
+							Server.this.fireListenerOnClientFailure(c);
 						}
 					}
 

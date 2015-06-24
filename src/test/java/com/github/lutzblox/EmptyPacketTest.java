@@ -46,6 +46,10 @@ public class EmptyPacketTest extends TestCase {
 			@Override
 			public void onTimeout(Connection connection) {
 			}
+
+			@Override
+			public void onClientFailure(Connection c) {
+			}
 		});
 
 		final Client client = new Client("localhost", 12345);
@@ -121,6 +125,7 @@ public class EmptyPacketTest extends TestCase {
 		if (errored) {
 
 			System.out.println("Errored - " + errorMessage);
+			fail();
 
 		} else {
 

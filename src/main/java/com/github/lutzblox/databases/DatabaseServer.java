@@ -18,6 +18,7 @@ import com.github.lutzblox.utils.ExtendedMap;
  */
 public class DatabaseServer {
 
+	/** Key representing the name of a database in a {@code Packet} */
 	public static final String DATABASE_NAME_KEY = "database-name";
 
 	private ExtendedMap data = new ExtendedMap();
@@ -130,6 +131,20 @@ public class DatabaseServer {
 
 					connection.setToReceive();
 
+				} else if (packet.hasData(DeleteRequest.DELETE_REQUEST_KEY_KEY)) {
+
+					String key = (String) packet
+							.getData(DeleteRequest.DELETE_REQUEST_KEY_KEY);
+
+					data.removeKey(key);
+
+					if (saveMethod != null) {
+
+						saveMethod.save(data, server);
+					}
+
+					connection.setToReceive();
+
 				} else if (packet.hasData(Command.COMMAND_KEY)) {
 
 					String command = (String) packet
@@ -154,6 +169,10 @@ public class DatabaseServer {
 
 			@Override
 			public void onTimeout(Connection connection) {
+			}
+
+			@Override
+			public void onClientFailure(Connection c) {
 			}
 		});
 	}
@@ -284,7 +303,7 @@ public class DatabaseServer {
 	}
 
 	/**
-	 * Attached a {@code ErrorListener} to this {@code DatabaseServer}
+	 * Attaches an {@code ErrorListener} to this {@code DatabaseServer}
 	 * 
 	 * @param reporter
 	 *            The {@code ErrorReporter} to add

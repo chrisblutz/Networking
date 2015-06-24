@@ -174,6 +174,23 @@ public class ExtendedMap {
 		}
 	}
 
+	/**
+	 * Removes a key/value combination from the map
+	 * 
+	 * @param key
+	 *            The key to remove
+	 */
+	public void removeKey(String key) {
+
+		for (Class<?> type : typeSet()) {
+
+			if (containsKey(type, key)) {
+
+				removeKeyInType(type, key);
+			}
+		}
+	}
+
 	/** Clears the map of all data */
 	public void clear() {
 

@@ -17,4 +17,13 @@ public interface ServerListener extends NetworkListener {
 	 *         {@code Client}'s {@code onConnect()} listener method)
 	 */
 	public Packet onConnect(Connection c, Packet data);
+
+	/**
+	 * Called when the {@code Server} detects that a {@code Client} is no longer
+	 * connected/open
+	 * 
+	 * @param c
+	 *            The {@code Connection} that failed
+	 */
+	public void onClientFailure(Connection c);
 }

@@ -48,6 +48,10 @@ public class PacketDataTest extends TestCase {
 			@Override
 			public void onTimeout(Connection connection) {
 			}
+
+			@Override
+			public void onClientFailure(Connection c) {
+			}
 		});
 
 		final Client client = new Client("localhost", 12347);
@@ -130,6 +134,7 @@ public class PacketDataTest extends TestCase {
 		if (errored) {
 
 			System.out.println("Errored - " + errorMessage);
+			fail();
 
 		} else {
 

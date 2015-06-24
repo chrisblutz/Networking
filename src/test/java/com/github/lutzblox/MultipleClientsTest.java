@@ -47,6 +47,10 @@ public class MultipleClientsTest extends TestCase {
 			@Override
 			public void onTimeout(Connection connection) {
 			}
+
+			@Override
+			public void onClientFailure(Connection c) {
+			}
 		});
 
 		final Client client1 = new Client("localhost", 12346);
@@ -148,6 +152,7 @@ public class MultipleClientsTest extends TestCase {
 		if (errored) {
 
 			System.out.println("Errored - " + errorMessage);
+			fail();
 
 		} else {
 

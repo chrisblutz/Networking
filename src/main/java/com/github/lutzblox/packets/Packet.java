@@ -3,10 +3,7 @@ package com.github.lutzblox.packets;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.lutzblox.Listenable;
 import com.github.lutzblox.exceptions.NetworkException;
-import com.github.lutzblox.packets.datatypes.DataType;
-import com.github.lutzblox.packets.datatypes.DataTypes;
 import com.github.lutzblox.packets.datatypes.wrappers.Null;
 import com.github.lutzblox.utils.ExtendedMap;
 
@@ -100,7 +97,7 @@ public class Packet {
 		} else {
 
 			throw new NetworkException(
-					"The constructor to Packet requires the String[] and Object[] to have the same lengths!");
+					"The constructor of Packet requires the String[] and Object[] to have the same lengths!");
 		}
 	}
 
@@ -177,6 +174,11 @@ public class Packet {
 		return packetData.toArray(new PacketData[] {});
 	}
 
+	public ExtendedMap getDataAsMap() {
+
+		return data;
+	}
+
 	/**
 	 * Checks if the specified key exists as a data key
 	 * 
@@ -248,129 +250,54 @@ public class Packet {
 		return false;
 	}
 
+	/**
+	 * Gets basic data about this {@code Packet}
+	 */
 	@Override
 	public String toString() {
 
-		String toWrite = "";
+		return this.getClass().getName() + "[Size: " + data.size()
+				+ ", Vital: " + isVital() + "]";
+	}
 
-		for (int typeInt = 0; typeInt < data.typeSet().size(); typeInt++) {
+	/**
+	 * Takes this {@code Packet} and formats it into a {@code String} for
+	 * writing/sending
+	 * 
+	 * @deprecated This functionality has been moved to
+	 *             {@code PacketWriter.getPacketAsWriteableString()}.
+	 *             {@code PacketWriter} allows more configuration with how the
+	 *             {@code Packet} to {@code String} transformations are handled. <br>
+	 *             NOTE: Using this method will not report any errors because
+	 *             the PacketWriter's error list is inaccessible for reporting.
+	 *             To retrieve errors to report them, use {@code PacketWriter}'s
+	 *             {@code getPacketAsWriteableString()} method and then retrieve
+	 *             any errors using its {@code getErrors()} method.
+	 * @return The formatted {@code String}
+	 */
+	public String getPacketAsWriteableString() {
 
-			Class<?> type = data.typeSet().toArray(new Class<?>[] {})[typeInt];
-
-			DataType dataType = DataTypes.getDataType(type);
-
-			if (dataType != null) {
-
-				for (int i = 0; i < data.size(type); i++) {
-
-					String key = data.keySet(type).toArray(new String[] {})[i];
-
-					toWrite += dataType.getAbbreviation().toUpperCase()
-							.replace("\n", "$(nl);").replace("\r", "$(cr);")
-							.replace("|", "$(vl);")
-							+ ":"
-							+ key.replace("\n", "$(nl);")
-									.replace("\r", "$(cr);")
-									.replace("|", "$(vl);")
-							+ "="
-							+ dataType.writeType(data.get(type, key))
-									.replace("\n", "$(nl);")
-									.replace("\r", "$(cr);")
-									.replace("|", "$(vl);");
-
-					if (i < data.keySet(type).size() - 1
-							|| (i == data.keySet(type).size() - 1 && typeInt < data
-									.typeSet().size() - 1)) {
-
-						toWrite += "|";
-					}
-				}
-
-			} else {
-
-				throw new NullPointerException("The class '" + type.getName()
-						+ "' does not have a DataType registered for it!");
-			}
-		}
-
-		return toWrite;
+		return new PacketWriter().getPacketAsWriteableString(this);
 	}
 
 	/**
 	 * Parses a {@code Packet} from a {@code String}
 	 * 
+	 * @deprecated This functionality has been moved to
+	 *             {@code PacketReader.getPacketFromString()}.
+	 *             {@code PacketReader} allows more configuration with how the
+	 *             {@code String} to {@code Packet} transformations are handled. <br>
+	 *             NOTE: Using this method will not report any errors because
+	 *             the PacketReader's error list is inaccessible for reporting.
+	 *             To retrieve errors to report them, use {@code PacketReader}'s
+	 *             {@code getPacketFromString()} method and then retrieve any
+	 *             errors using its {@code getErrors()} method.
 	 * @param toParse
 	 *            The {@code String} to parse
-	 * @param l
-	 *            The {@code Listenable} that received this {@code Packet}
 	 * @return The parsed {@code Packet}
 	 */
-	public static Packet getPacketFromString(String toParse, Listenable l) {
+	public static Packet getPacketFromString(String toParse) {
 
-		Packet p = new Packet();
-
-		String[] lines = toParse.split("\\|");
-
-		for (int i = 0; i < lines.length; i++) {
-
-			String line = lines[i];
-
-			if (line.contains("=")) {
-
-				String[] parts = line.split("=", 2);
-
-				if (parts[0].contains(":")) {
-
-					String value = parts[1];
-
-					String[] declParts = parts[0].split(":", 2);
-
-					DataType type = DataTypes.getDataType(declParts[0]
-							.replace("$(nl);", "\n").replace("$(cr);", "\r")
-							.replace("$(vl);", "|"));
-
-					if (type != null) {
-
-						Object parsedValue = type
-								.readType(value.replace("$(nl);", "\n")
-										.replace("$(cr);", "\r")
-										.replace("$(vl);", "|"));
-
-						String key = declParts[1].replace("$(nl);", "\n")
-								.replace("$(cr);", "\r").replace("$(vl);", "|");
-
-						p.putData(key, parsedValue);
-
-					} else {
-
-						NullPointerException ex = new NullPointerException(
-								"The data type abbreviation '"
-										+ declParts[0].replace("$(nl);", "\n")
-												.replace("$(cr);", "\r")
-												.replace("$(vl);", "|")
-												.toUpperCase()
-										+ "' does not have a DataType registered for it.");
-
-						l.report(ex);
-					}
-
-				} else {
-
-					NetworkException ex = new NetworkException(
-							"The packet information could not be read!");
-
-					l.report(ex);
-				}
-
-			} else {
-
-				NetworkException ex = new NetworkException(
-						"The packet information could not be read!");
-
-				l.report(ex);
-			}
-		}
-
-		return p;
+		return new PacketReader().getPacketFromString(toParse);
 	}
 }

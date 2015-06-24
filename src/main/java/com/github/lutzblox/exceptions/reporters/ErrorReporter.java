@@ -27,7 +27,7 @@ public abstract class ErrorReporter {
 
 		for (StackTraceElement e : t.getStackTrace()) {
 
-			toReport += "/t" + e.toString() + "\n";
+			toReport += "    " + e.toString() + "\n";
 		}
 
 		if (t.getCause() != null) {
@@ -44,7 +44,7 @@ public abstract class ErrorReporter {
 
 		for (StackTraceElement e : t.getStackTrace()) {
 
-			toReport += "/t" + e.toString() + "\n";
+			toReport += "    " + e.toString() + "\n";
 		}
 
 		if (t.getCause() != null) {

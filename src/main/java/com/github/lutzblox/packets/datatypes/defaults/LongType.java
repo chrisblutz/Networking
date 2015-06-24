@@ -2,20 +2,28 @@ package com.github.lutzblox.packets.datatypes.defaults;
 
 import com.github.lutzblox.packets.datatypes.DataType;
 
+/**
+ * A {@code DataType} representing a {@code Long} object
+ * 
+ * @author Christopher Lutz
+ */
 public class LongType extends DataType {
 
+	/** {@inheritDoc} */
 	@Override
 	public Class<?> getTypeClass() {
 
 		return Long.class;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String getAbbreviation() {
 
 		return "long";
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Object readType(String toRead) {
 
@@ -29,6 +37,7 @@ public class LongType extends DataType {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String writeType(Object toWrite) {
 

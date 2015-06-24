@@ -77,7 +77,9 @@ public class Client extends ClientListenable {
 
 		socket = new Socket(ip, port);
 
-		connection = new Connection(this, socket, State.RECEIVING, false);
+		connection = new Connection(this, socket,
+				this.getDefaultConnectionState() == null ? State.RECEIVING
+						: this.getDefaultConnectionState(), false);
 
 		open = true;
 	}

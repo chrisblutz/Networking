@@ -32,6 +32,7 @@ public class FileMethod implements SaveMethod {
 		this.file = file;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public ExtendedMap load(Listenable l) {
 
@@ -118,6 +119,7 @@ public class FileMethod implements SaveMethod {
 		return map;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void save(ExtendedMap data, Listenable l) {
 

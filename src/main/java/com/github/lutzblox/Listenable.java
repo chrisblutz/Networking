@@ -7,6 +7,7 @@ import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.NetworkListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
+import com.github.lutzblox.states.State;
 
 /**
  * A class that holds listeners for sides of a connection
@@ -17,9 +18,33 @@ public class Listenable {
 
 	protected List<NetworkListener> lists = new ArrayList<NetworkListener>();
 	protected List<ErrorReporter> reporters = new ArrayList<ErrorReporter>();
+	private State defaultState = null;
 
 	/**
-	 * Attached a {@code ErrorListener} to this {@code Listenable}
+	 * Sets the default {@code State} to use for {@code Connections} based off
+	 * this {@code Listenable}
+	 * 
+	 * @param state
+	 *            The default {@code State}
+	 */
+	public void setDefaultConnectionState(State state) {
+
+		this.defaultState = state;
+	}
+
+	/**
+	 * Gets the default {@code State} to use for {@code Connections} based off
+	 * this {@code Listenable}
+	 * 
+	 * @return The default {@code State}
+	 */
+	public State getDefaultConnectionState() {
+
+		return defaultState;
+	}
+
+	/**
+	 * Attaches an {@code ErrorListener} to this {@code Listenable}
 	 * 
 	 * @param reporter
 	 *            The {@code ErrorReporter} to add

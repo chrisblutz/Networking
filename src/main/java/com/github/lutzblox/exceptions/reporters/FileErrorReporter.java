@@ -45,18 +45,21 @@ public class FileErrorReporter extends ErrorReporter implements Closeable,
 		return file;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void report(String toReport) {
 
 		printStream.println(toReport);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void flush() throws IOException {
 
 		printStream.flush();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() {
 

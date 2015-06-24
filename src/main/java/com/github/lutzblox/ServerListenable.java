@@ -46,6 +46,7 @@ public class ServerListenable extends Listenable {
 	 *            The {@code Connection} that was connected
 	 * @param data
 	 *            The {@code Packet} to pass to the listener
+	 * @return The packet after passing through the listener methods
 	 */
 	public Packet fireListenerOnConnect(Connection c, Packet data) {
 
@@ -55,5 +56,20 @@ public class ServerListenable extends Listenable {
 		}
 
 		return data;
+	}
+
+	/**
+	 * Fires the {@code onClientFailure()} method in all of the
+	 * {@code ServerListener} objects attached to the {@code Server}
+	 * 
+	 * @param c
+	 *            The {@code Connection} that failed
+	 */
+	public void fireListenerOnClientFailure(Connection c) {
+
+		for (ServerListener l : getServerListeners()) {
+
+			l.onClientFailure(c);
+		}
 	}
 }
