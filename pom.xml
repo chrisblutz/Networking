@@ -19,6 +19,24 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-scm-publish-plugin</artifactId>
+					<version>1.1</version>
+					<extensions>true</extensions>
+					<configuration>
+						<checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
+						<checkinComment>Updating javadoc for ${project.name} ${project.version} (Published by Maven)</checkinComment>
+						<content>${project.build.directory}/docs</content>
+						<skipDeletedFiles>true</skipDeletedFiles>
+						<pubScmUrl>scm:git:git@github.com:LutzBlox/Networking.git</pubScmUrl>
+						<scmBranch>gh-pages</scmBranch>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -44,6 +62,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
 				<configuration>
+					<destDir>${project.build.directory}/docs/javadoc</destDir>
 					<doctitle>${project.name} ${project.version}</doctitle>
 					<windowtitle>${project.name} ${project.version}</windowtitle>
 				</configuration>
