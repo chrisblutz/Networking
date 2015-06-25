@@ -12,6 +12,11 @@ import com.github.lutzblox.relay.listeners.RelayListener;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.states.State;
 
+/**
+ * A class representing the server-side portion of a relay connection
+ * 
+ * @author Christopher Lutz
+ */
 public class RelayServer {
 
 	private Server server;
@@ -20,21 +25,65 @@ public class RelayServer {
 
 	private List<ConnectionGroup> groups = new ArrayList<ConnectionGroup>();
 
+	/**
+	 * Create a new {@code RelayServer} instance with the specified parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code RelayServer} on
+	 * @param serverName
+	 *            The name of this {@code RelayServer}
+	 */
 	public RelayServer(int port, String serverName) {
 
 		this(new Server(port, serverName));
 	}
 
+	/**
+	 * Create a new {@code RelayServer} instance with the specified parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code RelayServer} on
+	 * @param serverName
+	 *            The name of this {@code RelayServer}
+	 * @param maxConnections
+	 *            The maximum number of {@code Client} connections to be
+	 *            accepted by this {@code RelayServer}
+	 */
 	public RelayServer(int port, String serverName, int maxConnections) {
 
 		this(new Server(port, serverName, maxConnections));
 	}
 
+	/**
+	 * Create a new {@code RelayServer} instance with the specified parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code RelayServer} on
+	 * @param serverName
+	 *            The name of this {@code RelayServer}
+	 * @param failCheck
+	 *            The loop delay in milliseconds to check for {@code Clients}
+	 *            that have disconnected or errored
+	 */
 	public RelayServer(int port, String serverName, long failCheck) {
 
 		this(new Server(port, serverName, failCheck));
 	}
 
+	/**
+	 * Create a new {@code RelayServer} instance with the specified parameters
+	 * 
+	 * @param port
+	 *            The port to open the {@code RelayServer} on
+	 * @param serverName
+	 *            The name of this {@code RelayServer}
+	 * @param maxConnections
+	 *            The maximum number of {@code Client} connections to be
+	 *            accepted by this {@code RelayServer}
+	 * @param failCheck
+	 *            The loop delay in milliseconds to check for {@code Clients}
+	 *            that have disconnected or errored
+	 */
 	public RelayServer(int port, String serverName, int maxConnections,
 			long failCheck) {
 
@@ -87,11 +136,23 @@ public class RelayServer {
 		});
 	}
 
+	/**
+	 * Attaches a {@code RelayListener} to this {@code RelayServer}
+	 * 
+	 * @param listener
+	 *            The {@code RelayListener} to add
+	 */
 	public void addRelayListener(RelayListener listener) {
 
 		listeners.add(listener);
 	}
 
+	/**
+	 * Gets all {@code RelayListeners} attached to this {@code RelayServer}
+	 * 
+	 * @return A {@code RelayListener[]} containing all {@code RelayListeners}
+	 *         attached to this {@code RelayServer}
+	 */
 	public RelayListener[] getRelayListeners() {
 
 		return listeners.toArray(new RelayListener[] {});
@@ -132,6 +193,16 @@ public class RelayServer {
 		server.report(t);
 	}
 
+	/**
+	 * Groups {@code Connections} into a {@code ConnectionGroup}
+	 * 
+	 * @param id
+	 *            The id to be used for the resulting {@code ConnectionGroup}
+	 * @param connection
+	 *            The first {@code Connection}
+	 * @param connections
+	 *            Any more {@code Connections}
+	 */
 	public void group(String id, Connection connection,
 			Connection... connections) {
 
@@ -145,6 +216,16 @@ public class RelayServer {
 		groups.add(group);
 	}
 
+	/**
+	 * Adds {@code Connections} to a {@code ConnectionGroup}
+	 * 
+	 * @param group
+	 *            The {@code ConnectionGroup} to add to
+	 * @param connection
+	 *            The first {@code Connection}
+	 * @param connections
+	 *            Any more {@code Connections}
+	 */
 	public void group(ConnectionGroup group, Connection connection,
 			Connection... connections) {
 
@@ -155,6 +236,16 @@ public class RelayServer {
 		}
 	}
 
+	/**
+	 * Removes {@code Connections} from a {@code ConnectionGroup}
+	 * 
+	 * @param group
+	 *            The {@code ConnectionGroup} to remove from
+	 * @param connection
+	 *            The first {@code Connection} to remove
+	 * @param connections
+	 *            Any more {@code Connections} to remove
+	 */
 	public void ungroup(ConnectionGroup group, Connection connection,
 			Connection... connections) {
 
@@ -170,6 +261,14 @@ public class RelayServer {
 		}
 	}
 
+	/**
+	 * Removes {@code Connections} from all {@code ConnectionGroups}
+	 * 
+	 * @param connection
+	 *            The first {@code Connection} to remove
+	 * @param connections
+	 *            Any more {@code Connections} to remove
+	 */
 	public void ungroupAll(Connection connection, Connection... connections) {
 
 		for (ConnectionGroup g : groups.toArray(new ConnectionGroup[] {})) {
@@ -178,6 +277,14 @@ public class RelayServer {
 		}
 	}
 
+	/**
+	 * Checks if a {@code ConnectionGroup} with the specified id exists
+	 * 
+	 * @param id
+	 *            The id to check for
+	 * @return Whether or not there is a {@code ConnectionGroup} with the
+	 *         specified id
+	 */
 	public boolean hasGroup(String id) {
 
 		for (ConnectionGroup group : groups) {
@@ -191,6 +298,13 @@ public class RelayServer {
 		return false;
 	}
 
+	/**
+	 * Gets a {@code ConnectionGroup} that has the specified id
+	 * 
+	 * @param id
+	 *            The id to retrieve
+	 * @return The {@code ConnectionGroup} with the specified id
+	 */
 	public ConnectionGroup getGroupForId(String id) {
 
 		for (ConnectionGroup group : groups) {
@@ -203,12 +317,25 @@ public class RelayServer {
 
 		return null;
 	}
-	
-	public ConnectionGroup[] getGroups(){
-		
-		return groups.toArray(new ConnectionGroup[]{});
+
+	/**
+	 * Gets all {@code ConnectionGroups} associated with this
+	 * {@code RelayServer}
+	 * 
+	 * @return A {@code ConnectionGroup[]} containing all
+	 *         {@code ConnectionGroups} associated with this {@code RelayServer}
+	 */
+	public ConnectionGroup[] getGroups() {
+
+		return groups.toArray(new ConnectionGroup[] {});
 	}
 
+	/**
+	 * Removes a {@code ConnectionGroup} from this {@code RelayServer}
+	 * 
+	 * @param id
+	 *            The id of the {@code ConnectionGroup} to remove
+	 */
 	public void removeGroup(String id) {
 
 		ConnectionGroup g = getGroupForId(id);
@@ -219,41 +346,88 @@ public class RelayServer {
 		}
 	}
 
+	/**
+	 * Gets the name attached to this {@code RelayServer}
+	 * 
+	 * @return The server name of this {@code RelayServer}
+	 */
 	public String getServerName() {
 
 		return server.getServerName();
 	}
 
+	/**
+	 * Gets the port that this {@code RelayServer} will open onto
+	 * 
+	 * @return This {@code RelayServer}'s port
+	 */
 	public int getPort() {
 
 		return server.getPort();
 	}
 
+	/**
+	 * Checks if this {@code RelayServer} is currently open
+	 * 
+	 * @return Whether or not this {@code RelayServer} is open
+	 */
 	public boolean isOpen() {
 
 		return server.isOpen();
 	}
 
+	/**
+	 * Checks if this {@code RelayServer} has failed/errored
+	 * 
+	 * @return Whether or not this {@code RelayServer} has failed/errored
+	 */
 	public boolean hasFailed() {
 
 		return server.hasFailed();
 	}
 
+	/**
+	 * Attempts to open this {@code RelayServer} onto the specified port
+	 * 
+	 * @throws IOException
+	 *             If an I/O error occurs while starting the {@code RelayServer}
+	 */
 	public void start() throws IOException {
 
 		server.start();
 	}
 
+	/**
+	 * Attempts to close this {@code RelayServer} and disconnect all
+	 * {@code Clients}
+	 * 
+	 * @throws IOException
+	 *             If an I/O error occurs while shutting down this
+	 *             {@code RelayServer}
+	 */
 	public void close() throws IOException {
 
 		server.close();
 	}
 
+	/**
+	 * Gets all connections to this {@code RelayServer}
+	 * 
+	 * @return A {@code Connection[]} containing references to all connections
+	 *         on this {@code RelayServer}
+	 */
 	public Connection[] getConnections() {
 
 		return server.getConnections();
 	}
 
+	/**
+	 * Gets a {@code Connection} for a specified IP
+	 * 
+	 * @param ip
+	 *            The IP to get a {@code Connection} for
+	 * @return The {@code Connection} for the specified IP
+	 */
 	public Connection getConnectionForIp(String ip) {
 
 		return server.getConnectionForIp(ip);

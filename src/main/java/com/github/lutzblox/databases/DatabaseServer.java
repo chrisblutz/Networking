@@ -51,7 +51,7 @@ public class DatabaseServer {
 	 *            The name of this {@code DatabaseServer}
 	 * @param maxConnections
 	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this Server
+	 *            accepted by this {@code DatabaseServer}
 	 */
 	public DatabaseServer(int port, String databaseName, int maxConnections) {
 

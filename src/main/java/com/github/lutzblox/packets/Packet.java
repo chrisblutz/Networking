@@ -174,6 +174,12 @@ public class Packet {
 		return packetData.toArray(new PacketData[] {});
 	}
 
+	/**
+	 * Gets the data in this {@code Packet} as an {@code ExtendedMap}
+	 * 
+	 * @return The {@code ExtendedMap} containing all data from this
+	 *         {@code Packet}
+	 */
 	public ExtendedMap getDataAsMap() {
 
 		return data;

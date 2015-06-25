@@ -52,7 +52,7 @@ public class Server extends ServerListenable {
 	 *            The name of this {@code Server}
 	 * @param maxConnections
 	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this Server
+	 *            accepted by this {@code Server}
 	 */
 	public Server(int port, String serverName, int maxConnections) {
 
