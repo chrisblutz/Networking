@@ -1,4 +1,4 @@
-Travis CI Build Status: [![Build Status](https://travis-ci.org/LutzBlox/EasyXML.svg?branch=master)](https://travis-ci.org/LutzBlox/EasyXML)
+Travis CI Build Status: [![Build Status](https://travis-ci.org/LutzBlox/Networking.svg?branch=master)](https://travis-ci.org/LutzBlox/Networking)
 <h1>LutzBlox's Networking Library</h1>
 <p>A networking library built in Java that allows developers to send data easily across networks using packets of data.</p>
 <h3>Usage</h3>
