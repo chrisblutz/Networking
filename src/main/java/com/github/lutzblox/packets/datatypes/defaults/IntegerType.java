@@ -2,45 +2,54 @@ package com.github.lutzblox.packets.datatypes.defaults;
 
 import com.github.lutzblox.packets.datatypes.DataType;
 
+
 /**
  * A {@code DataType} representing a {@code Integer} object
- * 
+ *
  * @author Christopher Lutz
  */
 public class IntegerType extends DataType {
 
-	/** {@inheritDoc} */
-	@Override
-	public Class<?> getTypeClass() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<?> getTypeClass() {
 
-		return Integer.class;
-	}
+        return Integer.class;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String getAbbreviation() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAbbreviation() {
 
-		return "int";
-	}
+        return "int";
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public Object readType(String toRead) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object readType(String toRead) {
 
-		try {
+        try {
 
-			return Integer.parseInt(toRead);
+            return Integer.parseInt(toRead);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			return 0;
-		}
-	}
+            return 0;
+        }
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String writeType(Object toWrite) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String writeType(Object toWrite) {
 
-		return toWrite.toString();
-	}
+        return toWrite.toString();
+    }
 }

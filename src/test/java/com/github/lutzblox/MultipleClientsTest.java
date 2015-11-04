@@ -9,154 +9,162 @@ import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 
+
 public class MultipleClientsTest extends TestCase {
 
-	private boolean finished1 = false, finished2 = false,
-			errored = false;
-	private String errorMessage = "";
+    private boolean finished1 = false, finished2 = false,
+            errored = false;
+    private String errorMessage = "";
 
-	public MultipleClientsTest(String name){
-		
-		super(name);
-	}
-	
-	public static TestSuite suite(){
-		
-		return new TestSuite(MultipleClientsTest.class);
-	}
-	
-	public void testMultipleClients() {
-		
-		final Server server = new Server(12346, "MultipleClientsTest");
-		server.addErrorReporter(ErrorReporterFactory.newInstance());
-		server.addNetworkListener(new ServerListener() {
+    public MultipleClientsTest(String name) {
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
-			}
+        super(name);
+    }
 
-			@Override
-			public Packet onConnect(Connection c, Packet data) {
+    public static TestSuite suite() {
 
-				System.out.println("Server: Connection received from IP "
-						+ c.getIp());
+        return new TestSuite(MultipleClientsTest.class);
+    }
 
-				return data;
-			}
+    public void testMultipleClients() {
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
+        final Server server = new Server(12346, "MultipleClientsTest");
+        server.addErrorReporter(ErrorReporterFactory.newInstance());
+        server.addNetworkListener(new ServerListener() {
 
-			@Override
-			public void onClientFailure(Connection c) {
-			}
-		});
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-		final Client client1 = new Client("localhost", 12346);
-		client1.addErrorReporter(ErrorReporterFactory.newInstance());
-		client1.addNetworkListener(new ClientListener() {
+            }
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
-			}
+            @Override
+            public Packet onConnect(Connection c, Packet data) {
 
-			@Override
-			public void onConnect(Packet packet) {
+                System.out.println("Server: Connection received from IP "
+                        + c.getIp());
 
-				System.out.println("Client 1: Successfully received packet!");
+                return data;
+            }
 
-				finished1 = true;
-			}
+            @Override
+            public void onTimeout(Connection connection) {
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
-		});
+            }
 
-		final Client client2 = new Client("localhost", 12346);
-		client2.addErrorReporter(ErrorReporterFactory.newInstance());
-		client2.addNetworkListener(new ClientListener() {
+            @Override
+            public void onClientFailure(Connection c) {
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
-			}
+            }
+        });
 
-			@Override
-			public void onConnect(Packet packet) {
+        final Client client1 = new Client("localhost", 12346);
+        client1.addErrorReporter(ErrorReporterFactory.newInstance());
+        client1.addNetworkListener(new ClientListener() {
 
-				System.out.println("Client 2: Successfully received packet!");
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-				finished2 = true;
-			}
+            }
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
-		});
+            @Override
+            public void onConnect(Packet packet) {
 
-		try {
+                System.out.println("Client 1: Successfully received packet!");
 
-			System.out.println("Starting server...");
+                finished1 = true;
+            }
 
-			server.start();
+            @Override
+            public void onTimeout(Connection connection) {
 
-			System.out.println("Starting client 1...");
+            }
+        });
 
-			client1.connect();
+        final Client client2 = new Client("localhost", 12346);
+        client2.addErrorReporter(ErrorReporterFactory.newInstance());
+        client2.addNetworkListener(new ClientListener() {
 
-			System.out.println("Starting client 2...");
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-			client2.connect();
+            }
 
-		} catch (Exception e) {
+            @Override
+            public void onConnect(Packet packet) {
 
-			e.printStackTrace();
+                System.out.println("Client 2: Successfully received packet!");
 
-			errored = true;
-			errorMessage = e.getClass().getName();
+                finished2 = true;
+            }
 
-			finished1 = true;
-			finished2 = true;
-		}
+            @Override
+            public void onTimeout(Connection connection) {
 
-		while (true) {
+            }
+        });
 
-			try {
+        try {
 
-				Thread.sleep(100);
+            System.out.println("Starting server...");
 
-			} catch (InterruptedException e) {
-			}
+            server.start();
 
-			if (finished1 && finished2) {
+            System.out.println("Starting client 1...");
 
-				break;
-			}
-		}
+            client1.connect();
 
-		try {
+            System.out.println("Starting client 2...");
 
-			client1.close();
-			client2.close();
-			server.close();
+            client2.connect();
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			e.printStackTrace();
+            e.printStackTrace();
 
-			errored = true;
-			errorMessage = e.getClass().getName();
-		}
+            errored = true;
+            errorMessage = e.getClass().getName();
 
-		if (errored) {
+            finished1 = true;
+            finished2 = true;
+        }
 
-			System.out.println("Errored - " + errorMessage);
-			fail();
+        while (true) {
 
-		} else {
+            try {
 
-			System.out.println("Success!");
-		}
-	}
+                Thread.sleep(100);
+
+            } catch (InterruptedException e) {
+            }
+
+            if (finished1 && finished2) {
+
+                break;
+            }
+        }
+
+        try {
+
+            client1.close();
+            client2.close();
+            server.close();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            errored = true;
+            errorMessage = e.getClass().getName();
+        }
+
+        if (errored) {
+
+            System.out.println("Errored - " + errorMessage);
+            fail();
+
+        } else {
+
+            System.out.println("Success!");
+        }
+    }
 }

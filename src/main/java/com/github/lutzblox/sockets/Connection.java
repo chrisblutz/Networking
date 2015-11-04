@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -22,479 +23,553 @@ import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
 import com.github.lutzblox.states.State;
 
+
 /**
  * A wrapper for a {@code Socket}, used to send/receive {@code Packets}
- * 
+ *
  * @author Christopher Lutz
  */
 public class Connection {
 
-	private Listenable listenable;
+    private Listenable listenable;
 
-	private Socket socket;
+    private Socket socket;
 
-	private Thread listener;
+    private Thread listener, connCheck;
 
-	private State mainState, state, nextState = null;
+    private State mainState, state, nextState = null;
 
-	private List<Packet> dropped = new ArrayList<Packet>();
-
-	private List<Packet> vitalDropped = new ArrayList<Packet>();
-
-	private Packet waiting = null;
-
-	private boolean running = false, serverSide = false, firstReceive = true,
-			firstSend = true, shouldRespond = false, remoteClosed = false;
+    private List<Packet> dropped = new ArrayList<Packet>();
 
-	private int readTimeout = 8000;
-
-	private PacketReader packetReader;
-	private PacketWriter packetWriter;
-
-	/**
-	 * Creates a new {@code Connection} with the specified parameters
-	 * 
-	 * @param listenable
-	 *            The {@code Listenable} object that created this
-	 *            {@code Connection}
-	 * @param socket
-	 *            The {@code Socket} to wrap in this {@code Connection}
-	 * @param state
-	 *            The beginning {@code State} of this {@code Connection}
-	 * @param serverSide
-	 *            Whether or not this {@code Connection} represents a
-	 *            server-side connection
-	 */
-	public Connection(Listenable listenable, Socket socket, State state,
-			boolean serverSide) {
-
-		this.listenable = listenable;
-		this.socket = socket;
-		this.mainState = state;
-		this.state = state;
-		this.serverSide = serverSide;
-
-		packetReader = new PacketReader();
-		packetWriter = new PacketWriter();
-
-		listener = new Thread() {
-
-			@Override
-			public void run() {
-
-				listenerRun();
-			}
-		};
-		listener.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-			@Override
-			public void uncaughtException(Thread arg0, Throwable arg1) {
-
-				NetworkException ex = new NetworkException(arg0.getName()
-						+ " has errored!", arg1);
-
-				Connection.this.listenable.report(ex);
-			}
-		});
-		listener.setName("Packet Listener: "
-				+ (serverSide ? "Server" : "Client") + " on IP " + getIp());
-		running = true;
-		shouldRespond = serverSide ? false : true;
-		listener.start();
-	}
-
-	/**
-	 * Sends a {@code Packet} across the connection
-	 * 
-	 * @param p
-	 *            The {@code Packet} to send
-	 * @param expectResponse
-	 *            Whether or not the {@code Connection} should wait for a
-	 *            response (decides whether or not to timeout the {@code read()}
-	 *            calls
-	 */
-	public void sendPacket(Packet p, boolean expectResponse) {
-
-		if (waiting != null) {
-
-			dropped.add(waiting);
-
-			if (waiting.isVital()) {
-
-				vitalDropped.add(waiting);
-			}
-		}
-
-		if (p.isEmpty()) {
-
-			p.putData(Packet.EMPTY_PACKET);
-		}
-
-		waiting = p;
-		this.shouldRespond = expectResponse;
-	}
-
-	/**
-	 * Gets all {@code Packets} dropped by this {@code Connection}
-	 * 
-	 * @return A {@code Packet[]} containing all dropped {@code Packets}
-	 */
-	public Packet[] getDroppedPackets() {
-
-		return dropped.toArray(new Packet[] {});
-	}
-
-	/**
-	 * Gets the IP of this {@code Connection}
-	 * 
-	 * @return The IP of this {@code Connection}
-	 */
-	public String getIp() {
-
-		return socket.getInetAddress().getHostAddress();
-	}
-
-	/**
-	 * Checks the connection state of this {@code Connection}
-	 * 
-	 * @return Whether or not this {@code Connection} is connected
-	 */
-	public boolean isConnected() {
+    private List<Packet> vitalDropped = new ArrayList<Packet>();
 
-		return socket.isConnected();
-	}
+    private Packet waiting = null;
 
-	/**
-	 * Checks whether or not this {@code Connection} is closed
-	 * 
-	 * @return Whether or not this {@code Connection} is closed
-	 */
-	public boolean isClosed() {
+    private long ping = -1;
+    private long pingStart = 0;
 
-		return socket.isClosed();
-	}
+    private boolean running = false, serverSide = false, firstReceive = true,
+            firstSend = true, shouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true;
 
-	/**
-	 * Checks if the remote side of this connection is closed
-	 * 
-	 * @return Whether the remote side of this connection is closed
-	 */
-	public boolean isRemoteClosed() {
+    private int readTimeout = 8000;
 
-		return remoteClosed;
-	}
+    private PacketReader packetReader;
+    private PacketWriter packetWriter;
 
-	/**
-	 * Makes the {@code Connection} set itself back to the {@code Receiving}
-	 * state
-	 */
-	public void setToReceive() {
+    /**
+     * Creates a new {@code Connection} with the specified parameters
+     *
+     * @param listenable The {@code Listenable} object that created this
+     *                   {@code Connection}
+     * @param socket     The {@code Socket} to wrap in this {@code Connection}
+     * @param state      The beginning {@code State} of this {@code Connection}
+     * @param serverSide Whether or not this {@code Connection} represents a
+     *                   server-side connection
+     */
+    public Connection(Listenable listenable, Socket socket, State state,
+                      boolean serverSide) {
 
-		this.nextState = State.RECEIVING;
-	}
+        this.listenable = listenable;
+        this.socket = socket;
+        this.mainState = state;
+        this.state = state;
+        this.serverSide = serverSide;
 
-	/**
-	 * Makes the {@code Connection} set itself back to the {@code Sending} state
-	 */
-	public void setToSend() {
+        packetReader = new PacketReader();
+        packetWriter = new PacketWriter();
 
-		this.nextState = State.SENDING;
-	}
+        listener = new Thread() {
 
-	/**
-	 * Sets the timeout on reading from the {@code Connection}
-	 * 
-	 * @param timeout
-	 *            The timeout in milliseconds
-	 */
-	public void setReadTimeout(int timeout) {
+            @Override
+            public void run() {
 
-		this.readTimeout = timeout;
-	}
+                listenerRun();
+            }
+        };
+        listener.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
-	/**
-	 * Gets the timeout on reading from the {@code Connection}
-	 * 
-	 * @return The timeout in milliseconds
-	 */
-	public int getReadTimeout() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
 
-		return readTimeout;
-	}
+                NetworkException ex = new NetworkException(t.getName()
+                        + " has errored!", e);
 
-	/**
-	 * Attempts to close this {@code Connection}
-	 * 
-	 * @throws IOException
-	 *             If an I/O error occurs while shutting down this
-	 *             {@code Connection}
-	 */
-	public void close() throws IOException {
+                Connection.this.listenable.report(ex);
+            }
+        });
+        listener.setName("Packet Listener: "
+                + (serverSide ? "Server" : "Client") + " on IP " + getIp());
+        connCheck = new Thread() {
 
-		running = false;
-		listener.interrupt();
+            @Override
+            public void run() {
 
-		if (!socket.isClosed()) {
+                Socket socket = Connection.this.socket;
 
-			socket.close();
-		}
-	}
+                if (socket != null) {
 
-	private final void listenerRun() {
+                    if (socket.isClosed() || !socket.isConnected()) {
 
-		try {
+                        canExecute = false;
+                    }
 
-			while (running && socket.isConnected() && !socket.isClosed()) {
+                    if (socket.isInputShutdown()) {
 
-				if (mainState == State.MUTUAL) {
+                        canGetInput = false;
+                    }
 
-					if (!socket.isClosed() && socket.isConnected()) {
+                    if (socket.isOutputShutdown()) {
 
-						if (firstSend && serverSide) {
+                        canOutput = false;
+                    }
+                }
+            }
+        };
+        connCheck.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
-							state = State.SENDING;
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
 
-						} else if (new InputStreamReader(
-								socket.getInputStream()).ready()) {
+                NetworkException ex = new NetworkException(t.getName()
+                        + " has errored!", e);
+
+                Connection.this.listenable.report(ex);
+            }
+        });
+        connCheck.setName("Connection Check: " + (serverSide ? "Server" : "Client") + " on IP " + getIp());
+        running = true;
+        shouldRespond = serverSide ? false : true;
+        listener.start();
+        connCheck.start();
+    }
+
+    /**
+     * Creates an uninitialized Connection with default values
+     */
+    private Connection() {
+
+        this.listenable = null;
+        this.socket = null;
+        this.mainState = State.MUTUAL;
+        this.state = State.MUTUAL;
+        this.serverSide = false;
+    }
+
+    /**
+     * Sends a {@code Packet} across the connection
+     *
+     * @param p              The {@code Packet} to send
+     * @param expectResponse Whether or not the {@code Connection} should wait for a
+     *                       response (decides whether or not to timeout the {@code read()}
+     *                       calls
+     */
+    public void sendPacket(Packet p, boolean expectResponse) {
+
+        if (waiting != null) {
+
+            dropped.add(waiting);
+
+            if (waiting.isVital()) {
+
+                vitalDropped.add(waiting);
+            }
+        }
+
+        if (p.isEmpty()) {
+
+            p.putData(Packet.EMPTY_PACKET);
+        }
+
+        waiting = p;
+        this.shouldRespond = expectResponse;
+    }
+
+    /**
+     * Gets all {@code Packets} dropped by this {@code Connection}
+     *
+     * @return A {@code Packet[]} containing all dropped {@code Packets}
+     */
+    public Packet[] getDroppedPackets() {
+
+        return dropped.toArray(new Packet[]{});
+    }
+
+    /**
+     * Gets the IP of this {@code Connection}
+     *
+     * @return The IP of this {@code Connection}
+     */
+    public String getIp() {
+
+        return socket.getInetAddress().getHostAddress();
+    }
+
+    /**
+     * Checks the connection state of this {@code Connection}
+     *
+     * @return Whether or not this {@code Connection} is connected
+     */
+    public boolean isConnected() {
+
+        return socket.isConnected();
+    }
+
+    /**
+     * Checks whether or not this {@code Connection} is closed
+     *
+     * @return Whether or not this {@code Connection} is closed
+     */
+    public boolean isClosed() {
 
-							state = State.RECEIVING;
+        return socket.isClosed();
+    }
 
-						} else if (waiting != null) {
+    /**
+     * Checks if the remote side of this connection is closed
+     *
+     * @return Whether the remote side of this connection is closed
+     */
+    public boolean isRemoteClosed() {
 
-							state = State.SENDING;
+        return remoteClosed;
+    }
 
-						} else {
+    /**
+     * Makes the {@code Connection} set itself back to the {@code Receiving}
+     * state
+     */
+    public void setToReceive() {
 
-							state = State.MUTUAL;
-						}
-					}
-				}
+        this.nextState = State.RECEIVING;
+    }
 
-				if (state == State.SENDING) {
+    /**
+     * Makes the {@code Connection} set itself back to the {@code Sending} state
+     */
+    public void setToSend() {
 
-					if (!socket.isClosed() && socket.isConnected()
-							&& !socket.isOutputShutdown()) {
+        this.nextState = State.SENDING;
+    }
 
-						OutputStream stream = socket.getOutputStream();
+    /**
+     * Sets the timeout on reading from the {@code Connection}
+     *
+     * @param timeout The timeout in milliseconds
+     */
+    public void setReadTimeout(int timeout) {
 
-						PrintWriter out = new PrintWriter(stream, true);
+        this.readTimeout = timeout;
+    }
 
-						if (firstSend && serverSide) {
+    /**
+     * Gets the timeout on reading from the {@code Connection}
+     *
+     * @return The timeout in milliseconds
+     */
+    public int getReadTimeout() {
 
-							Packet p = new Packet();
+        return readTimeout;
+    }
 
-							p = ((ServerListenable) listenable)
-									.fireListenerOnConnect(this, p);
+    /**
+     * Attempts to close this {@code Connection}
+     *
+     * @throws IOException If an I/O error occurs while shutting down this
+     *                     {@code Connection}
+     */
+    public void close() throws IOException {
 
-							if (p.isEmpty()) {
+        running = false;
+        listener.interrupt();
 
-								p.putData(Packet.EMPTY_PACKET);
-							}
+        if (!socket.isClosed()) {
 
-							out.println(packetWriter
-									.getPacketAsWriteableString(p));
+            socket.close();
+        }
+    }
 
-							for (Throwable t : packetWriter.getErrors()) {
+    public long getPing() {
 
-								listenable.report(t);
-							}
+        return ping;
+    }
 
-							if (nextState != null) {
+    private final void listenerRun() {
 
-								state = nextState;
-								nextState = null;
+        try {
 
-							} else {
+            while (running && canExecute) {
 
-								state = State.RECEIVING;
-							}
+                if (mainState == State.MUTUAL) {
 
-							firstSend = false;
+                    if (firstSend && serverSide) {
 
-						} else if (waiting != null) {
+                        state = State.SENDING;
 
-							out.println(packetWriter
-									.getPacketAsWriteableString(waiting));
+                    } else if (new InputStreamReader(
+                            socket.getInputStream()).ready()) {
 
-							for (Throwable t : packetWriter.getErrors()) {
+                        state = State.RECEIVING;
 
-								listenable.report(t);
-							}
+                    } else if (waiting != null) {
 
-							waiting = null;
+                        state = State.SENDING;
 
-							if (nextState != null) {
+                    } else {
 
-								state = nextState;
-								nextState = null;
+                        state = State.MUTUAL;
+                    }
+                }
 
-							} else {
+                if (state == State.SENDING) {
 
-								state = State.RECEIVING;
-							}
+                    if (canExecute && canOutput) {
 
-						} else if (waiting == null && vitalDropped.size() > 0) {
+                        OutputStream stream = socket.getOutputStream();
 
-							out.println(packetWriter
-									.getPacketAsWriteableString(vitalDropped
-											.get(0)));
+                        PrintWriter out = new PrintWriter(stream, true);
 
-							for (Throwable t : packetWriter.getErrors()) {
+                        if (firstSend && serverSide) {
 
-								listenable.report(t);
-							}
+                            Packet p = new Packet();
 
-							vitalDropped.remove(0);
+                            p = ((ServerListenable) listenable)
+                                    .fireListenerOnConnect(this, p);
 
-						} else {
+                            if (p.isEmpty()) {
 
-							if (nextState != null) {
+                                p.putData(Packet.EMPTY_PACKET);
+                            }
 
-								state = nextState;
-								nextState = null;
-							}
-						}
-					}
+                            out.println(packetWriter
+                                    .getPacketAsWriteableString(p));
 
-				} else if (state == State.RECEIVING) {
+                            if (shouldRespond) {
 
-					if (!socket.isClosed() && socket.isConnected()
-							&& !socket.isInputShutdown()) {
+                                pingStart = System.currentTimeMillis();
+                            }
 
-						InputStream stream = socket.getInputStream();
+                            for (Throwable t : packetWriter.getErrors()) {
 
-						BufferedReader reader = new BufferedReader(
-								new InputStreamReader(stream));
+                                listenable.report(t);
+                            }
 
-						String inTemp = null;
+                            if (nextState != null) {
 
-						StringBuilder read = new StringBuilder();
+                                state = nextState;
+                                nextState = null;
 
-						try {
+                            } else {
 
-							if (shouldRespond) {
+                                state = State.RECEIVING;
+                            }
 
-								shouldRespond = false;
-								socket.setSoTimeout(readTimeout);
+                            firstSend = false;
 
-							} else {
+                        } else if (waiting != null) {
 
-								socket.setSoTimeout(0);
-							}
+                            out.println(packetWriter
+                                    .getPacketAsWriteableString(waiting));
 
-							if (!socket.isClosed()
-									&& (inTemp = reader.readLine()) != null) {
+                            for (Throwable t : packetWriter.getErrors()) {
 
-								read.append(inTemp);
+                                listenable.report(t);
+                            }
 
-							} else if (inTemp == null) {
+                            waiting = null;
 
-								remoteClosed = true;
-							}
+                            if (nextState != null) {
 
-						} catch (Exception e) {
+                                state = nextState;
+                                nextState = null;
 
-							if (e instanceof SocketTimeoutException) {
+                            } else {
 
-								listenable.fireListenerOnTimeout(this);
+                                state = State.RECEIVING;
+                            }
 
-							} else if (!(e instanceof SocketException)) {
+                        } else if (waiting == null && vitalDropped.size() > 0) {
 
-								listenable.report(e);
-							}
-						}
+                            out.println(packetWriter
+                                    .getPacketAsWriteableString(vitalDropped
+                                            .get(0)));
 
-						String readStr = read.toString();
+                            for (Throwable t : packetWriter.getErrors()) {
 
-						if (!readStr.equals("::REMCL")) {
+                                listenable.report(t);
+                            }
 
-							if (!readStr.toString().equals("")) {
+                            vitalDropped.remove(0);
 
-								final Packet p = packetReader
-										.getPacketFromString(readStr);
+                        } else {
 
-								for (Throwable t : packetReader.getErrors()) {
+                            if (nextState != null) {
 
-									listenable.report(t);
-								}
+                                state = nextState;
+                                nextState = null;
+                            }
+                        }
+                    }
 
-								if (p.getData().length == 1) {
+                } else if (state == State.RECEIVING) {
 
-									if (p.getData()[0] == Packet.EMPTY_PACKET) {
+                    if (canExecute && canGetInput) {
 
-										p.clearData();
-									}
-								}
+                        InputStream stream = socket.getInputStream();
 
-								if (firstReceive && !serverSide) {
+                        BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(stream));
 
-									((ClientListenable) listenable)
-											.fireListenerOnConnect(p);
+                        String inTemp = null;
 
-									state = State.SENDING;
+                        StringBuilder read = new StringBuilder();
 
-									firstReceive = false;
+                        try {
 
-								} else {
+                            if (shouldRespond) {
 
-									listenable.fireListenerOnReceive(this, p);
+                                shouldRespond = false;
+                                socket.setSoTimeout(readTimeout);
 
-									if (nextState != null) {
+                            } else {
 
-										state = nextState;
-										nextState = null;
+                                socket.setSoTimeout(0);
+                            }
 
-									} else {
+                            if (canExecute && canGetInput
+                                    && (inTemp = reader.readLine()) != null) {
 
-										state = State.SENDING;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+                                read.append(inTemp);
 
-			close();
+                            } else if (inTemp == null) {
 
-		} catch (Throwable e) {
+                                remoteClosed = true;
+                            }
 
-			boolean close = true;
+                            if (shouldRespond) {
 
-			if (e instanceof SocketException) {
+                                ping = System.currentTimeMillis() - pingStart;
+                            }
 
-				if (socket.isClosed()
-						|| e.getMessage().equalsIgnoreCase("socket closed")) {
+                        } catch (Exception e) {
 
-					close = false;
-				}
+                            if (e instanceof SocketTimeoutException) {
 
-			} else if (e instanceof IOException) {
+                                listenable.fireListenerOnTimeout(this);
 
-				if (socket.isClosed()
-						|| e.getMessage().equalsIgnoreCase("socket closed")) {
+                            } else if (!(e instanceof SocketException)) {
 
-					close = false;
+                                listenable.report(e);
+                            }
+                        }
 
-				} else {
+                        String readStr = read.toString();
 
-					remoteClosed = true;
-				}
-			}
+                        if (!readStr.equals("::REMCL")) {
 
-			if (close) {
+                            if (!readStr.toString().equals("")) {
 
-				listenable.report(e);
+                                final Packet p = packetReader
+                                        .getPacketFromString(readStr);
 
-				try {
+                                for (Throwable t : packetReader.getErrors()) {
 
-					close();
+                                    listenable.report(t);
+                                }
 
-				} catch (Exception e1) {
+                                if (p.getData().length == 1) {
 
-					listenable.report(e1);
-				}
-			}
-		}
-	}
+                                    if (p.getData()[0] == Packet.EMPTY_PACKET) {
+
+                                        p.clearData();
+                                    }
+                                }
+
+                                if (firstReceive && !serverSide) {
+
+                                    ((ClientListenable) listenable)
+                                            .fireListenerOnConnect(p);
+
+                                    state = State.SENDING;
+
+                                    firstReceive = false;
+
+                                } else {
+
+                                    listenable.fireListenerOnReceive(this, p);
+
+                                    if (nextState != null) {
+
+                                        state = nextState;
+                                        nextState = null;
+
+                                    } else {
+
+                                        state = State.SENDING;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            close();
+
+        } catch (Throwable e) {
+
+            boolean close = true;
+
+            if (e instanceof SocketException) {
+
+                if (socket.isClosed()
+                        || e.getMessage().equalsIgnoreCase("socket closed")) {
+
+                    close = false;
+                }
+
+            } else if (e instanceof IOException) {
+
+                if (socket.isClosed()
+                        || e.getMessage().equalsIgnoreCase("socket closed")) {
+
+                    close = false;
+
+                } else {
+
+                    remoteClosed = true;
+                }
+            }
+
+            if (close) {
+
+                listenable.report(e);
+
+                try {
+
+                    close();
+
+                } catch (Exception e1) {
+
+                    listenable.report(e1);
+                }
+            }
+        }
+    }
+
+    public static String getLocalIp() {
+
+        try {
+
+            return InetAddress.getLocalHost().getHostAddress();
+
+        } catch (Exception e) {
+
+            return "null";
+        }
+    }
+
+    public static Connection getUnitializedConnection() {
+
+        return new Connection();
+    }
 }

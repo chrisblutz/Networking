@@ -9,130 +9,135 @@ import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 
+
 public class TimeoutTest extends TestCase {
 
-	private boolean finished = false, errored = false;
-	private String errorMessage = "";
+    private boolean finished = false, errored = false;
+    private String errorMessage = "";
 
-	public TimeoutTest(String name) {
+    public TimeoutTest(String name) {
 
-		super(name);
-	}
+        super(name);
+    }
 
-	public static TestSuite suite() {
+    public static TestSuite suite() {
 
-		return new TestSuite(TimeoutTest.class);
-	}
+        return new TestSuite(TimeoutTest.class);
+    }
 
-	public void testTimeout() {
+    public void testTimeout() {
 
-		final Server server = new Server(12351, "TimeoutTest");
-		server.addErrorReporter(ErrorReporterFactory.newInstance());
-		server.addNetworkListener(new ServerListener() {
+        final Server server = new Server(12351, "TimeoutTest");
+        server.addErrorReporter(ErrorReporterFactory.newInstance());
+        server.addNetworkListener(new ServerListener() {
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
-			}
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-			@Override
-			public Packet onConnect(Connection c, Packet data) {
+            }
 
-				System.out.println("Server: Connection received from IP "
-						+ c.getIp());
+            @Override
+            public Packet onConnect(Connection c, Packet data) {
 
-				return data;
-			}
+                System.out.println("Server: Connection received from IP "
+                        + c.getIp());
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
+                return data;
+            }
 
-			@Override
-			public void onClientFailure(Connection c) {
-			}
-		});
+            @Override
+            public void onTimeout(Connection connection) {
 
-		final Client client = new Client("localhost", 12351);
-		client.addErrorReporter(ErrorReporterFactory.newInstance());
-		client.addNetworkListener(new ClientListener() {
+            }
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
-			}
+            @Override
+            public void onClientFailure(Connection c) {
 
-			@Override
-			public void onConnect(Packet packet) {
+            }
+        });
 
-				client.sendPacket(new Packet(), true);
-			}
+        final Client client = new Client("localhost", 12351);
+        client.addErrorReporter(ErrorReporterFactory.newInstance());
+        client.addNetworkListener(new ClientListener() {
 
-			@Override
-			public void onTimeout(Connection connection) {
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-				System.out.println("Connection to server timed out!");
+            }
 
-				finished = true;
-			}
-		});
+            @Override
+            public void onConnect(Packet packet) {
 
-		try {
+                client.sendPacket(new Packet(), true);
+            }
 
-			System.out.println("Starting server...");
+            @Override
+            public void onTimeout(Connection connection) {
 
-			server.start();
+                System.out.println("Connection to server timed out!");
 
-			System.out.println("Starting client...");
+                finished = true;
+            }
+        });
 
-			client.connect();
+        try {
 
-			System.out.println("Waiting for timeout... (This should take "+((double) client.getConnection().getReadTimeout()/1000)+" seconds)");
+            System.out.println("Starting server...");
 
-		} catch (Exception e) {
+            server.start();
 
-			e.printStackTrace();
+            System.out.println("Starting client...");
 
-			errored = true;
-			errorMessage = e.getClass().getName();
+            client.connect();
 
-			finished = true;
-		}
+            System.out.println("Waiting for timeout... (This should take " + ((double) client.getConnection().getReadTimeout() / 1000) + " seconds)");
 
-		while (true) {
+        } catch (Exception e) {
 
-			try {
+            e.printStackTrace();
 
-				Thread.sleep(100);
+            errored = true;
+            errorMessage = e.getClass().getName();
 
-			} catch (InterruptedException e) {
-			}
+            finished = true;
+        }
 
-			if (finished) {
+        while (true) {
 
-				break;
-			}
-		}
+            try {
 
-		try {
+                Thread.sleep(100);
 
-			client.close();
-			server.close();
+            } catch (InterruptedException e) {
+            }
 
-		} catch (Exception e) {
+            if (finished) {
 
-			e.printStackTrace();
+                break;
+            }
+        }
 
-			errored = true;
-			errorMessage = e.getClass().getName();
-		}
+        try {
 
-		if (errored) {
+            client.close();
+            server.close();
 
-			System.out.println("Errored - " + errorMessage);
-			fail();
+        } catch (Exception e) {
 
-		} else {
+            e.printStackTrace();
 
-			System.out.println("Success!");
-		}
-	}
+            errored = true;
+            errorMessage = e.getClass().getName();
+        }
+
+        if (errored) {
+
+            System.out.println("Errored - " + errorMessage);
+            fail();
+
+        } else {
+
+            System.out.println("Success!");
+        }
+    }
 }

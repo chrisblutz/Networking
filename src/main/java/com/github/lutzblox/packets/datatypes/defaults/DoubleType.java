@@ -2,45 +2,54 @@ package com.github.lutzblox.packets.datatypes.defaults;
 
 import com.github.lutzblox.packets.datatypes.DataType;
 
+
 /**
  * A {@code DataType} representing a {@code Double} object
- * 
+ *
  * @author Christopher Lutz
  */
 public class DoubleType extends DataType {
 
-	/** {@inheritDoc} */
-	@Override
-	public Class<?> getTypeClass() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<?> getTypeClass() {
 
-		return Double.class;
-	}
+        return Double.class;
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String getAbbreviation() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAbbreviation() {
 
-		return "dbl";
-	}
+        return "dbl";
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public Object readType(String toRead) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object readType(String toRead) {
 
-		try {
+        try {
 
-			return Double.parseDouble(toRead);
+            return Double.parseDouble(toRead);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			return 0d;
-		}
-	}
+            return 0d;
+        }
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String writeType(Object toWrite) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String writeType(Object toWrite) {
 
-		return toWrite.toString();
-	}
+        return toWrite.toString();
+    }
 }

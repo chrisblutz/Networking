@@ -1,15 +1,14 @@
 package com.github.lutzblox;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import com.github.lutzblox.databases.DatabaseClient;
 import com.github.lutzblox.databases.DatabaseServer;
 import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class DatabaseTest extends TestCase {
 
-	private boolean finished = false, errored = false;
+	private boolean errored = false;
 	private String errorMessage = "";
 
 	public DatabaseTest(String name) {
@@ -29,6 +28,8 @@ public class DatabaseTest extends TestCase {
 
 		final DatabaseClient client = new DatabaseClient("localhost", 12350);
 		client.addErrorReporter(ErrorReporterFactory.newInstance());
+
+		boolean finished = false;
 
 		try {
 

@@ -11,362 +11,346 @@ import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 
+
 /**
  * This class represents the server-side portion of a server <-> client
  * relationship.
- * 
+ *
  * @author Christopher Lutz
  */
 public class Server extends ServerListenable {
 
-	private int port, maxConnect;
-	private String serverName;
-	private ServerSocket socket = null;
-
-	private Thread incoming = null, checkFailed = null;
-	private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<Connection>();
-
-	private boolean failed = false, open = false;
-
-	private long failCheck;
-
-	/**
-	 * Create a new {@code Server} instance with the specified parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code Server} on
-	 * @param serverName
-	 *            The name of this {@code Server}
-	 */
-	public Server(int port, String serverName) {
-
-		this(port, serverName, 20, 5000);
-	}
-
-	/**
-	 * Create a new {@code Server} instance with the specified parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code Server} on
-	 * @param serverName
-	 *            The name of this {@code Server}
-	 * @param maxConnections
-	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this {@code Server}
-	 */
-	public Server(int port, String serverName, int maxConnections) {
-
-		this(port, serverName, maxConnections, 5000);
-	}
-
-	/**
-	 * Create a new {@code Server} instance with the specified parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code Server} on
-	 * @param serverName
-	 *            The name of this {@code Server}
-	 * @param failCheck
-	 *            The loop delay in milliseconds to check for {@code Clients}
-	 *            that have disconnected or errored
-	 */
-	public Server(int port, String serverName, long failCheck) {
-
-		this(port, serverName, 20, failCheck);
-	}
-
-	/**
-	 * Create a new {@code Server} instance with the specified parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code Server} on
-	 * @param serverName
-	 *            The name of this {@code Server}
-	 * @param maxConnections
-	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this {@code Server}
-	 * @param failCheck
-	 *            The loop delay in milliseconds to check for {@code Clients}
-	 *            that have disconnected or errored
-	 */
-	public Server(int port, String serverName, int maxConnections,
-			long failCheck) {
-
-		this.port = port;
-		this.serverName = serverName;
-		this.maxConnect = maxConnections;
-		this.failCheck = failCheck;
-	}
-
-	/**
-	 * Gets the name attached to this {@code Server}
-	 * 
-	 * @return The server name of this {@code Server}
-	 */
-	public String getServerName() {
-
-		return serverName;
-	}
-
-	/**
-	 * Gets the port that this {@code Server} will open onto
-	 * 
-	 * @return This {@code Server}'s port
-	 */
-	public int getPort() {
-
-		return port;
-	}
-
-	/**
-	 * Attempts to open this {@code Server} onto the specified port
-	 * 
-	 * @throws IOException
-	 *             If an I/O error occurs while starting the {@code Server}
-	 */
-	public void start() throws IOException {
+    private int port, maxConnect;
+    private String serverName;
+    private ServerSocket socket = null;
+
+    private Thread incoming = null, checkFailed = null;
+    private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<Connection>();
+
+    private boolean failed = false, open = false;
+
+    private long failCheck;
+
+    /**
+     * Create a new {@code Server} instance with the specified parameters
+     *
+     * @param port       The port to open the {@code Server} on
+     * @param serverName The name of this {@code Server}
+     */
+    public Server(int port, String serverName) {
+
+        this(port, serverName, 20, 5000);
+    }
+
+    /**
+     * Create a new {@code Server} instance with the specified parameters
+     *
+     * @param port           The port to open the {@code Server} on
+     * @param serverName     The name of this {@code Server}
+     * @param maxConnections The maximum number of {@code Client} connections to be
+     *                       accepted by this {@code Server}
+     */
+    public Server(int port, String serverName, int maxConnections) {
+
+        this(port, serverName, maxConnections, 5000);
+    }
+
+    /**
+     * Create a new {@code Server} instance with the specified parameters
+     *
+     * @param port       The port to open the {@code Server} on
+     * @param serverName The name of this {@code Server}
+     * @param failCheck  The loop delay in milliseconds to check for {@code Clients}
+     *                   that have disconnected or errored
+     */
+    public Server(int port, String serverName, long failCheck) {
+
+        this(port, serverName, 20, failCheck);
+    }
+
+    /**
+     * Create a new {@code Server} instance with the specified parameters
+     *
+     * @param port           The port to open the {@code Server} on
+     * @param serverName     The name of this {@code Server}
+     * @param maxConnections The maximum number of {@code Client} connections to be
+     *                       accepted by this {@code Server}
+     * @param failCheck      The loop delay in milliseconds to check for {@code Clients}
+     *                       that have disconnected or errored
+     */
+    public Server(int port, String serverName, int maxConnections,
+                  long failCheck) {
+
+        this.port = port;
+        this.serverName = serverName;
+        this.maxConnect = maxConnections;
+        this.failCheck = failCheck;
+    }
+
+    /**
+     * Gets the name attached to this {@code Server}
+     *
+     * @return The server name of this {@code Server}
+     */
+    public String getServerName() {
 
-		socket = new ServerSocket(port);
+        return serverName;
+    }
 
-		incoming = new Thread() {
+    /**
+     * Gets the port that this {@code Server} will open onto
+     *
+     * @return This {@code Server}'s port
+     */
+    public int getPort() {
 
-			@Override
-			public void run() {
+        return port;
+    }
 
-				try {
+    /**
+     * Attempts to open this {@code Server} onto the specified port
+     *
+     * @throws IOException If an I/O error occurs while starting the {@code Server}
+     */
+    public void start() throws IOException {
 
-					while (open) {
+        socket = new ServerSocket(port);
 
-						if (connections.size() < maxConnect) {
+        incoming = new Thread() {
 
-							Connection connection = new Connection(
-									Server.this,
-									socket.accept(),
-									Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING
-											: Server.this
-													.getDefaultConnectionState(),
-									true);
+            @Override
+            public void run() {
 
-							connections.add(connection);
-						}
-					}
+                try {
 
-				} catch (Exception e) {
+                    while (open) {
 
-					Server.this.report(e);
+                        if (connections.size() < maxConnect) {
 
-					failed = true;
+                            Connection connection = new Connection(
+                                    Server.this,
+                                    socket.accept(),
+                                    Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING
+                                            : Server.this
+                                            .getDefaultConnectionState(),
+                                    true);
 
-					try {
+                            connections.add(connection);
+                        }
+                    }
 
-						close();
+                } catch (Exception e) {
 
-					} catch (IOException e1) {
+                    Server.this.report(e);
 
-						Server.this.report(e1);
-					}
-				}
-			}
-		};
-		incoming.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                    failed = true;
 
-			@Override
-			public void uncaughtException(Thread arg0, Throwable arg1) {
+                    try {
 
-				NetworkException ex = new NetworkException(arg0.getName()
-						+ " has errored!", arg1);
+                        close();
 
-				Server.this.report(ex);
-			}
-		});
-		incoming.setName("Incoming Connection Monitor: Server '"
-				+ getServerName() + "'");
-		open = true;
-		incoming.start();
-		checkFailed = new Thread() {
+                    } catch (IOException e1) {
 
-			@Override
-			public void run() {
+                        Server.this.report(e1);
+                    }
+                }
+            }
+        };
+        incoming.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
-				try {
+            @Override
+            public void uncaughtException(Thread arg0, Throwable arg1) {
 
-					while (open) {
+                NetworkException ex = new NetworkException(arg0.getName()
+                        + " has errored!", arg1);
 
-						try {
+                Server.this.report(ex);
+            }
+        });
+        incoming.setName("Incoming Connection Monitor: Server '"
+                + getServerName() + "'");
+        open = true;
+        incoming.start();
+        checkFailed = new Thread() {
 
-							Thread.sleep(failCheck);
+            @Override
+            public void run() {
 
-						} catch (Exception e) {
-						}
+                try {
 
-						List<Connection> toRem = new ArrayList<Connection>();
+                    while (open) {
 
-						for (Connection c : connections) {
+                        try {
 
-							if (c.isRemoteClosed()) {
+                            Thread.sleep(failCheck);
 
-								toRem.add(c);
-							}
-						}
+                        } catch (Exception e) {
+                        }
 
-						for (Connection c : toRem) {
+                        List<Connection> toRem = new ArrayList<Connection>();
 
-							connections.remove(c);
-							Server.this.fireListenerOnClientFailure(c);
-						}
-					}
+                        for (Connection c : connections) {
 
-				} catch (Exception e) {
+                            if (c.isRemoteClosed()) {
 
-					failed = true;
+                                toRem.add(c);
+                            }
+                        }
 
-					Server.this.report(e);
+                        for (Connection c : toRem) {
 
-					try {
+                            connections.remove(c);
+                            Server.this.fireListenerOnClientFailure(c);
+                        }
+                    }
 
-						close();
+                } catch (Exception e) {
 
-					} catch (IOException e1) {
+                    failed = true;
 
-						Server.this.report(e1);
-					}
-				}
-			}
-		};
-		checkFailed.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                    Server.this.report(e);
 
-			@Override
-			public void uncaughtException(Thread arg0, Throwable arg1) {
+                    try {
 
-				NetworkException ex = new NetworkException(arg0.getName()
-						+ " has errored!", arg1);
+                        close();
 
-				Server.this.report(ex);
-			}
-		});
-		checkFailed.setName("Failed Client Monitor: Server '" + getServerName()
-				+ "'");
-		checkFailed.start();
+                    } catch (IOException e1) {
 
-		open = true;
-	}
+                        Server.this.report(e1);
+                    }
+                }
+            }
+        };
+        checkFailed.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
-	/**
-	 * Checks if this {@code Server} is currently open
-	 * 
-	 * @return Whether or not this {@code Server} is open
-	 */
-	public boolean isOpen() {
+            @Override
+            public void uncaughtException(Thread arg0, Throwable arg1) {
 
-		return open;
-	}
+                NetworkException ex = new NetworkException(arg0.getName()
+                        + " has errored!", arg1);
 
-	/**
-	 * Checks if this {@code Server} has failed/errored
-	 * 
-	 * @return Whether or not this {@code Server} has failed/errored
-	 */
-	public boolean hasFailed() {
+                Server.this.report(ex);
+            }
+        });
+        checkFailed.setName("Failed Client Monitor: Server '" + getServerName()
+                + "'");
+        checkFailed.start();
 
-		return failed;
-	}
+        open = true;
+    }
 
-	/**
-	 * Makes the {@code Server}'s {@code Connections} set themselves back to the
-	 * {@code Receiving} state
-	 */
-	public void setToReceive() {
+    /**
+     * Checks if this {@code Server} is currently open
+     *
+     * @return Whether or not this {@code Server} is open
+     */
+    public boolean isOpen() {
 
-		for (Connection c : connections) {
+        return open;
+    }
 
-			c.setToReceive();
-		}
-	}
+    /**
+     * Checks if this {@code Server} has failed/errored
+     *
+     * @return Whether or not this {@code Server} has failed/errored
+     */
+    public boolean hasFailed() {
 
-	/**
-	 * Makes the {@code Server}'s {@code Connections} set themselves back to the
-	 * {@code Sending} state
-	 */
-	public void setToSend() {
+        return failed;
+    }
 
-		for (Connection c : connections) {
+    /**
+     * Makes the {@code Server}'s {@code Connections} set themselves back to the
+     * {@code Receiving} state
+     */
+    public void setToReceive() {
 
-			c.setToSend();
-		}
-	}
+        for (Connection c : connections) {
 
-	/**
-	 * Attempts to close this {@code Server} and disconnect all {@code Clients}
-	 * 
-	 * @throws IOException
-	 *             If an I/O error occurs while shutting down this
-	 *             {@code Server}
-	 */
-	public void close() throws IOException {
+            c.setToReceive();
+        }
+    }
 
-		open = false;
-		incoming.interrupt();
-		checkFailed.interrupt();
+    /**
+     * Makes the {@code Server}'s {@code Connections} set themselves back to the
+     * {@code Sending} state
+     */
+    public void setToSend() {
 
-		for (Connection c : connections) {
+        for (Connection c : connections) {
 
-			c.close();
-		}
-	}
+            c.setToSend();
+        }
+    }
 
-	/**
-	 * Gets all connections to this {@code Server}
-	 * 
-	 * @return A {@code Connection[]} containing references to all connections
-	 *         on this {@code Server}
-	 */
-	public Connection[] getConnections() {
+    /**
+     * Attempts to close this {@code Server} and disconnect all {@code Clients}
+     *
+     * @throws IOException If an I/O error occurs while shutting down this
+     *                     {@code Server}
+     */
+    public void close() throws IOException {
 
-		return connections.toArray(new Connection[] {});
-	}
+        open = false;
+        incoming.interrupt();
+        checkFailed.interrupt();
 
-	/**
-	 * Gets a {@code Connection} for a specified IP
-	 * 
-	 * @param ip
-	 *            The IP to get a {@code Connection} for
-	 * @return The {@code Connection} for the specified IP
-	 */
-	public Connection getConnectionForIp(String ip) {
+        for (Connection c : connections) {
 
-		for (Connection c : connections) {
+            c.close();
+        }
+    }
 
-			if (c.getIp().equals(ip)) {
+    /**
+     * Gets all connections to this {@code Server}
+     *
+     * @return A {@code Connection[]} containing references to all connections
+     * on this {@code Server}
+     */
+    public Connection[] getConnections() {
 
-				return c;
-			}
-		}
+        return connections.toArray(new Connection[]{});
+    }
 
-		return null;
-	}
+    /**
+     * Gets a {@code Connection} for a specified IP
+     *
+     * @param ip The IP to get a {@code Connection} for
+     * @return The {@code Connection} for the specified IP
+     */
+    public Connection getConnectionForIp(String ip) {
 
-	/**
-	 * Sends a {@code Packet} across all connections to the clients on the
-	 * receiving ends
-	 * 
-	 * @param p
-	 *            The {@code Packet} to send
-	 * @param expectResponse
-	 *            Whether or not the {@code Connection} should wait for a
-	 *            response (decides whether or not to timeout the {@code read()}
-	 *            calls
-	 */
-	public void sendPacket(Packet p, boolean expectResponse) {
+        for (Connection c : connections) {
 
-		if (isOpen() && !hasFailed()) {
+            if (c.getIp().equals(ip)) {
 
-			for (Connection c : connections) {
+                return c;
+            }
+        }
 
-				if (c != null) {
+        return null;
+    }
 
-					c.sendPacket(p, expectResponse);
-				}
-			}
-		}
-	}
+    /**
+     * Sends a {@code Packet} across all connections to the clients on the
+     * receiving ends
+     *
+     * @param p              The {@code Packet} to send
+     * @param expectResponse Whether or not the {@code Connection} should wait for a
+     *                       response (decides whether or not to timeout the {@code read()}
+     *                       calls
+     */
+    public void sendPacket(Packet p, boolean expectResponse) {
+
+        if (isOpen() && !hasFailed()) {
+
+            for (Connection c : connections) {
+
+                if (c != null) {
+
+                    c.sendPacket(p, expectResponse);
+                }
+            }
+        }
+    }
 }

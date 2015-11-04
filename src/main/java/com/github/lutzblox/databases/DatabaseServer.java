@@ -10,355 +10,345 @@ import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.utils.ExtendedMap;
 
+
 /**
  * This class represents the client-side portion of a database server <-> client
  * relationship.
- * 
+ *
  * @author Christopher Lutz
  */
 public class DatabaseServer {
 
-	/** Key representing the name of a database in a {@code Packet} */
-	public static final String DATABASE_NAME_KEY = "database-name";
-
-	private ExtendedMap data = new ExtendedMap();
-
-	private Server server;
-
-	private SaveMethod saveMethod = null;
-
-	/**
-	 * Create a new {@code DatabaseServer} instance with the specified
-	 * parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code DatabaseServer} on
-	 * @param databaseName
-	 *            The name of this {@code DatabaseServer}
-	 */
-	public DatabaseServer(int port, String databaseName) {
-
-		this(new Server(port, databaseName));
-	}
-
-	/**
-	 * Create a new {@code DatabaseServer} instance with the specified
-	 * parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code DatabaseServer} on
-	 * @param databaseName
-	 *            The name of this {@code DatabaseServer}
-	 * @param maxConnections
-	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this {@code DatabaseServer}
-	 */
-	public DatabaseServer(int port, String databaseName, int maxConnections) {
+    /**
+     * Key representing the name of a database in a {@code Packet}
+     */
+    public static final String DATABASE_NAME_KEY = "database-name";
 
-		this(new Server(port, databaseName, maxConnections));
-	}
+    private ExtendedMap data = new ExtendedMap();
 
-	/**
-	 * Create a new {@code DatabaseServer} instance with the specified
-	 * parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code DatabaseServer} on
-	 * @param databaseName
-	 *            The name of this {@code DatabaseServer}
-	 * @param failCheck
-	 *            The loop delay in milliseconds to check for {@code Clients}
-	 *            that have disconnected or errored
-	 */
-	public DatabaseServer(int port, String databaseName, long failCheck) {
+    private Server server;
 
-		this(new Server(port, databaseName, failCheck));
-	}
+    private SaveMethod saveMethod = null;
 
-	/**
-	 * Create a new {@code DatabaseServer} instance with the specified
-	 * parameters
-	 * 
-	 * @param port
-	 *            The port to open the {@code DatabaseServer} on
-	 * @param databaseName
-	 *            The name of this {@code DatabaseServer}
-	 * @param maxConnections
-	 *            The maximum number of {@code Client} connections to be
-	 *            accepted by this {@code DatabaseServer}
-	 * @param failCheck
-	 *            The loop delay in milliseconds to check for {@code Clients}
-	 *            that have disconnected or errored
-	 */
-	public DatabaseServer(int port, String databaseName, int maxConnections,
-			long failCheck) {
+    /**
+     * Create a new {@code DatabaseServer} instance with the specified
+     * parameters
+     *
+     * @param port         The port to open the {@code DatabaseServer} on
+     * @param databaseName The name of this {@code DatabaseServer}
+     */
+    public DatabaseServer(int port, String databaseName) {
 
-		this(new Server(port, databaseName, maxConnections, failCheck));
-	}
-
-	private DatabaseServer(Server s) {
+        this(new Server(port, databaseName));
+    }
 
-		this.server = s;
-
-		server.addNetworkListener(new ServerListener() {
+    /**
+     * Create a new {@code DatabaseServer} instance with the specified
+     * parameters
+     *
+     * @param port           The port to open the {@code DatabaseServer} on
+     * @param databaseName   The name of this {@code DatabaseServer}
+     * @param maxConnections The maximum number of {@code Client} connections to be
+     *                       accepted by this {@code DatabaseServer}
+     */
+    public DatabaseServer(int port, String databaseName, int maxConnections) {
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
+        this(new Server(port, databaseName, maxConnections));
+    }
 
-				if (packet.hasData(Request.REQUEST_KEY)) {
+    /**
+     * Create a new {@code DatabaseServer} instance with the specified
+     * parameters
+     *
+     * @param port         The port to open the {@code DatabaseServer} on
+     * @param databaseName The name of this {@code DatabaseServer}
+     * @param failCheck    The loop delay in milliseconds to check for {@code Clients}
+     *                     that have disconnected or errored
+     */
+    public DatabaseServer(int port, String databaseName, long failCheck) {
 
-					String key = (String) packet.getData(Request.REQUEST_KEY);
+        this(new Server(port, databaseName, failCheck));
+    }
 
-					Packet response = new Packet();
-					response.putData(Response.RESPONSE_KEY, data.get(key));
+    /**
+     * Create a new {@code DatabaseServer} instance with the specified
+     * parameters
+     *
+     * @param port           The port to open the {@code DatabaseServer} on
+     * @param databaseName   The name of this {@code DatabaseServer}
+     * @param maxConnections The maximum number of {@code Client} connections to be
+     *                       accepted by this {@code DatabaseServer}
+     * @param failCheck      The loop delay in milliseconds to check for {@code Clients}
+     *                       that have disconnected or errored
+     */
+    public DatabaseServer(int port, String databaseName, int maxConnections,
+                          long failCheck) {
 
-					connection.sendPacket(response, false);
+        this(new Server(port, databaseName, maxConnections, failCheck));
+    }
 
-				} else if (packet.hasData(PutRequest.PUT_REQUEST_KEY_KEY)
-						&& packet.hasData(PutRequest.PUT_REQUEST_VALUE_KEY)) {
+    private DatabaseServer(Server s) {
 
-					String key = (String) packet
-							.getData(PutRequest.PUT_REQUEST_KEY_KEY);
-					Object value = packet
-							.getData(PutRequest.PUT_REQUEST_VALUE_KEY);
+        this.server = s;
 
-					data.put(value.getClass(), key, value);
+        server.addNetworkListener(new ServerListener() {
 
-					if (saveMethod != null) {
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-						saveMethod.save(data, server);
-					}
+                if (packet.hasData(Request.REQUEST_KEY)) {
 
-					connection.setToReceive();
+                    String key = (String) packet.getData(Request.REQUEST_KEY);
 
-				} else if (packet.hasData(DeleteRequest.DELETE_REQUEST_KEY_KEY)) {
+                    Packet response = new Packet();
+                    response.putData(Response.RESPONSE_KEY, data.get(key));
 
-					String key = (String) packet
-							.getData(DeleteRequest.DELETE_REQUEST_KEY_KEY);
+                    connection.sendPacket(response, false);
 
-					data.removeKey(key);
+                } else if (packet.hasData(PutRequest.PUT_REQUEST_KEY_KEY)
+                        && packet.hasData(PutRequest.PUT_REQUEST_VALUE_KEY)) {
 
-					if (saveMethod != null) {
+                    String key = (String) packet
+                            .getData(PutRequest.PUT_REQUEST_KEY_KEY);
+                    Object value = packet
+                            .getData(PutRequest.PUT_REQUEST_VALUE_KEY);
 
-						saveMethod.save(data, server);
-					}
+                    data.put(value.getClass(), key, value);
 
-					connection.setToReceive();
+                    if (saveMethod != null) {
 
-				} else if (packet.hasData(Command.COMMAND_KEY)) {
+                        saveMethod.save(data, server);
+                    }
 
-					String command = (String) packet
-							.getData(Command.COMMAND_KEY);
+                    connection.setToReceive();
 
-					if (command.equalsIgnoreCase("clear")) {
+                } else if (packet.hasData(DeleteRequest.DELETE_REQUEST_KEY_KEY)) {
 
-						data.clear();
-					}
+                    String key = (String) packet
+                            .getData(DeleteRequest.DELETE_REQUEST_KEY_KEY);
 
-					connection.setToReceive();
-				}
-			}
+                    data.removeKey(key);
 
-			@Override
-			public Packet onConnect(Connection c, Packet data) {
+                    if (saveMethod != null) {
 
-				data.putData(DATABASE_NAME_KEY, server.getServerName());
+                        saveMethod.save(data, server);
+                    }
 
-				return data;
-			}
+                    connection.setToReceive();
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
+                } else if (packet.hasData(Command.COMMAND_KEY)) {
 
-			@Override
-			public void onClientFailure(Connection c) {
-			}
-		});
-	}
+                    String command = (String) packet
+                            .getData(Command.COMMAND_KEY);
 
-	/**
-	 * Sets the {@code SaveMethod} used by this {@code DatabaseServer} to save
-	 * data
-	 * 
-	 * @param method
-	 *            The {@code SaveMethod} to use
-	 */
-	public void setSaveMethod(SaveMethod method) {
+                    if (command.equalsIgnoreCase("clear")) {
 
-		this.saveMethod = method;
-	}
+                        data.clear();
+                    }
 
-	/**
-	 * Gets the {@code SaveMethod} used by this {@code DatabaseServer} to save
-	 * data
-	 * 
-	 * @return The {@code SaveMethod} used
-	 */
-	public SaveMethod getSaveMethod() {
+                    connection.setToReceive();
+                }
+            }
 
-		return saveMethod;
-	}
+            @Override
+            public Packet onConnect(Connection c, Packet data) {
 
-	/** Loads database data through the {@code SaveMethod} */
-	public void loadDatabase() {
+                data.putData(DATABASE_NAME_KEY, server.getServerName());
 
-		if (saveMethod != null) {
+                return data;
+            }
 
-			data.putAll(saveMethod.load(server));
-		}
-	}
-
-	/** Saves database data through the {@code SaveMethod} */
-	public void saveDatabase() {
-
-		if (saveMethod != null) {
+            @Override
+            public void onTimeout(Connection connection) {
 
-			saveMethod.save(data, server);
-		}
-	}
-
-	/**
-	 * Gets the port that this {@code DatabaseServer} will open onto
-	 * 
-	 * @return This {@code DatabaseServer}'s port
-	 */
-	public int getPort() {
-
-		return server.getPort();
-	}
-
-	/**
-	 * Gets the name attached to this {@code DatabaseServer}
-	 * 
-	 * @return The database name of this {@code DatabaseServer}
-	 */
-	public String getDatabaseName() {
-
-		return server.getServerName();
-	}
-
-	/**
-	 * Puts a value into the database
-	 * 
-	 * @param key
-	 *            The key of the data
-	 * @param value
-	 *            The value of the data
-	 */
-	public void putData(String key, Object value) {
-
-		data.put(value.getClass(), key, value);
-	}
-
-	/**
-	 * Checks if the database contains a value with the specified key
-	 * 
-	 * @param key
-	 *            The key to check for
-	 * @return Whether or not the database contains a value for the specified
-	 *         key
-	 */
-	public boolean hasData(String key) {
-
-		return data.containsKey(key);
-	}
-
-	/**
-	 * Gets the value associated with the specified key
-	 * 
-	 * @param key
-	 *            The key to find the value for
-	 * @return The value for the key
-	 */
-	public Object getData(String key) {
-
-		return data.get(key);
-	}
-
-	/** Clears the data from the database */
-	public void clear() {
-
-		data.clear();
-	}
-
-	/**
-	 * Checks if this {@code DatabaseServer} is currently open
-	 * 
-	 * @return Whether or not this {@code DatabaseServer} is open
-	 */
-	public boolean isOpen() {
-
-		return server.isOpen();
-	}
-
-	/**
-	 * Checks if this {@code DatabaseServer} has failed/errored
-	 * 
-	 * @return Whether or not this {@code DatabaseServer} has failed/errored
-	 */
-	public boolean hasFailed() {
-
-		return server.hasFailed();
-	}
-
-	/**
-	 * Attaches an {@code ErrorListener} to this {@code DatabaseServer}
-	 * 
-	 * @param reporter
-	 *            The {@code ErrorReporter} to add
-	 */
-	public void addErrorReporter(ErrorReporter reporter) {
-
-		server.addErrorReporter(reporter);
-	}
-
-	/**
-	 * Gets all of the {@code ErrorReporters} attached to this
-	 * {@code DatabaseServer}
-	 * 
-	 * @return An {@code ErrorReporter[]} containing all {@code ErrorReporters}
-	 *         attached to this {@code DatabaseServer}
-	 */
-	public ErrorReporter[] getErrorReporters() {
-
-		return server.getErrorReporters();
-	}
-
-	/**
-	 * Reports an error ({@code Throwable}) through the {@code ErrorReporters}
-	 * attached to this {@code DatabaseServer}
-	 * 
-	 * @param t
-	 *            The {@code Throwable} to report
-	 */
-	public void report(Throwable t) {
-
-		server.report(t);
-	}
-
-	/**
-	 * Attempts to open this {@code DatabaseServer} onto the specified port
-	 * 
-	 * @throws IOException
-	 *             If an I/O error occurs while starting the
-	 *             {@code DatabaseServer}
-	 */
-	public void start() throws IOException {
-
-		server.start();
-	}
-
-	/**
-	 * Attempts to close this {@code DatabaseServer} and disconnect all
-	 * {@code Clients}
-	 * 
-	 * @throws IOException
-	 *             If an I/O error occurs while shutting down this
-	 *             {@code DatabaseServer}
-	 */
-	public void close() throws IOException {
-
-		server.close();
-	}
+            }
+
+            @Override
+            public void onClientFailure(Connection c) {
+
+            }
+        });
+    }
+
+    /**
+     * Sets the {@code SaveMethod} used by this {@code DatabaseServer} to save
+     * data
+     *
+     * @param method The {@code SaveMethod} to use
+     */
+    public void setSaveMethod(SaveMethod method) {
+
+        this.saveMethod = method;
+    }
+
+    /**
+     * Gets the {@code SaveMethod} used by this {@code DatabaseServer} to save
+     * data
+     *
+     * @return The {@code SaveMethod} used
+     */
+    public SaveMethod getSaveMethod() {
+
+        return saveMethod;
+    }
+
+    /**
+     * Loads database data through the {@code SaveMethod}
+     */
+    public void loadDatabase() {
+
+        if (saveMethod != null) {
+
+            data.putAll(saveMethod.load(server));
+        }
+    }
+
+    /**
+     * Saves database data through the {@code SaveMethod}
+     */
+    public void saveDatabase() {
+
+        if (saveMethod != null) {
+
+            saveMethod.save(data, server);
+        }
+    }
+
+    /**
+     * Gets the port that this {@code DatabaseServer} will open onto
+     *
+     * @return This {@code DatabaseServer}'s port
+     */
+    public int getPort() {
+
+        return server.getPort();
+    }
+
+    /**
+     * Gets the name attached to this {@code DatabaseServer}
+     *
+     * @return The database name of this {@code DatabaseServer}
+     */
+    public String getDatabaseName() {
+
+        return server.getServerName();
+    }
+
+    /**
+     * Puts a value into the database
+     *
+     * @param key   The key of the data
+     * @param value The value of the data
+     */
+    public void putData(String key, Object value) {
+
+        data.put(value.getClass(), key, value);
+    }
+
+    /**
+     * Checks if the database contains a value with the specified key
+     *
+     * @param key The key to check for
+     * @return Whether or not the database contains a value for the specified
+     * key
+     */
+    public boolean hasData(String key) {
+
+        return data.containsKey(key);
+    }
+
+    /**
+     * Gets the value associated with the specified key
+     *
+     * @param key The key to find the value for
+     * @return The value for the key
+     */
+    public Object getData(String key) {
+
+        return data.get(key);
+    }
+
+    /**
+     * Clears the data from the database
+     */
+    public void clear() {
+
+        data.clear();
+    }
+
+    /**
+     * Checks if this {@code DatabaseServer} is currently open
+     *
+     * @return Whether or not this {@code DatabaseServer} is open
+     */
+    public boolean isOpen() {
+
+        return server.isOpen();
+    }
+
+    /**
+     * Checks if this {@code DatabaseServer} has failed/errored
+     *
+     * @return Whether or not this {@code DatabaseServer} has failed/errored
+     */
+    public boolean hasFailed() {
+
+        return server.hasFailed();
+    }
+
+    /**
+     * Attaches an {@code ErrorListener} to this {@code DatabaseServer}
+     *
+     * @param reporter The {@code ErrorReporter} to add
+     */
+    public void addErrorReporter(ErrorReporter reporter) {
+
+        server.addErrorReporter(reporter);
+    }
+
+    /**
+     * Gets all of the {@code ErrorReporters} attached to this
+     * {@code DatabaseServer}
+     *
+     * @return An {@code ErrorReporter[]} containing all {@code ErrorReporters}
+     * attached to this {@code DatabaseServer}
+     */
+    public ErrorReporter[] getErrorReporters() {
+
+        return server.getErrorReporters();
+    }
+
+    /**
+     * Reports an error ({@code Throwable}) through the {@code ErrorReporters}
+     * attached to this {@code DatabaseServer}
+     *
+     * @param t The {@code Throwable} to report
+     */
+    public void report(Throwable t) {
+
+        server.report(t);
+    }
+
+    /**
+     * Attempts to open this {@code DatabaseServer} onto the specified port
+     *
+     * @throws IOException If an I/O error occurs while starting the
+     *                     {@code DatabaseServer}
+     */
+    public void start() throws IOException {
+
+        server.start();
+    }
+
+    /**
+     * Attempts to close this {@code DatabaseServer} and disconnect all
+     * {@code Clients}
+     *
+     * @throws IOException If an I/O error occurs while shutting down this
+     *                     {@code DatabaseServer}
+     */
+    public void close() throws IOException {
+
+        server.close();
+    }
 }

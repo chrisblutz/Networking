@@ -7,303 +7,293 @@ import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.wrappers.Null;
 import com.github.lutzblox.utils.ExtendedMap;
 
+
 /**
  * A class representing a group of data pieces to be sent across a
  * {@code Connection}
- * 
+ *
  * @author Christopher Lutz
  */
 public class Packet {
 
-	/**
-	 * A class representing a data piece inside of a {@code Packet}
-	 * 
-	 * @author Christopher Lutz
-	 */
-	public static class PacketData {
+    /**
+     * A class representing a data piece inside of a {@code Packet}
+     *
+     * @author Christopher Lutz
+     */
+    public static class PacketData {
 
-		private String key;
-		private Object value;
+        private String key;
+        private Object value;
 
-		/**
-		 * Creates a new {@code PacketData} object with the specified parameters
-		 * 
-		 * @param key
-		 *            The key of the data piece
-		 * @param value
-		 *            The value of the data piece
-		 */
-		public PacketData(String key, Object value) {
+        /**
+         * Creates a new {@code PacketData} object with the specified parameters
+         *
+         * @param key   The key of the data piece
+         * @param value The value of the data piece
+         */
+        public PacketData(String key, Object value) {
 
-			this.key = key;
-			this.value = value;
-		}
+            this.key = key;
+            this.value = value;
+        }
 
-		/**
-		 * Gets the key of the data piece
-		 * 
-		 * @return The key of the data piece
-		 */
-		public String getKey() {
+        /**
+         * Gets the key of the data piece
+         *
+         * @return The key of the data piece
+         */
+        public String getKey() {
 
-			return key;
-		}
+            return key;
+        }
 
-		/**
-		 * Gets the value of the data piece
-		 * 
-		 * @return The value of the data piece
-		 */
-		public Object getValue() {
+        /**
+         * Gets the value of the data piece
+         *
+         * @return The value of the data piece
+         */
+        public Object getValue() {
 
-			return value;
-		}
-	}
+            return value;
+        }
+    }
 
-	/**
-	 * A {@code PacketData} instance that tells the remote end that this
-	 * {@code Packet} is empty and contains no data
-	 */
-	public static final PacketData EMPTY_PACKET = new PacketData(
-			"packet-empty", true);
+    /**
+     * A {@code PacketData} instance that tells the remote end that this
+     * {@code Packet} is empty and contains no data
+     */
+    public static final PacketData EMPTY_PACKET = new PacketData(
+            "packet-empty", true);
 
-	private ExtendedMap data = new ExtendedMap();
+    private ExtendedMap data = new ExtendedMap();
 
-	private boolean isVital = false;
+    private boolean isVital = false;
 
-	/**
-	 * Creates an empty {@code Packet}
-	 */
-	public Packet() {
-	}
+    /**
+     * Creates an empty {@code Packet}
+     */
+    public Packet() {
 
-	/**
-	 * Creates a new {@code Packet} containing the specified data pieces
-	 * 
-	 * @param keys
-	 *            The keys of the data pieces
-	 * @param values
-	 *            The values of the data pieces
-	 */
-	public Packet(String[] keys, Object[] values) {
+    }
 
-		if (keys.length == values.length) {
+    /**
+     * Creates a new {@code Packet} containing the specified data pieces
+     *
+     * @param keys   The keys of the data pieces
+     * @param values The values of the data pieces
+     */
+    public Packet(String[] keys, Object[] values) {
 
-			for (int i = 0; i < keys.length; i++) {
+        if (keys.length == values.length) {
 
-				putData(keys[i], values[i]);
-			}
+            for (int i = 0; i < keys.length; i++) {
 
-		} else {
+                putData(keys[i], values[i]);
+            }
 
-			throw new NetworkException(
-					"The constructor of Packet requires the String[] and Object[] to have the same lengths!");
-		}
-	}
+        } else {
 
-	/**
-	 * Creates a new {@code Packet} containing the specified data pieces
-	 * 
-	 * @param data
-	 *            The data pieces to add
-	 */
-	public Packet(PacketData... data) {
+            throw new NetworkException(
+                    "The constructor of Packet requires the String[] and Object[] to have the same lengths!");
+        }
+    }
 
-		for (PacketData d : data) {
+    /**
+     * Creates a new {@code Packet} containing the specified data pieces
+     *
+     * @param data The data pieces to add
+     */
+    public Packet(PacketData... data) {
 
-			putData(d.getKey(), d.getValue());
-		}
-	}
+        for (PacketData d : data) {
 
-	/**
-	 * Adds a data piece to this {@code Packet}
-	 * 
-	 * @param key
-	 *            The key of the data piece
-	 * @param value
-	 *            The value of the data piece
-	 */
-	public void putData(String key, Object value) {
+            putData(d.getKey(), d.getValue());
+        }
+    }
 
-		data.put(value != null ? value.getClass() : Null.class, key, value);
-	}
+    /**
+     * Adds a data piece to this {@code Packet}
+     *
+     * @param key   The key of the data piece
+     * @param value The value of the data piece
+     */
+    public void putData(String key, Object value) {
 
-	/**
-	 * Adds a data piece to this {@code Packet}
-	 * 
-	 * @param packetData
-	 *            The data piece to add
-	 */
-	public void putData(PacketData packetData) {
+        data.put(value != null ? value.getClass() : Null.class, key, value);
+    }
 
-		data.put(packetData.getValue().getClass(), packetData.getKey(),
-				packetData.getValue());
-	}
+    /**
+     * Adds a data piece to this {@code Packet}
+     *
+     * @param packetData The data piece to add
+     */
+    public void putData(PacketData packetData) {
 
-	/**
-	 * Gets the value for the specified key
-	 * 
-	 * @param key
-	 *            The key to check against
-	 * @return The value attached to the key (can be {@code null} if the key
-	 *         does not exist)
-	 */
-	public Object getData(String key) {
+        data.put(packetData.getValue().getClass(), packetData.getKey(),
+                packetData.getValue());
+    }
 
-		return data.get(key);
-	}
+    /**
+     * Gets the value for the specified key
+     *
+     * @param key The key to check against
+     * @return The value attached to the key (can be {@code null} if the key
+     * does not exist)
+     */
+    public Object getData(String key) {
 
-	/**
-	 * Gets all data pieces attached to this {@code Packet}
-	 * 
-	 * @return A {@code PacketData[]} containing all data pieces attached to
-	 *         this {@code Packet}
-	 */
-	public PacketData[] getData() {
+        return data.get(key);
+    }
 
-		List<PacketData> packetData = new ArrayList<PacketData>();
+    /**
+     * Gets all data pieces attached to this {@code Packet}
+     *
+     * @return A {@code PacketData[]} containing all data pieces attached to
+     * this {@code Packet}
+     */
+    public PacketData[] getData() {
 
-		for (Class<?> type : data.typeSet()) {
+        List<PacketData> packetData = new ArrayList<PacketData>();
 
-			for (String key : data.keySet(type)) {
+        for (Class<?> type : data.typeSet()) {
 
-				packetData.add(new PacketData(key, data.get(key)));
-			}
-		}
+            for (String key : data.keySet(type)) {
 
-		return packetData.toArray(new PacketData[] {});
-	}
+                packetData.add(new PacketData(key, data.get(key)));
+            }
+        }
 
-	/**
-	 * Gets the data in this {@code Packet} as an {@code ExtendedMap}
-	 * 
-	 * @return The {@code ExtendedMap} containing all data from this
-	 *         {@code Packet}
-	 */
-	public ExtendedMap getDataAsMap() {
+        return packetData.toArray(new PacketData[]{});
+    }
 
-		return data;
-	}
+    /**
+     * Gets the data in this {@code Packet} as an {@code ExtendedMap}
+     *
+     * @return The {@code ExtendedMap} containing all data from this
+     * {@code Packet}
+     */
+    public ExtendedMap getDataAsMap() {
 
-	/**
-	 * Checks if the specified key exists as a data key
-	 * 
-	 * @param key
-	 *            The key to check for
-	 * @return Whether or not the key exists
-	 */
-	public boolean hasData(String key) {
+        return data;
+    }
 
-		return data.containsKey(key);
-	}
+    /**
+     * Checks if the specified key exists as a data key
+     *
+     * @param key The key to check for
+     * @return Whether or not the key exists
+     */
+    public boolean hasData(String key) {
 
-	/**
-	 * Clears all data pieces from this {@code Packet}
-	 */
-	public void clearData() {
+        return data.containsKey(key);
+    }
 
-		data.clear();
-	}
+    /**
+     * Clears all data pieces from this {@code Packet}
+     */
+    public void clearData() {
 
-	/**
-	 * Sets whether or not this {@code Packet} should be vital. If a vital
-	 * packet is dropped by either side of a connection, it will be sent
-	 * whenever there is an opening.
-	 * 
-	 * @param vital
-	 *            Whether or not this {@code Packet} should be vital
-	 */
-	public void setVital(boolean vital) {
+        data.clear();
+    }
 
-		this.isVital = vital;
-	}
+    /**
+     * Sets whether or not this {@code Packet} should be vital. If a vital
+     * packet is dropped by either side of a connection, it will be sent
+     * whenever there is an opening.
+     *
+     * @param vital Whether or not this {@code Packet} should be vital
+     */
+    public void setVital(boolean vital) {
 
-	/**
-	 * Checks whether or not this {@code Packet} is vital. If a vital packet is
-	 * dropped by either side of a connection, it will be sent whenever there is
-	 * an opening.
-	 * 
-	 * @return Whether or not this {@code Packet} is vital
-	 */
-	public boolean isVital() {
+        this.isVital = vital;
+    }
 
-		return isVital;
-	}
+    /**
+     * Checks whether or not this {@code Packet} is vital. If a vital packet is
+     * dropped by either side of a connection, it will be sent whenever there is
+     * an opening.
+     *
+     * @return Whether or not this {@code Packet} is vital
+     */
+    public boolean isVital() {
 
-	/**
-	 * Checks whether or not this {@code Packet} contains no data pieces
-	 * 
-	 * @return Whether or not this {@code Packet} contains any data pieces
-	 */
-	public boolean isEmpty() {
+        return isVital;
+    }
 
-		if (data.isEmpty()) {
+    /**
+     * Checks whether or not this {@code Packet} contains no data pieces
+     *
+     * @return Whether or not this {@code Packet} contains any data pieces
+     */
+    public boolean isEmpty() {
 
-			return true;
+        if (data.isEmpty()) {
 
-		} else if (data.size() == 1) {
+            return true;
 
-			if (data.containsKey(Packet.EMPTY_PACKET.getKey())) {
+        } else if (data.size() == 1) {
 
-				if (data.get(Packet.EMPTY_PACKET.getKey()) instanceof Boolean
-						&& data.get(Packet.EMPTY_PACKET.getKey()).equals(true)) {
+            if (data.containsKey(Packet.EMPTY_PACKET.getKey())) {
 
-					return true;
-				}
-			}
-		}
+                if (data.get(Packet.EMPTY_PACKET.getKey()) instanceof Boolean
+                        && data.get(Packet.EMPTY_PACKET.getKey()).equals(true)) {
 
-		return false;
-	}
+                    return true;
+                }
+            }
+        }
 
-	/**
-	 * Gets basic data about this {@code Packet}
-	 */
-	@Override
-	public String toString() {
+        return false;
+    }
 
-		return this.getClass().getName() + "[Size: " + data.size()
-				+ ", Vital: " + isVital() + "]";
-	}
+    /**
+     * Gets basic data about this {@code Packet}
+     */
+    @Override
+    public String toString() {
 
-	/**
-	 * Takes this {@code Packet} and formats it into a {@code String} for
-	 * writing/sending
-	 * 
-	 * @deprecated This functionality has been moved to
-	 *             {@code PacketWriter.getPacketAsWriteableString()}.
-	 *             {@code PacketWriter} allows more configuration with how the
-	 *             {@code Packet} to {@code String} transformations are handled. <br>
-	 *             NOTE: Using this method will not report any errors because
-	 *             the PacketWriter's error list is inaccessible for reporting.
-	 *             To retrieve errors to report them, use {@code PacketWriter}'s
-	 *             {@code getPacketAsWriteableString()} method and then retrieve
-	 *             any errors using its {@code getErrors()} method.
-	 * @return The formatted {@code String}
-	 */
-	public String getPacketAsWriteableString() {
+        return this.getClass().getName() + "[Size: " + data.size()
+                + ", Vital: " + isVital() + "]";
+    }
 
-		return new PacketWriter().getPacketAsWriteableString(this);
-	}
+    /**
+     * Takes this {@code Packet} and formats it into a {@code String} for
+     * writing/sending
+     *
+     * @return The formatted {@code String}
+     * @deprecated This functionality has been moved to
+     * {@code PacketWriter.getPacketAsWriteableString()}.
+     * {@code PacketWriter} allows more configuration with how the
+     * {@code Packet} to {@code String} transformations are handled. <br>
+     * NOTE: Using this method will not report any errors because
+     * the PacketWriter's error list is inaccessible for reporting.
+     * To retrieve errors to report them, use {@code PacketWriter}'s
+     * {@code getPacketAsWriteableString()} method and then retrieve
+     * any errors using its {@code getErrors()} method.
+     */
+    public String getPacketAsWriteableString() {
 
-	/**
-	 * Parses a {@code Packet} from a {@code String}
-	 * 
-	 * @deprecated This functionality has been moved to
-	 *             {@code PacketReader.getPacketFromString()}.
-	 *             {@code PacketReader} allows more configuration with how the
-	 *             {@code String} to {@code Packet} transformations are handled. <br>
-	 *             NOTE: Using this method will not report any errors because
-	 *             the PacketReader's error list is inaccessible for reporting.
-	 *             To retrieve errors to report them, use {@code PacketReader}'s
-	 *             {@code getPacketFromString()} method and then retrieve any
-	 *             errors using its {@code getErrors()} method.
-	 * @param toParse
-	 *            The {@code String} to parse
-	 * @return The parsed {@code Packet}
-	 */
-	public static Packet getPacketFromString(String toParse) {
+        return new PacketWriter().getPacketAsWriteableString(this);
+    }
 
-		return new PacketReader().getPacketFromString(toParse);
-	}
+    /**
+     * Parses a {@code Packet} from a {@code String}
+     *
+     * @param toParse The {@code String} to parse
+     * @return The parsed {@code Packet}
+     * @deprecated This functionality has been moved to
+     * {@code PacketReader.getPacketFromString()}.
+     * {@code PacketReader} allows more configuration with how the
+     * {@code String} to {@code Packet} transformations are handled. <br>
+     * NOTE: Using this method will not report any errors because
+     * the PacketReader's error list is inaccessible for reporting.
+     * To retrieve errors to report them, use {@code PacketReader}'s
+     * {@code getPacketFromString()} method and then retrieve any
+     * errors using its {@code getErrors()} method.
+     */
+    public static Packet getPacketFromString(String toParse) {
+
+        return new PacketReader().getPacketFromString(toParse);
+    }
 }

@@ -7,118 +7,117 @@ import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
 import com.github.lutzblox.utils.ExtendedMap;
 
+
 /**
  * A class that allows the transformation of {@code Packets} into
  * {@code Strings}. This can be configured using a
  * {@code PacketHandlerConfiguration}.
- * 
+ *
  * @author Christopher Lutz
  */
 public class PacketWriter {
 
-	private List<Throwable> errors = new ArrayList<Throwable>();
-	private PacketHandlerConfiguration config;
+    private List<Throwable> errors = new ArrayList<Throwable>();
+    private PacketHandlerConfiguration config;
 
-	/**
-	 * Creates a {@code PacketWriter} that uses the default
-	 * {@code PacketHandlerConfiguration}
-	 */
-	public PacketWriter() {
+    /**
+     * Creates a {@code PacketWriter} that uses the default
+     * {@code PacketHandlerConfiguration}
+     */
+    public PacketWriter() {
 
-		this(PacketHandlerConfiguration.getDefaultConfiguration());
-	}
+        this(PacketHandlerConfiguration.getDefaultConfiguration());
+    }
 
-	/**
-	 * Creates a {@code PacketWriter} that uses a custom
-	 * {@code PacketHandlerConfiguration}
-	 * 
-	 * @param config
-	 *            The {@code PacketHandlerConfiguration} that should be used
-	 */
-	public PacketWriter(PacketHandlerConfiguration config) {
+    /**
+     * Creates a {@code PacketWriter} that uses a custom
+     * {@code PacketHandlerConfiguration}
+     *
+     * @param config The {@code PacketHandlerConfiguration} that should be used
+     */
+    public PacketWriter(PacketHandlerConfiguration config) {
 
-		this.config = config;
-	}
+        this.config = config;
+    }
 
-	/**
-	 * Turns a {@code Packet} into a {@code String} following the
-	 * {@code PacketHandlerConfiguration} used by this {@code PacketWriter}
-	 * 
-	 * @param packet
-	 *            The {@code Packet} to turn into a {@code String}
-	 * @return The {@code String} form of the {@code Packet}
-	 */
-	public String getPacketAsWriteableString(Packet packet) {
+    /**
+     * Turns a {@code Packet} into a {@code String} following the
+     * {@code PacketHandlerConfiguration} used by this {@code PacketWriter}
+     *
+     * @param packet The {@code Packet} to turn into a {@code String}
+     * @return The {@code String} form of the {@code Packet}
+     */
+    public String getPacketAsWriteableString(Packet packet) {
 
-		errors.clear();
+        errors.clear();
 
-		ExtendedMap data = packet.getDataAsMap();
+        ExtendedMap data = packet.getDataAsMap();
 
-		String toWrite = "";
+        String toWrite = "";
 
-		for (int typeInt = 0; typeInt < data.typeSet().size(); typeInt++) {
+        for (int typeInt = 0; typeInt < data.typeSet().size(); typeInt++) {
 
-			Class<?> type = data.typeSet().toArray(new Class<?>[] {})[typeInt];
+            Class<?> type = data.typeSet().toArray(new Class<?>[]{})[typeInt];
 
-			DataType dataType = DataTypes.getDataType(type);
+            DataType dataType = DataTypes.getDataType(type);
 
-			if (dataType != null) {
+            if (dataType != null) {
 
-				for (int i = 0; i < data.size(type); i++) {
+                for (int i = 0; i < data.size(type); i++) {
 
-					String key = data.keySet(type).toArray(new String[] {})[i];
+                    String key = data.keySet(type).toArray(new String[]{})[i];
 
-					toWrite += dataType.getAbbreviation().toUpperCase()
-							.replace("\n", "$(nl);").replace("\r", "$(cr);")
-							.replace("|", "$(vl);")
-							+ ":"
-							+ key.replace("\n", "$(nl);")
-									.replace("\r", "$(cr);")
-									.replace("|", "$(vl);")
-							+ "="
-							+ dataType.writeType(data.get(type, key))
-									.replace("\n", "$(nl);")
-									.replace("\r", "$(cr);")
-									.replace("|", "$(vl);");
+                    toWrite += dataType.getAbbreviation().toUpperCase()
+                            .replace("\n", "$(nl);").replace("\r", "$(cr);")
+                            .replace("|", "$(vl);")
+                            + ":"
+                            + key.replace("\n", "$(nl);")
+                            .replace("\r", "$(cr);")
+                            .replace("|", "$(vl);")
+                            + "="
+                            + dataType.writeType(data.get(type, key))
+                            .replace("\n", "$(nl);")
+                            .replace("\r", "$(cr);")
+                            .replace("|", "$(vl);");
 
-					if (i < data.keySet(type).size() - 1
-							|| (i == data.keySet(type).size() - 1 && typeInt < data
-									.typeSet().size() - 1)) {
+                    if (i < data.keySet(type).size() - 1
+                            || (i == data.keySet(type).size() - 1 && typeInt < data
+                            .typeSet().size() - 1)) {
 
-						toWrite += "|";
-					}
-				}
+                        toWrite += "|";
+                    }
+                }
 
-			} else {
+            } else {
 
-				NullPointerException e = new NullPointerException("The class '"
-						+ type.getName()
-						+ "' does not have a DataType registered for it!");
+                NullPointerException e = new NullPointerException("The class '"
+                        + type.getName()
+                        + "' does not have a DataType registered for it!");
 
-				if (config.getIgnoreErrors()) {
+                if (config.getIgnoreErrors()) {
 
-					errors.add(e);
+                    errors.add(e);
 
-				} else {
+                } else {
 
-					throw e;
-				}
-			}
-		}
+                    throw e;
+                }
+            }
+        }
 
-		return toWrite;
-	}
+        return toWrite;
+    }
 
-	/**
-	 * Gets all of the errors thrown during the previous {@code Packet} to
-	 * {@code String} transformation. This will be empty if {@code ignoreErrors}
-	 * flag in the {@code PacketHandlerConfiguration} is {@code false}.
-	 * 
-	 * @return A {@code Throwable[]} containing all errors thrown during the
-	 *         previous transformation
-	 */
-	public Throwable[] getErrors() {
+    /**
+     * Gets all of the errors thrown during the previous {@code Packet} to
+     * {@code String} transformation. This will be empty if {@code ignoreErrors}
+     * flag in the {@code PacketHandlerConfiguration} is {@code false}.
+     *
+     * @return A {@code Throwable[]} containing all errors thrown during the
+     * previous transformation
+     */
+    public Throwable[] getErrors() {
 
-		return errors.toArray(new Throwable[] {});
-	}
+        return errors.toArray(new Throwable[]{});
+    }
 }

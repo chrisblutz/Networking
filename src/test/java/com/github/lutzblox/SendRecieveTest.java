@@ -9,162 +9,164 @@ import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 
+
 public class SendRecieveTest extends TestCase {
 
-	private boolean finished = false, errored = false;
-	private String errorMessage = "";
-	private int timesSent = 1;
+    private boolean finished = false, errored = false;
+    private String errorMessage = "";
+    private int timesSent = 1;
 
-	public SendRecieveTest(String name) {
+    public SendRecieveTest(String name) {
 
-		super(name);
-	}
+        super(name);
+    }
 
-	public static TestSuite suite() {
+    public static TestSuite suite() {
 
-		return new TestSuite(SendRecieveTest.class);
-	}
+        return new TestSuite(SendRecieveTest.class);
+    }
 
-	public void testSendReceive() {
+    public void testSendReceive() {
 
-		final Server server = new Server(12349, "SendRecieveTest");
-		server.addErrorReporter(ErrorReporterFactory.newInstance());
-		server.addNetworkListener(new ServerListener() {
+        final Server server = new Server(12349, "SendRecieveTest");
+        server.addErrorReporter(ErrorReporterFactory.newInstance());
+        server.addNetworkListener(new ServerListener() {
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-				System.out.println("Server: Successfully received packet!");
+                System.out.println("Server: Successfully received packet!");
 
-				if (timesSent < 10) {
+                if (timesSent < 10) {
 
-					timesSent++;
+                    timesSent++;
 
-					server.sendPacket(new Packet(), true);
-				}
-			}
+                    server.sendPacket(new Packet(), true);
+                }
+            }
 
-			@Override
-			public Packet onConnect(Connection c, Packet data) {
+            @Override
+            public Packet onConnect(Connection c, Packet data) {
 
-				System.out.println("Server: Connection received from IP "
-						+ c.getIp());
+                System.out.println("Server: Connection received from IP "
+                        + c.getIp());
 
-				data.putData("server-name", server.getServerName());
+                data.putData("server-name", server.getServerName());
 
-				return data;
-			}
+                return data;
+            }
 
-			@Override
-			public void onTimeout(Connection connection) {
-				
-				errored = true;
-				errorMessage = "Connection timed out!";
-				
-				finished = true;
-			}
+            @Override
+            public void onTimeout(Connection connection) {
 
-			@Override
-			public void onClientFailure(Connection c) {
-			}
-		});
+                errored = true;
+                errorMessage = "Connection timed out!";
 
-		final Client client = new Client("localhost", 12349);
-		client.addErrorReporter(ErrorReporterFactory.newInstance());
-		client.addNetworkListener(new ClientListener() {
+                finished = true;
+            }
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
+            @Override
+            public void onClientFailure(Connection c) {
 
-				System.out.println("Client: Successfully received packet!");
+            }
+        });
 
-				if (timesSent < 10) {
+        final Client client = new Client("localhost", 12349);
+        client.addErrorReporter(ErrorReporterFactory.newInstance());
+        client.addNetworkListener(new ClientListener() {
 
-					timesSent++;
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-					client.sendPacket(new Packet(), true);
-				}
-			}
+                System.out.println("Client: Successfully received packet!");
 
-			@Override
-			public void onConnect(Packet packet) {
+                if (timesSent < 10) {
 
-				System.out.println("Client: Successfully received packet!");
+                    timesSent++;
 
-				if (timesSent < 10) {
+                    client.sendPacket(new Packet(), true);
+                }
+            }
 
-					timesSent++;
+            @Override
+            public void onConnect(Packet packet) {
 
-					client.sendPacket(new Packet(), true);
-				}
-			}
+                System.out.println("Client: Successfully received packet!");
 
-			@Override
-			public void onTimeout(Connection connection) {
-				
-				errored = true;
-				errorMessage = "Connection timed out!";
-				
-				finished = true;
-			}
-		});
+                if (timesSent < 10) {
 
-		try {
+                    timesSent++;
 
-			System.out.println("Starting server...");
+                    client.sendPacket(new Packet(), true);
+                }
+            }
 
-			server.start();
+            @Override
+            public void onTimeout(Connection connection) {
 
-			System.out.println("Starting client...");
+                errored = true;
+                errorMessage = "Connection timed out!";
 
-			client.connect();
+                finished = true;
+            }
+        });
 
-		} catch (Exception e) {
+        try {
 
-			e.printStackTrace();
+            System.out.println("Starting server...");
 
-			errored = true;
-			errorMessage = e.getClass().getName();
+            server.start();
 
-			finished = true;
-		}
+            System.out.println("Starting client...");
 
-		while (true) {
+            client.connect();
 
-			try {
+        } catch (Exception e) {
 
-				Thread.sleep(100);
+            e.printStackTrace();
 
-			} catch (InterruptedException e) {
-			}
+            errored = true;
+            errorMessage = e.getClass().getName();
 
-			if (finished || timesSent >= 10) {
+            finished = true;
+        }
 
-				break;
-			}
-		}
+        while (true) {
 
-		try {
+            try {
 
-			client.close();
-			server.close();
+                Thread.sleep(100);
 
-		} catch (Exception e) {
+            } catch (InterruptedException e) {
+            }
 
-			e.printStackTrace();
+            if (finished || timesSent >= 10) {
 
-			errored = true;
-			errorMessage = e.getClass().getName();
-		}
+                break;
+            }
+        }
 
-		if (errored) {
+        try {
 
-			System.out.println("Errored - " + errorMessage);
-			fail();
+            client.close();
+            server.close();
 
-		} else {
+        } catch (Exception e) {
 
-			System.out.println("Success!");
-		}
-	}
+            e.printStackTrace();
+
+            errored = true;
+            errorMessage = e.getClass().getName();
+        }
+
+        if (errored) {
+
+            System.out.println("Errored - " + errorMessage);
+            fail();
+
+        } else {
+
+            System.out.println("Success!");
+        }
+    }
 }

@@ -11,184 +11,190 @@ import com.github.lutzblox.relay.RelayServer;
 import com.github.lutzblox.relay.listeners.RelayListener;
 import com.github.lutzblox.sockets.Connection;
 
+
 public class RelayTest extends TestCase {
 
-	private boolean finished = false, errored = false;
-	private String errorMessage = "";
+    private boolean finished = false, errored = false;
+    private String errorMessage = "";
 
-	public RelayTest(String name) {
+    public RelayTest(String name) {
 
-		super(name);
-	}
+        super(name);
+    }
 
-	public static TestSuite suite() {
+    public static TestSuite suite() {
 
-		return new TestSuite(RelayTest.class);
-	}
+        return new TestSuite(RelayTest.class);
+    }
 
-	public void testRelay() {
+    public void testRelay() {
 
-		final RelayServer server = new RelayServer(12352, "RelayTest");
-		server.addErrorReporter(ErrorReporterFactory.newInstance());
-		server.addRelayListener(new RelayListener() {
+        final RelayServer server = new RelayServer(12352, "RelayTest");
+        server.addErrorReporter(ErrorReporterFactory.newInstance());
+        server.addRelayListener(new RelayListener() {
 
-			@Override
-			public void onReceive(RelayServer server, Connection c, Packet data) {
+            @Override
+            public void onReceive(RelayServer server, Connection c, Packet data) {
 
-				System.out.println("Server received client 2's packet!");
-			}
+                System.out.println("Server received client 2's packet!");
+            }
 
-			@Override
-			public void onTimeout(RelayServer server, Connection c) {
-			}
+            @Override
+            public void onTimeout(RelayServer server, Connection c) {
 
-			@Override
-			public Packet onConnect(RelayServer server, Connection c,
-					Packet data) {
+            }
 
-				System.out.println("Connection received from IP " + c.getIp());
+            @Override
+            public Packet onConnect(RelayServer server, Connection c,
+                                    Packet data) {
 
-				if (server.getConnections().length > 0
-						&& c != server.getConnections()[0]
-						&& server.getGroups().length == 0) {
+                System.out.println("Connection received from IP " + c.getIp());
 
-					server.group("test", c, server.getConnections()[0]);
+                if (server.getConnections().length > 0
+                        && c != server.getConnections()[0]
+                        && server.getGroups().length == 0) {
 
-				} else if (server.getConnections().length > 1
-						&& server.getGroups().length == 0) {
+                    server.group("test", c, server.getConnections()[0]);
 
-					server.group(
-							"test",
-							c,
-							c != server.getConnections()[0] ? server
-									.getConnections()[0] : server
-									.getConnections()[1]);
-				}
+                } else if (server.getConnections().length > 1
+                        && server.getGroups().length == 0) {
 
-				return data;
-			}
-		});
+                    server.group(
+                            "test",
+                            c,
+                            c != server.getConnections()[0] ? server
+                                    .getConnections()[0] : server
+                                    .getConnections()[1]);
+                }
 
-		final RelayClient client1 = new RelayClient("localhost", 12352);
-		client1.addErrorReporter(ErrorReporterFactory.newInstance());
-		client1.addNetworkListener(new ClientListener() {
+                return data;
+            }
+        });
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
+        final RelayClient client1 = new RelayClient("localhost", 12352);
+        client1.addErrorReporter(ErrorReporterFactory.newInstance());
+        client1.addNetworkListener(new ClientListener() {
 
-				System.out.println("Received packet successfully in client 1!");
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-				finished = true;
-			}
+                System.out.println("Received packet successfully in client 1!");
 
-			@Override
-			public void onConnect(Packet packet) {
-			}
+                finished = true;
+            }
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
-		});
+            @Override
+            public void onConnect(Packet packet) {
 
-		final RelayClient client2 = new RelayClient("localhost", 12352);
-		client2.addErrorReporter(ErrorReporterFactory.newInstance());
-		client2.addNetworkListener(new ClientListener() {
+            }
 
-			@Override
-			public void onReceive(Connection connection, Packet packet) {
+            @Override
+            public void onTimeout(Connection connection) {
 
-				errored = true;
-				errorMessage = "Client 2 received a packet when it shouldn't have!";
+            }
+        });
 
-				finished = true;
-			}
+        final RelayClient client2 = new RelayClient("localhost", 12352);
+        client2.addErrorReporter(ErrorReporterFactory.newInstance());
+        client2.addNetworkListener(new ClientListener() {
 
-			@Override
-			public void onConnect(Packet packet) {
-			}
+            @Override
+            public void onReceive(Connection connection, Packet packet) {
 
-			@Override
-			public void onTimeout(Connection connection) {
-			}
-		});
+                errored = true;
+                errorMessage = "Client 2 received a packet when it shouldn't have!";
 
-		try {
+                finished = true;
+            }
 
-			System.out.println("Starting server...");
+            @Override
+            public void onConnect(Packet packet) {
 
-			server.start();
+            }
 
-			System.out.println("Starting client 1...");
+            @Override
+            public void onTimeout(Connection connection) {
 
-			client1.connect();
+            }
+        });
 
-			System.out.println("Starting client 2...");
+        try {
 
-			client2.connect();
+            System.out.println("Starting server...");
 
-			System.out.println("Waiting...");
+            server.start();
 
-			while (server.getConnections().length < 2) {
+            System.out.println("Starting client 1...");
 
-				try {
+            client1.connect();
 
-					Thread.sleep(100);
+            System.out.println("Starting client 2...");
 
-				} catch (Exception e) {
-				}
-			}
+            client2.connect();
 
-			System.out.println("Sending packet via client 2...");
+            System.out.println("Waiting...");
 
-			client2.sendPacket(new Packet(), false);
+            while (server.getConnections().length < 2) {
 
-		} catch (Exception e) {
+                try {
 
-			e.printStackTrace();
+                    Thread.sleep(100);
 
-			errored = true;
-			errorMessage = e.getClass().getName();
+                } catch (Exception e) {
+                }
+            }
 
-			finished = true;
-		}
+            System.out.println("Sending packet via client 2...");
 
-		while (true) {
+            client2.sendPacket(new Packet(), false);
 
-			try {
+        } catch (Exception e) {
 
-				Thread.sleep(100);
+            e.printStackTrace();
 
-			} catch (InterruptedException e) {
-			}
+            errored = true;
+            errorMessage = e.getClass().getName();
 
-			if (finished) {
+            finished = true;
+        }
 
-				break;
-			}
-		}
+        while (true) {
 
-		try {
+            try {
 
-			client1.close();
-			client2.close();
-			server.close();
+                Thread.sleep(100);
 
-		} catch (Exception e) {
+            } catch (InterruptedException e) {
+            }
 
-			e.printStackTrace();
+            if (finished) {
 
-			errored = true;
-			errorMessage = e.getClass().getName();
-		}
+                break;
+            }
+        }
 
-		if (errored) {
+        try {
 
-			System.out.println("Errored - " + errorMessage);
-			fail();
+            client1.close();
+            client2.close();
+            server.close();
 
-		} else {
+        } catch (Exception e) {
 
-			System.out.println("Success!");
-		}
-	}
+            e.printStackTrace();
+
+            errored = true;
+            errorMessage = e.getClass().getName();
+        }
+
+        if (errored) {
+
+            System.out.println("Errored - " + errorMessage);
+            fail();
+
+        } else {
+
+            System.out.println("Success!");
+        }
+    }
 }
