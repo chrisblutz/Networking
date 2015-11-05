@@ -1,13 +1,12 @@
 package com.github.lutzblox;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-import com.github.lutzblox.ClientListenable;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.states.State;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 
 /**
@@ -22,7 +21,7 @@ public class Client extends ClientListenable {
     private String ip;
     private Socket socket;
 
-    private Connection connection = Connection.getUnitializedConnection();
+    private Connection connection = Connection.getUninitializedConnection();
 
     private boolean open = false;
 

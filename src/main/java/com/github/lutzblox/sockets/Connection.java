@@ -568,7 +568,7 @@ public class Connection {
         }
     }
 
-    public static Connection getUnitializedConnection() {
+    public static Connection getUninitializedConnection() {
 
         return new Connection();
     }

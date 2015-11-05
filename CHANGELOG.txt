@@ -4,13 +4,17 @@
 + Added timeout option to Connections
 + Added error reporters as an alternative to simply printing the stack trace of an error
 + Added MUTUAL state for connections, meaning that the connection maintains a neutral state until it has a waiting packet or there is data to be read.
++ Added static method to retrieve local machine IP in Connection
++ Connections now calculate ping times on Packets expecting a response
 ~ The SaveMethod methods and Packet's getPacketFromString() now take Listenables as parameters, to assist with error reporting
 ~ The sendPacket() methods of Connection now takes a boolean called expectResponse.  This tells the Connection if it should set the timeout on the next read call or not.  If a response is expected, the timeout is set.  If one is not expected, no timeout is set to prevent unnecessary exceptions being thrown.
 ~ Changed method of detecting if the remote socket is closed to rely on interactions through the Connection by the programmer, rather than automated calls to write(), as these interfered with the timeout.  Whenever the programmer writes a packet or the Connection receives a packet, it will check.
 ~ A Connection object is now passed to the onReceive() method of NetworkListeners
 ~ ExtendedMap's generic type parameters no longer exist.  They are fixed and cannot be changed.  This is to assist with null catching on values
-~ Changed Maven groupId and package names from com.lutz.networking to com.github.lutzblox
+~ Changed Maven groupId and package names from com.lutz.networking to com.github.lutzblox.networking
 ~ Packet/String transformations are now handled by PacketReaders/Writers.  These classes allow for more configuration of how these transformations are done.
+~ Switched from Maven to Gradle
+~ Clients/Servers now use uninitialized Connections rather than null Connections to prevent NullPointerExceptions
 * Fixed null objects crashing connections with NullPointerExceptions - null values are now represented by Null.NULL when being sent.  They are converted back when read.
 
 ========[  KEY  ]========

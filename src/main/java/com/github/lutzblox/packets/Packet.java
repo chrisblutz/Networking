@@ -120,7 +120,7 @@ public class Packet {
      */
     public void putData(String key, Object value) {
 
-        data.put(value != null ? value.getClass() : Null.class, key, value);
+        data.put(value != null ? value.getClass() : Null.class, key, (value != null ? value : new Null()));
     }
 
     /**
@@ -130,8 +130,7 @@ public class Packet {
      */
     public void putData(PacketData packetData) {
 
-        data.put(packetData.getValue().getClass(), packetData.getKey(),
-                packetData.getValue());
+        putData(packetData.getKey(), packetData.getValue());
     }
 
     /**
@@ -143,7 +142,16 @@ public class Packet {
      */
     public Object getData(String key) {
 
-        return data.get(key);
+        Object o = data.get(key);
+
+        if(o != new Null()){
+
+            return o;
+
+        }else{
+
+            return null;
+        }
     }
 
     /**
@@ -160,7 +168,7 @@ public class Packet {
 
             for (String key : data.keySet(type)) {
 
-                packetData.add(new PacketData(key, data.get(key)));
+                packetData.add(new PacketData(key, getData(key)));
             }
         }
 

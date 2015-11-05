@@ -28,7 +28,7 @@ public class ExtendedMap {
 
         if (object == null) {
 
-            object = Null.NULL;
+            return;
         }
 
         if (!data.containsKey(type)) {
@@ -283,14 +283,7 @@ public class ExtendedMap {
 
                 Object o = data.get(type).get(key);
 
-                if (o == Null.NULL) {
-
-                    return null;
-
-                } else {
-
-                    return o;
-                }
+                return o;
             }
         }
 
@@ -311,14 +304,7 @@ public class ExtendedMap {
 
                 Object o = getType(type).get(key);
 
-                if (o == Null.NULL) {
-
-                    return null;
-
-                } else {
-
-                    return o;
-                }
+                return o;
             }
         }
 
