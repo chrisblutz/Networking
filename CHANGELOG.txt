@@ -1,4 +1,4 @@
-========[ 1.0.1 ]========
+========[ 1.1.0 ]========
 + Added database server/client
 + Added relay server/client.  These allow two or more clients to communicate with each other via a single server.
 + Added timeout option to Connections
