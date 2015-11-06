@@ -1,15 +1,15 @@
 package com.github.lutzblox;
 
+import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.sockets.Connection;
+
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.github.lutzblox.exceptions.NetworkException;
-import com.github.lutzblox.packets.Packet;
-import com.github.lutzblox.sockets.Connection;
 
 
 /**

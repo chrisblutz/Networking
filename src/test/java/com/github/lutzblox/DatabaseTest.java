@@ -107,7 +107,7 @@ public class DatabaseTest extends TestCase {
 		if (errored) {
 
 			System.out.println("Errored - " + errorMessage);
-			fail();
+			fail(errorMessage);
 
 		} else {
 

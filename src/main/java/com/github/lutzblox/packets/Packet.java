@@ -1,11 +1,11 @@
 package com.github.lutzblox.packets;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.wrappers.Null;
 import com.github.lutzblox.utils.ExtendedMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -134,6 +134,19 @@ public class Packet {
     }
 
     /**
+     * Adds data pieces to this {@code Packet}
+     *
+     * @param packetData The data pieces to add
+     */
+    public void putData(PacketData... packetData) {
+
+        for (PacketData d : packetData) {
+
+            putData(d.getKey(), d.getValue());
+        }
+    }
+
+    /**
      * Gets the value for the specified key
      *
      * @param key The key to check against
@@ -144,11 +157,11 @@ public class Packet {
 
         Object o = data.get(key);
 
-        if(o != new Null()){
+        if (o != new Null()) {
 
             return o;
 
-        }else{
+        } else {
 
             return null;
         }

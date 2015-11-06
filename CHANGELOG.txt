@@ -5,7 +5,8 @@
 + Added error reporters as an alternative to simply printing the stack trace of an error
 + Added MUTUAL state for connections, meaning that the connection maintains a neutral state until it has a waiting packet or there is data to be read.
 + Added static method to retrieve local machine IP in Connection
-+ Connections now calculate ping times on Packets expecting a response
++ Connections now calculate ping times on Packets expecting a response (they also calculate a running average)
++ Added ConstantPingClients and ConstantPingServers that are in constant communication with each other
 ~ The SaveMethod methods and Packet's getPacketFromString() now take Listenables as parameters, to assist with error reporting
 ~ The sendPacket() methods of Connection now takes a boolean called expectResponse.  This tells the Connection if it should set the timeout on the next read call or not.  If a response is expected, the timeout is set.  If one is not expected, no timeout is set to prevent unnecessary exceptions being thrown.
 ~ Changed method of detecting if the remote socket is closed to rely on interactions through the Connection by the programmer, rather than automated calls to write(), as these interfered with the timeout.  Whenever the programmer writes a packet or the Connection receives a packet, it will check.

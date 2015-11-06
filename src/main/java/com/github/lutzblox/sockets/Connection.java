@@ -1,19 +1,5 @@
 package com.github.lutzblox.sockets;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.lutzblox.ClientListenable;
 import com.github.lutzblox.Listenable;
 import com.github.lutzblox.ServerListenable;
@@ -22,6 +8,15 @@ import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
 import com.github.lutzblox.states.State;
+
+import java.io.*;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -45,8 +40,7 @@ public class Connection {
 
     private Packet waiting = null;
 
-    private long ping = -1;
-    private long pingStart = 0;
+    private long ping = -1, pingStart = 0, pingTotal = 0, pingTimes = 0;
 
     private boolean running = false, serverSide = false, firstReceive = true,
             firstSend = true, shouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true;
@@ -293,6 +287,18 @@ public class Connection {
         return ping;
     }
 
+    public long getAveragePing() {
+
+        if (pingTimes > 0) {
+
+            return pingTotal / pingTimes;
+
+        } else {
+
+            return 0;
+        }
+    }
+
     private final void listenerRun() {
 
         try {
@@ -448,6 +454,8 @@ public class Connection {
                             if (shouldRespond) {
 
                                 ping = System.currentTimeMillis() - pingStart;
+                                pingTotal += ping;
+                                pingTimes++;
                             }
 
                         } catch (Exception e) {
