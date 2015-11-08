@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 
 
 /**
- * This class represents the client-side portion of a server <-> client
+ * This class represents the client-side portion of a server &lt;-&gt; client
  * relationship.
  *
  * @author Christopher Lutz

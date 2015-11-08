@@ -1,7 +1,5 @@
 package com.github.lutzblox.databases;
 
-import java.io.IOException;
-
 import com.github.lutzblox.Server;
 import com.github.lutzblox.databases.saving.SaveMethod;
 import com.github.lutzblox.exceptions.reporters.ErrorReporter;
@@ -10,9 +8,11 @@ import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.utils.ExtendedMap;
 
+import java.io.IOException;
+
 
 /**
- * This class represents the client-side portion of a database server <-> client
+ * This class represents the client-side portion of a database server &lt;-&gt; client
  * relationship.
  *
  * @author Christopher Lutz

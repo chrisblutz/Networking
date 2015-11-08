@@ -11,10 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * This class represents the client-side portion of a server &lt;-&gt; client
+ * relationship that constantly pings each other.
+ *
+ * @author Christopher Lutz
+ */
 public class ConstantPingClient extends Client {
 
     private List<Packet> waiting = new ArrayList<Packet>();
 
+    /**
+     * Creates a {@code ConstantPingClient} instance that is set up to connect to the
+     * specified port on the specified IP
+     *
+     * @param ip   The IP of the server to connect to when {@code connect()} is
+     *             called
+     * @param port The port of the server to connect to when {@code connect()} is
+     *             called
+     */
     public ConstantPingClient(String ip, int port) {
 
         super(ip, port);
@@ -58,6 +73,9 @@ public class ConstantPingClient extends Client {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void fireListenerOnReceive(Connection connection, Packet packet) {
 

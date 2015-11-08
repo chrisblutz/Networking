@@ -13,7 +13,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
- * This class represents the server-side portion of a server <-> client
+ * This class represents the server-side portion of a server &lt;-&gt; client
  * relationship.
  *
  * @author Christopher Lutz

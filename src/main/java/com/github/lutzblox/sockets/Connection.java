@@ -282,11 +282,21 @@ public class Connection {
         }
     }
 
+    /**
+     * Gets the time between the last client-server communication in milliseconds
+     *
+     * @return The ping of the {@code Connection} in milliseconds
+     */
     public long getPing() {
 
         return ping;
     }
 
+    /**
+     * Gets the average time between client-server communications in milliseconds
+     *
+     * @return The average ping of the {@code Connection} in milliseconds;
+     */
     public long getAveragePing() {
 
         if (pingTimes > 0) {
@@ -564,6 +574,11 @@ public class Connection {
         }
     }
 
+    /**
+     * Gets the IP of the local machine
+     *
+     * @return The local IP as a {@code String}
+     */
     public static String getLocalIp() {
 
         try {
@@ -576,6 +591,11 @@ public class Connection {
         }
     }
 
+    /**
+     * Gets an uninitialized instance of {@code Connection} with no open ports or listening {@code Threads}
+     *
+     * @return An uninitialized {@code Connection} with no open ports or listening {@code Threads}
+     */
     public static Connection getUninitializedConnection() {
 
         return new Connection();

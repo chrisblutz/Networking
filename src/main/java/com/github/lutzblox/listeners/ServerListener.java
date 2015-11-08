@@ -14,6 +14,8 @@ public interface ServerListener extends NetworkListener {
     /**
      * Called when a new {@code Client} connects to this {@code Server}
      *
+     * @param c    The {@code Connection} that was connected
+     * @param data The {@code Packet} that will be sent across to the {@code Client}
      * @return The {@code Packet} to send (this will be the packet passed to the
      * {@code Client}'s {@code onConnect()} listener method)
      */

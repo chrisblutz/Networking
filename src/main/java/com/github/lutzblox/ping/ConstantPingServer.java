@@ -13,25 +13,63 @@ import java.util.List;
 import java.util.Map;
 
 
+/**
+ * This class represents the server-side portion of a server &lt;-&gt; client
+ * relationship that constantly pings each other.
+ *
+ * @author Christopher Lutz
+ */
 public class ConstantPingServer extends Server {
 
     private Map<Connection, List<Packet>> waiting = new HashMap<Connection, List<Packet>>();
 
+    /**
+     * Create a new {@code ConstantPingServer} instance with the specified parameters
+     *
+     * @param port       The port to open the {@code ConstantPingServer} on
+     * @param serverName The name of this {@code ConstantPingServer}
+     */
     public ConstantPingServer(int port, String serverName) {
 
         super(port, serverName);
     }
 
+    /**
+     * Create a new {@code ConstantPingServer} instance with the specified parameters
+     *
+     * @param port           The port to open the {@code ConstantPingServer} on
+     * @param serverName     The name of this {@code ConstantPingServer}
+     * @param maxConnections The maximum number of {@code Client} connections to be
+     *                       accepted by this {@code ConstantPingServer}
+     */
     public ConstantPingServer(int port, String serverName, int maxConnections) {
 
         super(port, serverName, maxConnections);
     }
 
+    /**
+     * Create a new {@code ConstantPingServer} instance with the specified parameters
+     *
+     * @param port       The port to open the {@code ConstantPingServer} on
+     * @param serverName The name of this {@code ConstantPingServer}
+     * @param failCheck  The loop delay in milliseconds to check for {@code Clients}
+     *                   that have disconnected or errored
+     */
     public ConstantPingServer(int port, String serverName, long failCheck) {
 
         super(port, serverName, failCheck);
     }
 
+    /**
+     * Create a new {@code ConstantPingServer} instance with the specified parameters
+     *
+     * @param port           The port to open the {@code ConstantPingServer} on
+     * @param serverName     The name of this {@code ConstantPingServer}
+     * @param maxConnections The maximum number of {@code Client} connections to be
+     *                       accepted by this {@code ConstantPingServer}
+     * @param failCheck      The loop delay in milliseconds to check for {@code Clients}
+     *                       that have disconnected or errored
+     */
     public ConstantPingServer(int port, String serverName, int maxConnections, long failCheck) {
 
         super(port, serverName, maxConnections, failCheck);
@@ -47,9 +85,9 @@ public class ConstantPingServer extends Server {
     @Override
     public void sendPacket(Packet p, boolean expectResponse) {
 
-        for(Connection c : getConnections()){
+        for (Connection c : getConnections()) {
 
-            if(!waiting.containsKey(c)){
+            if (!waiting.containsKey(c)) {
 
                 waiting.put(c, new ArrayList<Packet>());
             }
@@ -84,6 +122,9 @@ public class ConstantPingServer extends Server {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void fireListenerOnReceive(Connection connection, Packet packet) {
 
@@ -97,7 +138,7 @@ public class ConstantPingServer extends Server {
 
         Packet toSend = new Packet();
 
-        if(waiting.containsKey(connection)) {
+        if (waiting.containsKey(connection)) {
 
             List<Packet> waitingList = waiting.get(connection);
 

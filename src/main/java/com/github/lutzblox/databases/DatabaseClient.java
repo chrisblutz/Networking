@@ -1,8 +1,5 @@
 package com.github.lutzblox.databases;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-
 import com.github.lutzblox.Client;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.exceptions.reporters.ErrorReporter;
@@ -10,9 +7,12 @@ import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+
 
 /**
- * This class represents the client-side portion of a database server <-> client
+ * This class represents the client-side portion of a database server &lt;-&gt; client
  * relationship.
  *
  * @author Christopher Lutz
