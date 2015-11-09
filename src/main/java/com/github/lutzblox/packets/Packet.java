@@ -2,6 +2,7 @@ package com.github.lutzblox.packets;
 
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.wrappers.Null;
+import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.utils.ExtendedMap;
 
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ public class Packet {
         } else {
 
             throw new NetworkException(
-                    "The constructor of Packet requires the String[] and Object[] to have the same lengths!");
+                    Localization.getMessage(Localization.PACKET_CONSTRUCTOR));
         }
     }
 
@@ -276,45 +277,5 @@ public class Packet {
 
         return this.getClass().getName() + "[Size: " + data.size()
                 + ", Vital: " + isVital() + "]";
-    }
-
-    /**
-     * Takes this {@code Packet} and formats it into a {@code String} for
-     * writing/sending
-     *
-     * @return The formatted {@code String}
-     * @deprecated This functionality has been moved to
-     * {@code PacketWriter.getPacketAsWriteableString()}.
-     * {@code PacketWriter} allows more configuration with how the
-     * {@code Packet} to {@code String} transformations are handled. <br>
-     * NOTE: Using this method will not report any errors because
-     * the PacketWriter's error list is inaccessible for reporting.
-     * To retrieve errors to report them, use {@code PacketWriter}'s
-     * {@code getPacketAsWriteableString()} method and then retrieve
-     * any errors using its {@code getErrors()} method.
-     */
-    public String getPacketAsWriteableString() {
-
-        return new PacketWriter().getPacketAsWriteableString(this);
-    }
-
-    /**
-     * Parses a {@code Packet} from a {@code String}
-     *
-     * @param toParse The {@code String} to parse
-     * @return The parsed {@code Packet}
-     * @deprecated This functionality has been moved to
-     * {@code PacketReader.getPacketFromString()}.
-     * {@code PacketReader} allows more configuration with how the
-     * {@code String} to {@code Packet} transformations are handled. <br>
-     * NOTE: Using this method will not report any errors because
-     * the PacketReader's error list is inaccessible for reporting.
-     * To retrieve errors to report them, use {@code PacketReader}'s
-     * {@code getPacketFromString()} method and then retrieve any
-     * errors using its {@code getErrors()} method.
-     */
-    public static Packet getPacketFromString(String toParse) {
-
-        return new PacketReader().getPacketFromString(toParse);
     }
 }

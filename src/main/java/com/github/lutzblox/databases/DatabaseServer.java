@@ -15,6 +15,8 @@ import java.io.IOException;
  * This class represents the client-side portion of a database server &lt;-&gt; client
  * relationship.
  *
+ * @deprecated This class will be removed in 1.2 in favor of more reliable SQL database support
+ *
  * @author Christopher Lutz
  */
 public class DatabaseServer {

@@ -7,6 +7,7 @@ import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
+import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.states.State;
 
 import java.io.*;
@@ -63,6 +64,8 @@ public class Connection {
     public Connection(Listenable listenable, Socket socket, State state,
                       boolean serverSide) {
 
+        System.out.println(Localization.getMessage("test"));
+
         this.listenable = listenable;
         this.socket = socket;
         this.mainState = state;
@@ -85,8 +88,7 @@ public class Connection {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
 
-                NetworkException ex = new NetworkException(t.getName()
-                        + " has errored!", e);
+                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, t.getName()), e);
 
                 Connection.this.listenable.report(ex);
             }
@@ -124,8 +126,7 @@ public class Connection {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
 
-                NetworkException ex = new NetworkException(t.getName()
-                        + " has errored!", e);
+                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, t.getName()), e);
 
                 Connection.this.listenable.report(ex);
             }

@@ -2,6 +2,7 @@ package com.github.lutzblox;
 
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.sockets.Connection;
 
 import java.io.IOException;
@@ -161,8 +162,7 @@ public class Server extends ServerListenable {
             @Override
             public void uncaughtException(Thread arg0, Throwable arg1) {
 
-                NetworkException ex = new NetworkException(arg0.getName()
-                        + " has errored!", arg1);
+                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, arg0.getName()), arg1);
 
                 Server.this.report(ex);
             }
@@ -226,8 +226,7 @@ public class Server extends ServerListenable {
             @Override
             public void uncaughtException(Thread arg0, Throwable arg1) {
 
-                NetworkException ex = new NetworkException(arg0.getName()
-                        + " has errored!", arg1);
+                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, arg0.getName()), arg1);
 
                 Server.this.report(ex);
             }

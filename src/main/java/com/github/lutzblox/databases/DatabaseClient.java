@@ -5,6 +5,7 @@ import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.sockets.Connection;
 
 import java.io.IOException;
@@ -14,6 +15,8 @@ import java.net.UnknownHostException;
 /**
  * This class represents the client-side portion of a database server &lt;-&gt; client
  * relationship.
+ *
+ * @deprecated This class will be removed in 1.2 in favor of more reliable SQL database support
  *
  * @author Christopher Lutz
  */
@@ -65,7 +68,7 @@ public class DatabaseClient {
             public void onTimeout(Connection connection) {
 
                 NetworkException ex = new NetworkException(
-                        "The database server took too long to respond!");
+                        Localization.getMessage(Localization.SERVER_TIMEOUT));
 
                 client.report(ex);
 
