@@ -64,8 +64,6 @@ public class Connection {
     public Connection(Listenable listenable, Socket socket, State state,
                       boolean serverSide) {
 
-        System.out.println(Localization.getMessage("test"));
-
         this.listenable = listenable;
         this.socket = socket;
         this.mainState = state;
