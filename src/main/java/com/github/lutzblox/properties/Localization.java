@@ -15,6 +15,7 @@ public class Localization {
     public static final String UNREADABLE_PACKET = "unreadable_packet";
 
     private static boolean loaded = false;
+    private static String locale = null;
     private static Properties properties = new Properties();
 
     public static String getMessage(String id, String... args) {
@@ -45,7 +46,7 @@ public class Localization {
 
         Locale l = Locale.getDefault();
 
-        String locale = l.getLanguage() + "_" + l.getCountry();
+        locale = l.getLanguage() + "_" + l.getCountry();
 
         InputStream propInput = Localization.class.getResourceAsStream("/locale/" + locale + ".properties");
 
@@ -57,7 +58,7 @@ public class Localization {
 
                 loaded = true;
 
-            }catch(Exception e){
+            } catch (Exception e) {
 
                 e.printStackTrace();
             }
@@ -66,5 +67,15 @@ public class Localization {
 
             new FileNotFoundException("No localization file found for " + locale + " in /locale/ inside the Networking jar file!").printStackTrace();
         }
+    }
+
+    public static String getLocale() {
+
+        if (!loaded || locale == null) {
+
+            load();
+        }
+
+        return locale;
     }
 }

@@ -12,7 +12,6 @@ public class ConstantPingTest extends TestCase {
 
     private boolean finished = false, errored = false;
     private String errorMessage = "";
-    private long startTime = 0;
 
     public ConstantPingTest(String name) {
 
