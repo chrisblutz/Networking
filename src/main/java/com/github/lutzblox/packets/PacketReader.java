@@ -1,9 +1,9 @@
 package com.github.lutzblox.packets;
 
+import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
-import com.github.lutzblox.properties.Localization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +106,7 @@ public class PacketReader {
 
                 } else {
 
-                    NetworkException e = new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET));
+                    NetworkException e = Errors.getUnreadablePacket();
 
                     if (config.getIgnoreErrors()) {
 
@@ -120,7 +120,7 @@ public class PacketReader {
 
             } else {
 
-                NetworkException e = new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET));
+                NetworkException e = Errors.getUnreadablePacket();
 
                 if (config.getIgnoreErrors()) {
 

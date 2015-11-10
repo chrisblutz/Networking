@@ -65,7 +65,25 @@ public class Localization {
 
         } else {
 
-            new FileNotFoundException("No localization file found for " + locale + " in /locale/ inside the Networking jar file!").printStackTrace();
+            propInput = Localization.class.getResourceAsStream("/locale/default.properties");
+
+            if (propInput != null) {
+
+                try {
+
+                    properties.load(propInput);
+
+                    loaded = true;
+
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                new FileNotFoundException("Localization was not loaded correctly!  No localization for '" + getLocale() + "' and no default localizations could be found!").printStackTrace();
+            }
         }
     }
 

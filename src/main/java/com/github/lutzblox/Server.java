@@ -1,8 +1,7 @@
 package com.github.lutzblox;
 
-import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
-import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.sockets.Connection;
 
 import java.io.IOException;
@@ -162,9 +161,7 @@ public class Server extends ServerListenable {
             @Override
             public void uncaughtException(Thread arg0, Throwable arg1) {
 
-                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, arg0.getName()), arg1);
-
-                Server.this.report(ex);
+                Errors.threadErrored(arg0.getName(), Server.this);
             }
         });
         incoming.setName("Incoming Connection Monitor: Server '"
@@ -226,9 +223,7 @@ public class Server extends ServerListenable {
             @Override
             public void uncaughtException(Thread arg0, Throwable arg1) {
 
-                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, arg0.getName()), arg1);
-
-                Server.this.report(ex);
+                Errors.threadErrored(arg0.getName(), Server.this);
             }
         });
         checkFailed.setName("Failed Client Monitor: Server '" + getServerName()

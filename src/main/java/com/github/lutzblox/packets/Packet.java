@@ -1,8 +1,7 @@
 package com.github.lutzblox.packets;
 
-import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.datatypes.wrappers.Null;
-import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.utils.ExtendedMap;
 
 import java.util.ArrayList;
@@ -95,8 +94,7 @@ public class Packet {
 
         } else {
 
-            throw new NetworkException(
-                    Localization.getMessage(Localization.PACKET_CONSTRUCTOR));
+            Errors.invalidPacketConstructor();
         }
     }
 

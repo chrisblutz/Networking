@@ -1,11 +1,10 @@
 package com.github.lutzblox.databases;
 
 import com.github.lutzblox.Client;
-import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.packets.Packet;
-import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.sockets.Connection;
 
 import java.io.IOException;
@@ -67,10 +66,7 @@ public class DatabaseClient {
             @Override
             public void onTimeout(Connection connection) {
 
-                NetworkException ex = new NetworkException(
-                        Localization.getMessage(Localization.SERVER_TIMEOUT));
-
-                client.report(ex);
+                Errors.serverTimedOut(client);
 
                 recentValue = null;
                 updated = true;

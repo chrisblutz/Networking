@@ -3,11 +3,10 @@ package com.github.lutzblox.sockets;
 import com.github.lutzblox.ClientListenable;
 import com.github.lutzblox.Listenable;
 import com.github.lutzblox.ServerListenable;
-import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
-import com.github.lutzblox.properties.Localization;
 import com.github.lutzblox.states.State;
 
 import java.io.*;
@@ -86,9 +85,7 @@ public class Connection {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
 
-                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, t.getName()), e);
-
-                Connection.this.listenable.report(ex);
+                Errors.threadErrored(t.getName(), Connection.this.listenable);
             }
         });
         listener.setName("Packet Listener: "
@@ -124,9 +121,7 @@ public class Connection {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
 
-                NetworkException ex = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, t.getName()), e);
-
-                Connection.this.listenable.report(ex);
+                Errors.threadErrored(t.getName(), Connection.this.listenable);
             }
         });
         connCheck.setName("Connection Check: " + (serverSide ? "Server" : "Client") + " on IP " + getIp());
