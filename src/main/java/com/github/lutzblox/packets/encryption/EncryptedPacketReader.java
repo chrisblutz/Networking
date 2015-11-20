@@ -43,7 +43,10 @@ public class EncryptedPacketReader extends PacketReader {
                         cipher.doFinal(new Base64().decode(toParse.getBytes())))
                         .replace("$(enc);", ":ENC:");
 
-                return super.getPacketFromString(decrypted);
+                Packet p = super.getPacketFromString(decrypted);
+                p.setEncrypted(true);
+
+                return p;
 
             } catch (Exception e) {
 

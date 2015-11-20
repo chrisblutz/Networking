@@ -242,12 +242,12 @@ public class Packet {
         return isVital;
     }
 
-    public void setEncrypt(boolean encrypt){
+    public void setEncrypted(boolean encrypt){
 
         this.encrypt = encrypt;
     }
 
-    public boolean shouldEncrypt(){
+    public boolean getEncrypted(){
 
         return encrypt;
     }

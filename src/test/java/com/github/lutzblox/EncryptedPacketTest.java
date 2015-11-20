@@ -45,7 +45,7 @@ public class EncryptedPacketTest extends TestCase {
                         + c.getIp());
 
                 data.putData("testKey", "testValue");
-                data.setEncrypt(true);
+                data.setEncrypted(true);
 
                 return data;
             }

@@ -361,7 +361,7 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (p.shouldEncrypt()) {
+                            if (p.getEncrypted()) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(p);
                                 errors = encryptedWriter.getErrors();
@@ -402,7 +402,7 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (waiting.shouldEncrypt()) {
+                            if (waiting.getEncrypted()) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(waiting);
                                 errors = encryptedWriter.getErrors();
@@ -438,7 +438,7 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (vitalDropped.get(0).shouldEncrypt()) {
+                            if (vitalDropped.get(0).getEncrypted()) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(vitalDropped.get(0));
                                 errors = encryptedWriter.getErrors();
