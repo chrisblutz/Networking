@@ -7,6 +7,8 @@ import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
+import com.github.lutzblox.packets.encryption.EncryptedPacketReader;
+import com.github.lutzblox.packets.encryption.EncryptedPacketWriter;
 import com.github.lutzblox.states.State;
 
 import java.io.*;
@@ -49,6 +51,8 @@ public class Connection {
 
     private PacketReader packetReader;
     private PacketWriter packetWriter;
+    private EncryptedPacketReader encryptedReader;
+    private EncryptedPacketWriter encryptedWriter;
 
     /**
      * Creates a new {@code Connection} with the specified parameters
@@ -71,6 +75,10 @@ public class Connection {
 
         packetReader = new PacketReader();
         packetWriter = new PacketWriter();
+        encryptedReader = new EncryptedPacketReader();
+        encryptedReader.setListenable(listenable);
+        encryptedWriter = new EncryptedPacketWriter();
+        encryptedWriter.setListenable(listenable);
 
         listener = new Thread() {
 
@@ -85,7 +93,7 @@ public class Connection {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
 
-                Errors.threadErrored(t.getName(), Connection.this.listenable);
+                Errors.threadErrored(t.getName(), Connection.this.listenable, e);
             }
         });
         listener.setName("Packet Listener: "
@@ -121,7 +129,7 @@ public class Connection {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
 
-                Errors.threadErrored(t.getName(), Connection.this.listenable);
+                Errors.threadErrored(t.getName(), Connection.this.listenable, e);
             }
         });
         connCheck.setName("Connection Check: " + (serverSide ? "Server" : "Client") + " on IP " + getIp());
@@ -350,15 +358,29 @@ public class Connection {
                                 p.putData(Packet.EMPTY_PACKET);
                             }
 
-                            out.println(packetWriter
-                                    .getPacketAsWriteableString(p));
+                            String toWrite;
+                            Throwable[] errors;
+
+                            if (p.shouldEncrypt()) {
+
+                                toWrite = encryptedWriter.getPacketAsWriteableString(p);
+                                errors = encryptedWriter.getErrors();
+
+                            } else {
+
+                                toWrite = packetWriter
+                                        .getPacketAsWriteableString(p);
+                                errors = packetWriter.getErrors();
+                            }
+
+                            out.println(toWrite);
 
                             if (shouldRespond) {
 
                                 pingStart = System.currentTimeMillis();
                             }
 
-                            for (Throwable t : packetWriter.getErrors()) {
+                            for (Throwable t : errors) {
 
                                 listenable.report(t);
                             }
@@ -377,10 +399,24 @@ public class Connection {
 
                         } else if (waiting != null) {
 
-                            out.println(packetWriter
-                                    .getPacketAsWriteableString(waiting));
+                            String toWrite;
+                            Throwable[] errors;
 
-                            for (Throwable t : packetWriter.getErrors()) {
+                            if (waiting.shouldEncrypt()) {
+
+                                toWrite = encryptedWriter.getPacketAsWriteableString(waiting);
+                                errors = encryptedWriter.getErrors();
+
+                            } else {
+
+                                toWrite = packetWriter
+                                        .getPacketAsWriteableString(waiting);
+                                errors = packetWriter.getErrors();
+                            }
+
+                            out.println(toWrite);
+
+                            for (Throwable t : errors) {
 
                                 listenable.report(t);
                             }
@@ -399,11 +435,24 @@ public class Connection {
 
                         } else if (waiting == null && vitalDropped.size() > 0) {
 
-                            out.println(packetWriter
-                                    .getPacketAsWriteableString(vitalDropped
-                                            .get(0)));
+                            String toWrite;
+                            Throwable[] errors;
 
-                            for (Throwable t : packetWriter.getErrors()) {
+                            if (vitalDropped.get(0).shouldEncrypt()) {
+
+                                toWrite = encryptedWriter.getPacketAsWriteableString(vitalDropped.get(0));
+                                errors = encryptedWriter.getErrors();
+
+                            } else {
+
+                                toWrite = packetWriter
+                                        .getPacketAsWriteableString(vitalDropped.get(0));
+                                errors = packetWriter.getErrors();
+                            }
+
+                            out.println(toWrite);
+
+                            for (Throwable t : errors) {
 
                                 listenable.report(t);
                             }
@@ -480,10 +529,22 @@ public class Connection {
 
                             if (!readStr.toString().equals("")) {
 
-                                final Packet p = packetReader
-                                        .getPacketFromString(readStr);
+                                Packet p;
+                                Throwable[] errors;
 
-                                for (Throwable t : packetReader.getErrors()) {
+                                if (readStr.startsWith(":ENC:")) {
+
+                                    p = encryptedReader.getPacketFromString(readStr);
+                                    errors = encryptedReader.getErrors();
+
+                                } else {
+
+                                    p = packetReader
+                                            .getPacketFromString(readStr);
+                                    errors = packetReader.getErrors();
+                                }
+
+                                for (Throwable t : errors) {
 
                                     listenable.report(t);
                                 }
@@ -527,7 +588,11 @@ public class Connection {
 
             close();
 
-        } catch (Throwable e) {
+        } catch (
+                Throwable e
+                )
+
+        {
 
             boolean close = true;
 
@@ -566,6 +631,7 @@ public class Connection {
                 }
             }
         }
+
     }
 
     /**

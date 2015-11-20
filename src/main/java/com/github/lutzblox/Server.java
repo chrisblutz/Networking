@@ -161,7 +161,7 @@ public class Server extends ServerListenable {
             @Override
             public void uncaughtException(Thread arg0, Throwable arg1) {
 
-                Errors.threadErrored(arg0.getName(), Server.this);
+                Errors.threadErrored(arg0.getName(), Server.this, arg1);
             }
         });
         incoming.setName("Incoming Connection Monitor: Server '"
@@ -223,7 +223,7 @@ public class Server extends ServerListenable {
             @Override
             public void uncaughtException(Thread arg0, Throwable arg1) {
 
-                Errors.threadErrored(arg0.getName(), Server.this);
+                Errors.threadErrored(arg0.getName(), Server.this, arg1);
             }
         });
         checkFailed.setName("Failed Client Monitor: Server '" + getServerName()

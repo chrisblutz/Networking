@@ -106,7 +106,7 @@ public class PacketReader {
 
                 } else {
 
-                    NetworkException e = Errors.getUnreadablePacket();
+                    NetworkException e = Errors.getUnreadablePacket(new NetworkException(""));
 
                     if (config.getIgnoreErrors()) {
 
@@ -120,7 +120,7 @@ public class PacketReader {
 
             } else {
 
-                NetworkException e = Errors.getUnreadablePacket();
+                NetworkException e = Errors.getUnreadablePacket(new NetworkException(""));
 
                 if (config.getIgnoreErrors()) {
 

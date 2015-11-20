@@ -6,9 +6,9 @@ import com.github.lutzblox.properties.Localization;
 
 public class Errors {
 
-    public static void threadErrored(String threadName, Listenable listenable) {
+    public static void threadErrored(String threadName, Listenable listenable, Throwable parent) {
 
-        NetworkException ex = getThreadErrored(threadName);
+        NetworkException ex = getThreadErrored(threadName, parent);
 
         if (listenable != null) {
 
@@ -20,19 +20,26 @@ public class Errors {
         }
     }
 
-    public static void threadErrored(String threadName) {
+    public static void threadErrored(String threadName, Throwable parent) {
 
         threadErrored(threadName, null);
     }
 
-    public static NetworkException getThreadErrored(String threadName) {
+    public static NetworkException getThreadErrored(String threadName, Throwable parent) {
 
-        return new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, threadName));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, threadName)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
     }
 
-    public static void serverTimedOut(Listenable listenable) {
+    public static void serverTimedOut(Listenable listenable, Throwable parent) {
 
-        NetworkException ex = getServerTimedOut();
+        NetworkException ex = getServerTimedOut(parent);
 
         if (listenable != null) {
 
@@ -44,19 +51,26 @@ public class Errors {
         }
     }
 
-    public static void serverTimedOut() {
+    public static void serverTimedOut(Throwable parent) {
 
-        serverTimedOut(null);
+        serverTimedOut(null, parent);
     }
 
-    public static NetworkException getServerTimedOut() {
+    public static NetworkException getServerTimedOut(Throwable parent) {
 
-        return new NetworkException(Localization.getMessage(Localization.SERVER_TIMEOUT));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.SERVER_TIMEOUT)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
     }
 
-    public static void invalidPacketConstructor(Listenable listenable) {
+    public static void invalidPacketConstructor(Listenable listenable, Throwable parent) {
 
-        NetworkException ex = getInvalidPacketConstructor();
+        NetworkException ex = getInvalidPacketConstructor(parent);
 
         if (listenable != null) {
 
@@ -68,19 +82,26 @@ public class Errors {
         }
     }
 
-    public static void invalidPacketConstructor() {
+    public static void invalidPacketConstructor(Throwable parent) {
 
-        invalidPacketConstructor(null);
+        invalidPacketConstructor(null, parent);
     }
 
-    public static NetworkException getInvalidPacketConstructor() {
+    public static NetworkException getInvalidPacketConstructor(Throwable parent) {
 
-        return new NetworkException(Localization.getMessage(Localization.PACKET_CONSTRUCTOR));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.PACKET_CONSTRUCTOR)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
     }
 
-    public static void unreadablePacket(Listenable listenable) {
+    public static void unreadablePacket(Listenable listenable, Throwable parent) {
 
-        NetworkException ex = getUnreadablePacket();
+        NetworkException ex = getUnreadablePacket(parent);
 
         if (listenable != null) {
 
@@ -92,13 +113,82 @@ public class Errors {
         }
     }
 
-    public static void unreadablePacket() {
+    public static void unreadablePacket(Throwable parent) {
 
-        unreadablePacket(null);
+        unreadablePacket(null, parent);
     }
 
-    public static NetworkException getUnreadablePacket() {
+    public static NetworkException getUnreadablePacket(Throwable parent) {
 
-        return new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void encryptionFailed(Listenable listenable, String type, Throwable parent) {
+
+        NetworkException ex = getEncryptionFailed(type, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void encryptionFailed(String type, Throwable parent) {
+
+        encryptionFailed(null, type, parent);
+    }
+
+    public static NetworkException getEncryptionFailed(String type, Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.ENCRYPTION_FAILED, type)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void decryptionFailed(Listenable listenable, String type, Throwable parent) {
+
+        NetworkException ex = getDecryptionFailed(type, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void decryptionFailed(String type, Throwable parent) {
+
+        decryptionFailed(null, type, parent);
+    }
+
+    public static NetworkException getDecryptionFailed(String type, Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.DECRYPTION_FAILED, type)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
     }
 }

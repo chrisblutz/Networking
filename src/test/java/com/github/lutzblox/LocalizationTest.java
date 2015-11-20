@@ -22,5 +22,6 @@ public class LocalizationTest extends TestCase {
 
         System.out.println("Current Locale: " + Localization.getLocale());
         System.out.println("Test message (unreadable_packet): " + Localization.getMessage(Localization.UNREADABLE_PACKET));
+        System.out.println("Success!");
     }
 }

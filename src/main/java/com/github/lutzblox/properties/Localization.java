@@ -13,6 +13,9 @@ public class Localization {
     public static final String SERVER_TIMEOUT = "server_timeout";
     public static final String PACKET_CONSTRUCTOR = "packet_constructor";
     public static final String UNREADABLE_PACKET = "unreadable_packet";
+    public static final String ENCRYPTION_FAILED = "encryption_failed";
+    public static final String DECRYPTION_FAILED = "decryption_failed";
+    public static final String CAUSED_BY = "caused_by";
 
     private static boolean loaded = false;
     private static String locale = null;

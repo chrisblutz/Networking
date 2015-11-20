@@ -1,6 +1,7 @@
 package com.github.lutzblox.packets;
 
 import com.github.lutzblox.exceptions.Errors;
+import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.wrappers.Null;
 import com.github.lutzblox.utils.ExtendedMap;
 
@@ -68,7 +69,7 @@ public class Packet {
 
     private ExtendedMap data = new ExtendedMap();
 
-    private boolean isVital = false;
+    private boolean isVital = false, encrypt = false;
 
     /**
      * Creates an empty {@code Packet}
@@ -94,7 +95,7 @@ public class Packet {
 
         } else {
 
-            Errors.invalidPacketConstructor();
+            Errors.invalidPacketConstructor(new NetworkException(""));
         }
     }
 
@@ -239,6 +240,16 @@ public class Packet {
     public boolean isVital() {
 
         return isVital;
+    }
+
+    public void setEncrypt(boolean encrypt){
+
+        this.encrypt = encrypt;
+    }
+
+    public boolean shouldEncrypt(){
+
+        return encrypt;
     }
 
     /**
