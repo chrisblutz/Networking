@@ -28,7 +28,7 @@ public class ConstantPingTest extends TestCase {
         final Server server = new ConstantPingServer(12353, "ConstantPingTest");
         server.addErrorReporter(ErrorReporterFactory.newInstance());
 
-        final Client client = new ConstantPingClient("localhost", 12353);
+        final Client client = new ConstantPingClient("0.0.0.0", 12353);
         client.addErrorReporter(ErrorReporterFactory.newInstance());
 
         try {

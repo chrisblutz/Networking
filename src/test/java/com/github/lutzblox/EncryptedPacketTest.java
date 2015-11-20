@@ -61,7 +61,7 @@ public class EncryptedPacketTest extends TestCase {
             }
         });
 
-        final Client client = new Client("localhost", 12354);
+        final Client client = new Client("0.0.0.0", 12354);
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 

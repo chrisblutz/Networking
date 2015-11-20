@@ -26,7 +26,7 @@ public class DatabaseTest extends TestCase {
 		final DatabaseServer server = new DatabaseServer(12350, "DatabaseTest");
 		server.addErrorReporter(ErrorReporterFactory.newInstance());
 
-		final DatabaseClient client = new DatabaseClient("localhost", 12350);
+		final DatabaseClient client = new DatabaseClient("0.0.0.0", 12350);
 		client.addErrorReporter(ErrorReporterFactory.newInstance());
 
 		boolean finished = false;

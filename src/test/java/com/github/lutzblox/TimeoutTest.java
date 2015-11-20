@@ -56,7 +56,7 @@ public class TimeoutTest extends TestCase {
             }
         });
 
-        final Client client = new Client("localhost", 12351);
+        final Client client = new Client("0.0.0.0", 12351);
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 

@@ -71,7 +71,7 @@ public class RelayTest extends TestCase {
             }
         });
 
-        final RelayClient client1 = new RelayClient("localhost", 12352);
+        final RelayClient client1 = new RelayClient("0.0.0.0", 12352);
         client1.addErrorReporter(ErrorReporterFactory.newInstance());
         client1.addNetworkListener(new ClientListener() {
 
@@ -94,7 +94,7 @@ public class RelayTest extends TestCase {
             }
         });
 
-        final RelayClient client2 = new RelayClient("localhost", 12352);
+        final RelayClient client2 = new RelayClient("0.0.0.0", 12352);
         client2.addErrorReporter(ErrorReporterFactory.newInstance());
         client2.addNetworkListener(new ClientListener() {
 

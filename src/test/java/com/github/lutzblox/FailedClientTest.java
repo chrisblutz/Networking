@@ -57,7 +57,7 @@ public class FailedClientTest extends TestCase {
             }
         });
 
-        final Client client = new Client("localhost", 12348);
+        final Client client = new Client("0.0.0.0", 12348);
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 
