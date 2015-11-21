@@ -21,6 +21,13 @@ import java.util.List;
  */
 public class Server extends ServerListenable {
 
+    public static final class ConnectionKeys {
+
+        public static final String SERVER_NAME = "server:name";
+        public static final String MAX_CONNECTIONS = "server:maxcon";
+        public static final String CURRENTLY_CONNECTED = "server:curcon";
+    }
+
     private int port, maxConnect;
     private String serverName;
     private ServerSocket socket = null;
@@ -235,6 +242,16 @@ public class Server extends ServerListenable {
         return new Connection(Server.this, socket,
                 Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING : Server.this.getDefaultConnectionState(),
                 true);
+    }
+
+    public Packet getInformationPacket(){
+
+        Packet p = new Packet();
+        p.putData(ConnectionKeys.SERVER_NAME, serverName);
+        p.putData(ConnectionKeys.MAX_CONNECTIONS, maxConnect);
+        p.putData(ConnectionKeys.CURRENTLY_CONNECTED, connections.size());
+
+        return p;
     }
 
     /**

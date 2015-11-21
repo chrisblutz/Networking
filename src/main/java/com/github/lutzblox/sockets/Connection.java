@@ -2,6 +2,7 @@ package com.github.lutzblox.sockets;
 
 import com.github.lutzblox.ClientListenable;
 import com.github.lutzblox.Listenable;
+import com.github.lutzblox.Server;
 import com.github.lutzblox.ServerListenable;
 import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.exceptions.NetworkException;
@@ -390,7 +391,16 @@ public class Connection {
 
                         if (firstSend && serverSide) {
 
-                            Packet p = new Packet();
+                            Packet p;
+
+                            if(listenable instanceof Server){
+
+                                p = ((Server) listenable).getInformationPacket();
+
+                            }else{
+
+                                p = new Packet();
+                            }
 
                             p = ((ServerListenable) listenable)
                                     .fireListenerOnConnect(this, p);

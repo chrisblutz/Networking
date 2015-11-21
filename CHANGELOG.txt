@@ -1,3 +1,11 @@
+========[ 1.2.0 ]========
++ Added localizations for errors and other messages
++ Added central Errors class
++ Added support for encrypted Packets and Connections
+~ Servers now hold Connections in ConnectionBundles rather than Connection[]s
+~ Servers now include data on their name, maximum connection number, and number of current connections when the first packet is sent
+- Removed DatabaseClient/Server because there are better alternatives out there for the same effect.
+
 ========[ 1.1.0 ]========
 + Added database server/client
 + Added relay server/client.  These allow two or more clients to communicate with each other via a single server.
