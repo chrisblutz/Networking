@@ -101,7 +101,7 @@ public class FailedClientTest extends TestCase {
                 } catch (InterruptedException e) {
                 }
 
-                if (server.getConnections().length >= 1) {
+                if (server.getConnections().size() >= 1) {
 
                     break;
                 }
@@ -130,7 +130,7 @@ public class FailedClientTest extends TestCase {
             } catch (InterruptedException e) {
             }
 
-            if (closedClient && server.getConnections().length == 0) {
+            if (closedClient && server.getConnections().size() == 0) {
 
                 break;
             }

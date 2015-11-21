@@ -4,6 +4,7 @@ import com.github.lutzblox.Listenable;
 import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketWriter;
+import com.github.lutzblox.properties.Localization;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
@@ -29,6 +30,11 @@ public class EncryptedPacketWriter extends PacketWriter {
     public String getPacketAsWriteableString(Packet packet) {
 
         try {
+
+            if (EncryptionKey.getKey() == null) {
+
+                throw new NullPointerException(Localization.getMessage(Localization.ENCRYPTION_KEY_NULL));
+            }
 
             String writeable = super.getPacketAsWriteableString(packet).replace(":ENC:", "$(enc);");
 

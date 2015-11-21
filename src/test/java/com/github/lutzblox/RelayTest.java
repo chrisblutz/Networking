@@ -50,21 +50,21 @@ public class RelayTest extends TestCase {
 
                 System.out.println("Connection received from IP " + c.getIp());
 
-                if (server.getConnections().length > 0
-                        && c != server.getConnections()[0]
+                if (server.getConnections().size() > 0
+                        && c != server.getConnections().getConnectionsAsArray()[0]
                         && server.getGroups().length == 0) {
 
-                    server.group("test", c, server.getConnections()[0]);
+                    server.group("test", c, server.getConnections().getConnectionsAsArray()[0]);
 
-                } else if (server.getConnections().length > 1
+                } else if (server.getConnections().size() > 1
                         && server.getGroups().length == 0) {
 
                     server.group(
                             "test",
                             c,
-                            c != server.getConnections()[0] ? server
-                                    .getConnections()[0] : server
-                                    .getConnections()[1]);
+                            c != server.getConnections().getConnectionsAsArray()[0] ? server
+                                    .getConnections().getConnectionsAsArray()[0] : server
+                                    .getConnections().getConnectionsAsArray()[1]);
                 }
 
                 return data;
@@ -134,7 +134,7 @@ public class RelayTest extends TestCase {
 
             System.out.println("Waiting...");
 
-            while (server.getConnections().length < 2) {
+            while (server.getConnections().size() < 2) {
 
                 try {
 

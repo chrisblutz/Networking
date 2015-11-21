@@ -7,6 +7,7 @@ import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.states.State;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +76,14 @@ public class ConstantPingServer extends Server {
         super(port, serverName, maxConnections, failCheck);
     }
 
+    @Override
+    protected Connection makeConnection(Socket socket){
+
+        return new Connection(ConstantPingServer.this, socket,
+                ConstantPingServer.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING : ConstantPingServer.this.getDefaultConnectionState(),
+                true, false);
+    }
+
     /**
      * Sends a {@code Packet} across all connections to the clients on the
      * receiving ends
@@ -94,22 +103,6 @@ public class ConstantPingServer extends Server {
 
             waiting.get(c).add(p);
         }
-    }
-
-    /**
-     * This method has no effect in a {@code ConstantPingServer}
-     */
-    @Override
-    public void setToReceive() {
-
-    }
-
-    /**
-     * This method has no effect in a {@code ConstantPingServer}
-     */
-    @Override
-    public void setToSend() {
-
     }
 
     /**

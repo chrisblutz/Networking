@@ -16,6 +16,9 @@ public class Localization {
     public static final String ENCRYPTION_FAILED = "encryption_failed";
     public static final String DECRYPTION_FAILED = "decryption_failed";
     public static final String CAUSED_BY = "caused_by";
+    public static final String DISALLOWED_FORCED_STATE_CHANGE = "disallowed_forced_state_change";
+    public static final String ENCRYPTION_KEY_NULL = "encryption_key_null";
+    public static final String MISSING_DATA_TYPE = "missing_data_type";
 
     private static boolean loaded = false;
     private static String locale = null;

@@ -27,7 +27,7 @@ public class Errors {
 
     public static NetworkException getThreadErrored(String threadName, Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, threadName)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.THREAD_HAS_ERRORED, threadName) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
@@ -58,7 +58,7 @@ public class Errors {
 
     public static NetworkException getServerTimedOut(Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.SERVER_TIMEOUT)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.SERVER_TIMEOUT) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
@@ -89,7 +89,7 @@ public class Errors {
 
     public static NetworkException getInvalidPacketConstructor(Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.PACKET_CONSTRUCTOR)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.PACKET_CONSTRUCTOR) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
@@ -120,7 +120,7 @@ public class Errors {
 
     public static NetworkException getUnreadablePacket(Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
@@ -151,7 +151,7 @@ public class Errors {
 
     public static NetworkException getEncryptionFailed(String type, Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.ENCRYPTION_FAILED, type)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.ENCRYPTION_FAILED, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
@@ -182,7 +182,69 @@ public class Errors {
 
     public static NetworkException getDecryptionFailed(String type, Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.DECRYPTION_FAILED, type)+(parent != null ? " ("+Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage())+")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.DECRYPTION_FAILED, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+    
+    public static void disallowedForcedStateChange(Listenable listenable, Throwable parent) {
+        
+        NetworkException ex = getDisallowedForcedStateChange(parent);
+        
+        if (listenable != null) {
+            
+            listenable.report(ex);
+            
+        } else {
+            
+            throw ex;
+        }
+    }
+    
+    public static void disallowedForcedStateChange(Throwable parent) {
+        
+        disallowedForcedStateChange(null, parent);
+    }
+    
+    public static NetworkException getDisallowedForcedStateChange(Throwable parent) {
+        
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.DISALLOWED_FORCED_STATE_CHANGE) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+        
+        if (parent != null) {
+            
+            exception.setStackTrace(parent.getStackTrace());
+        }
+        
+        return exception;
+    }
+
+    public static void missingDataType(Listenable listenable, String type, String name, Throwable parent) {
+
+        NullPointerException ex = getMissingDataType(type, name, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void missingDataType(String type, String name, Throwable parent) {
+
+        missingDataType(null, type, name, parent);
+    }
+
+    public static NullPointerException getMissingDataType(String type, String name, Throwable parent) {
+
+        NullPointerException exception = new NullPointerException(Localization.getMessage(Localization.DISALLOWED_FORCED_STATE_CHANGE, type, name) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 

@@ -1,11 +1,13 @@
 package com.github.lutzblox.packets;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.github.lutzblox.exceptions.Errors;
+import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
 import com.github.lutzblox.utils.ExtendedMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -90,9 +92,7 @@ public class PacketWriter {
 
             } else {
 
-                NullPointerException e = new NullPointerException("The class '"
-                        + type.getName()
-                        + "' does not have a DataType registered for it!");
+                NullPointerException e = Errors.getMissingDataType("class", type.getName(), new NetworkException(""));
 
                 if (config.getIgnoreErrors()) {
 

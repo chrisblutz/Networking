@@ -3,13 +3,14 @@ package com.github.lutzblox;
 import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
+import com.github.lutzblox.sockets.ConnectionBundle;
 
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -25,7 +26,7 @@ public class Server extends ServerListenable {
     private ServerSocket socket = null;
 
     private Thread incoming = null, checkFailed = null;
-    private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<Connection>();
+    private ConnectionBundle connections = new ConnectionBundle();
 
     private boolean failed = false, open = false;
 
@@ -127,13 +128,9 @@ public class Server extends ServerListenable {
 
                         if (connections.size() < maxConnect) {
 
-                            Connection connection = new Connection(
-                                    Server.this,
-                                    socket.accept(),
-                                    Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING
-                                            : Server.this
-                                            .getDefaultConnectionState(),
-                                    true);
+                            Socket connect = socket.accept();
+
+                            Connection connection = makeConnection(connect);
 
                             connections.add(connection);
                         }
@@ -233,6 +230,13 @@ public class Server extends ServerListenable {
         open = true;
     }
 
+    protected Connection makeConnection(Socket socket) {
+
+        return new Connection(Server.this, socket,
+                Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING : Server.this.getDefaultConnectionState(),
+                true);
+    }
+
     /**
      * Checks if this {@code Server} is currently open
      *
@@ -251,30 +255,6 @@ public class Server extends ServerListenable {
     public boolean hasFailed() {
 
         return failed;
-    }
-
-    /**
-     * Makes the {@code Server}'s {@code Connections} set themselves back to the
-     * {@code Receiving} state
-     */
-    public void setToReceive() {
-
-        for (Connection c : connections) {
-
-            c.setToReceive();
-        }
-    }
-
-    /**
-     * Makes the {@code Server}'s {@code Connections} set themselves back to the
-     * {@code Sending} state
-     */
-    public void setToSend() {
-
-        for (Connection c : connections) {
-
-            c.setToSend();
-        }
     }
 
     /**
@@ -298,12 +278,12 @@ public class Server extends ServerListenable {
     /**
      * Gets all connections to this {@code Server}
      *
-     * @return A {@code Connection[]} containing references to all connections
-     * on this {@code Server}
+     * @return A {@code ConnectionBundle} containing all the {@code Connection}s currently connected
+     * to this {@code Server}
      */
-    public Connection[] getConnections() {
+    public ConnectionBundle getConnections() {
 
-        return connections.toArray(new Connection[]{});
+        return connections;
     }
 
     /**

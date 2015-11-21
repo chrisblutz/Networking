@@ -4,6 +4,7 @@ import com.github.lutzblox.ClientListenable;
 import com.github.lutzblox.Listenable;
 import com.github.lutzblox.ServerListenable;
 import com.github.lutzblox.exceptions.Errors;
+import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
@@ -44,7 +45,7 @@ public class Connection {
 
     private long ping = -1, pingStart = 0, pingTotal = 0, pingTimes = 0;
 
-    private boolean running = false, serverSide = false, firstReceive = true,
+    private boolean encrypted = false, allowSettingState = true, running = false, serverSide = false, firstReceive = true,
             firstSend = true, shouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true;
 
     private int readTimeout = 8000;
@@ -67,11 +68,28 @@ public class Connection {
     public Connection(Listenable listenable, Socket socket, State state,
                       boolean serverSide) {
 
+        this(listenable, socket, state, serverSide, true);
+    }
+
+    /**
+     * Creates a new {@code Connection} with the specified parameters
+     *
+     * @param listenable        The {@code Listenable} object that created this
+     *                          {@code Connection}
+     * @param socket            The {@code Socket} to wrap in this {@code Connection}
+     * @param state             The beginning {@code State} of this {@code Connection}
+     * @param serverSide        Whether or not this {@code Connection} represents a
+     *                          server-side connection
+     * @param allowSettingState Whether or not {@code setToSend()} or {@code setToReceive()} have any effect on this {@code Connection}'s {@code State}
+     */
+    public Connection(Listenable listenable, Socket socket, State state, boolean serverSide, boolean allowSettingState) {
+
         this.listenable = listenable;
         this.socket = socket;
         this.mainState = state;
         this.state = state;
         this.serverSide = serverSide;
+        this.allowSettingState = allowSettingState;
 
         packetReader = new PacketReader();
         packetWriter = new PacketWriter();
@@ -236,7 +254,14 @@ public class Connection {
      */
     public void setToReceive() {
 
-        this.nextState = State.RECEIVING;
+        if (allowSettingState) {
+
+            this.nextState = State.RECEIVING;
+
+        } else {
+
+            Errors.disallowedForcedStateChange(listenable, new NetworkException(""));
+        }
     }
 
     /**
@@ -244,7 +269,14 @@ public class Connection {
      */
     public void setToSend() {
 
-        this.nextState = State.SENDING;
+        if (allowSettingState) {
+
+            this.nextState = State.SENDING;
+
+        } else {
+
+            Errors.disallowedForcedStateChange(listenable, new NetworkException(""));
+        }
     }
 
     /**
@@ -311,6 +343,16 @@ public class Connection {
         }
     }
 
+    public void setEncrypted(boolean encrypted) {
+
+        this.encrypted = encrypted;
+    }
+
+    public boolean getEncrypted() {
+
+        return encrypted;
+    }
+
     private final void listenerRun() {
 
         try {
@@ -361,7 +403,7 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (p.getEncrypted()) {
+                            if (p.getEncrypted() || encrypted) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(p);
                                 errors = encryptedWriter.getErrors();
@@ -402,7 +444,7 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (waiting.getEncrypted()) {
+                            if (waiting.getEncrypted() || encrypted) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(waiting);
                                 errors = encryptedWriter.getErrors();
@@ -438,7 +480,7 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (vitalDropped.get(0).getEncrypted()) {
+                            if (vitalDropped.get(0).getEncrypted() || encrypted) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(vitalDropped.get(0));
                                 errors = encryptedWriter.getErrors();

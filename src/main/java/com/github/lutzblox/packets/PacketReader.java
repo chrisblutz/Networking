@@ -86,13 +86,9 @@ public class PacketReader {
 
                     } else {
 
-                        NullPointerException e = new NullPointerException(
-                                "The data type abbreviation '"
-                                        + declParts[0].replace("$(nl);", "\n")
-                                        .replace("$(cr);", "\r")
-                                        .replace("$(vl);", "|")
-                                        .toUpperCase()
-                                        + "' does not have a DataType registered for it.");
+                        NullPointerException e = Errors.getMissingDataType("data type abbreviation",
+                                declParts[0].replace("$(nl);", "\n").replace("$(cr);", "\r")
+                                        .replace("$(vl);", "|").toUpperCase(), new NetworkException(""));
 
                         if (config.getIgnoreErrors()) {
 

@@ -1,16 +1,17 @@
 package com.github.lutzblox.relay;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.lutzblox.Server;
 import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.relay.listeners.RelayListener;
 import com.github.lutzblox.sockets.Connection;
+import com.github.lutzblox.sockets.ConnectionBundle;
 import com.github.lutzblox.states.State;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -386,7 +387,7 @@ public class RelayServer {
      * @return A {@code Connection[]} containing references to all connections
      * on this {@code RelayServer}
      */
-    public Connection[] getConnections() {
+    public ConnectionBundle getConnections() {
 
         return server.getConnections();
     }
