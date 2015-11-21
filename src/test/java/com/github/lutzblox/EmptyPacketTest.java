@@ -41,6 +41,7 @@ public class EmptyPacketTest extends TestCase {
 
                 System.out.println("Server: Connection received from IP "
                         + c.getIp());
+                data.clearData();
 
                 return data;
             }
