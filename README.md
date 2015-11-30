@@ -18,6 +18,8 @@ gradlew build
 <pre>
 bash ./gradlew build
 </pre>
+<p>The finished <code>.jar</code> files can be found in <code>/build/libs</code>, called <code>networking-X.X.X.jar</code>, <code>networking-X.X.X-sources.jar</code>, and <code>networking-X.X.X-javadoc.jar</code> for the compiled library, source code, and javadocs respectively.</p>
+<p>If you have problems, consult the <a href="#troubleshooting">troubleshooting guide</a>.</p>
 <h2></h2>
 <a name="troubleshooting"></a>
 <h4>Troubleshooting</h4></a>
