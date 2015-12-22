@@ -2,6 +2,8 @@ package com.github.lutzblox;
 
 import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.query.QueryPolicy;
+import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.sockets.ConnectionBundle;
 
@@ -11,6 +13,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -38,6 +42,8 @@ public class Server extends ServerListenable {
     private boolean failed = false, open = false;
 
     private long failCheck;
+
+    private Map<QueryType, QueryPolicy> policies = new ConcurrentHashMap<QueryType, QueryPolicy>();
 
     /**
      * Create a new {@code Server} instance with the specified parameters
@@ -93,6 +99,26 @@ public class Server extends ServerListenable {
         this.serverName = serverName;
         this.maxConnect = maxConnections;
         this.failCheck = failCheck;
+    }
+
+    public void setQueryPolicy(QueryType type, QueryPolicy policy) {
+
+        policies.put(type, policy);
+
+        for (Connection c : connections) {
+
+            c.setQueryPolicy(type, policy);
+        }
+    }
+
+    public Map<QueryType, QueryPolicy> getQueryPolicies() {
+
+        return policies;
+    }
+
+    public QueryPolicy getQueryPolicy(QueryType type) {
+
+        return getQueryPolicies().get(type);
     }
 
     /**
@@ -241,10 +267,10 @@ public class Server extends ServerListenable {
 
         return new Connection(Server.this, socket,
                 Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING : Server.this.getDefaultConnectionState(),
-                true);
+                true, policies);
     }
 
-    public Packet getInformationPacket(){
+    public Packet getInformationPacket() {
 
         Packet p = new Packet();
         p.putData(ConnectionKeys.SERVER_NAME, serverName);

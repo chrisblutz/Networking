@@ -6,7 +6,9 @@ import com.github.lutzblox.packets.datatypes.wrappers.Null;
 import com.github.lutzblox.utils.ExtendedMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -276,6 +278,48 @@ public class Packet {
         }
 
         return false;
+    }
+
+    public Map<String, Object> getAllForType(Class<?> cl){
+
+        return data.getType(cl);
+    }
+
+    public Map<String, Object> getAllForNamePrefix(String prefix){
+
+        Map<String, Object> d = new HashMap<String, Object>();
+
+        for(Class<?> c : data.typeSet()){
+
+            for(String name : data.keySet(c)){
+
+                if(name.startsWith(prefix)){
+
+                    d.put(name.substring(prefix.length()), data.get(c, name));
+                }
+            }
+        }
+
+        return d;
+    }
+
+    public void removeAllForType(Class<?> cl) {
+
+        data.clear(cl);
+    }
+
+    public void removeAllForNamePrefix(String prefix) {
+
+        for(Class<?> c : data.typeSet()){
+
+            for(String name : data.keySet(c)){
+
+                if(name.startsWith(prefix)){
+
+                    data.removeKeyInType(c, name);
+                }
+            }
+        }
     }
 
     /**

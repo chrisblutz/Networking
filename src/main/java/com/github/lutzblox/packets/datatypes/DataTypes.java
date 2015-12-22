@@ -1,18 +1,9 @@
 package com.github.lutzblox.packets.datatypes;
 
+import com.github.lutzblox.packets.datatypes.defaults.*;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.github.lutzblox.packets.datatypes.defaults.BooleanType;
-import com.github.lutzblox.packets.datatypes.defaults.ByteType;
-import com.github.lutzblox.packets.datatypes.defaults.CharType;
-import com.github.lutzblox.packets.datatypes.defaults.DoubleType;
-import com.github.lutzblox.packets.datatypes.defaults.FloatType;
-import com.github.lutzblox.packets.datatypes.defaults.IntegerType;
-import com.github.lutzblox.packets.datatypes.defaults.LongType;
-import com.github.lutzblox.packets.datatypes.defaults.NullType;
-import com.github.lutzblox.packets.datatypes.defaults.ShortType;
-import com.github.lutzblox.packets.datatypes.defaults.StringType;
 
 
 /**
@@ -102,6 +93,8 @@ public class DataTypes {
         DataTypes.registerDataType(new BooleanType());
         DataTypes.registerDataType(new ByteType());
         DataTypes.registerDataType(new NullType());
+        DataTypes.registerDataType(new StringArrayType());
+        DataTypes.registerDataType(new QueryRequestType());
     }
 
     static {

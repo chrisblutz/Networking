@@ -1,12 +1,16 @@
 package com.github.lutzblox;
 
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.query.QueryPolicy;
+import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.states.State;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -25,6 +29,8 @@ public class Client extends ClientListenable {
 
     private boolean open = false;
 
+    private Map<QueryType, QueryPolicy> policies = new ConcurrentHashMap<QueryType, QueryPolicy>();
+
     /**
      * Creates a {@code Client} instance that is set up to connect to the
      * specified port on the specified IP
@@ -38,6 +44,21 @@ public class Client extends ClientListenable {
 
         this.ip = ip;
         this.port = port;
+    }
+
+    public void setQueryPolicy(QueryType type, QueryPolicy policy) {
+
+        policies.put(type, policy);
+    }
+
+    public Map<QueryType, QueryPolicy> getQueryPolicies() {
+
+        return policies;
+    }
+
+    public QueryPolicy getQueryPolicy(QueryType type) {
+
+        return getQueryPolicies().get(type);
     }
 
     /**
@@ -74,11 +95,16 @@ public class Client extends ClientListenable {
 
         socket = new Socket(ip, port);
 
-        connection = new Connection(this, socket,
-                this.getDefaultConnectionState() == null ? State.RECEIVING
-                        : this.getDefaultConnectionState(), false);
+        connection = makeConnection(socket);
 
         open = true;
+    }
+
+    protected Connection makeConnection(Socket socket){
+
+        return new Connection(this, socket,
+                this.getDefaultConnectionState() == null ? State.RECEIVING
+                        : this.getDefaultConnectionState(), false, policies);
     }
 
     /**

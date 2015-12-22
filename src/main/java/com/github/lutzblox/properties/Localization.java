@@ -19,6 +19,8 @@ public class Localization {
     public static final String DISALLOWED_FORCED_STATE_CHANGE = "disallowed_forced_state_change";
     public static final String ENCRYPTION_KEY_NULL = "encryption_key_null";
     public static final String MISSING_DATA_TYPE = "missing_data_type";
+    public static final String NO_RESPONSE_EXPECTED = "no_response_expected";
+    public static final String RESPONSE_TIMED_OUT = "response_timed_out";
 
     private static boolean loaded = false;
     private static String locale = null;

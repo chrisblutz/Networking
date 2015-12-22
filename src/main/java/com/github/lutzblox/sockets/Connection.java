@@ -11,6 +11,7 @@ import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
 import com.github.lutzblox.packets.encryption.EncryptedPacketReader;
 import com.github.lutzblox.packets.encryption.EncryptedPacketWriter;
+import com.github.lutzblox.query.*;
 import com.github.lutzblox.states.State;
 
 import java.io.*;
@@ -21,6 +22,8 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -42,12 +45,13 @@ public class Connection {
 
     private List<Packet> vitalDropped = new ArrayList<Packet>();
 
-    private Packet waiting = null;
+    private Packet waiting = null, response = null;
+    private boolean responseTimedOut = false;
 
     private long ping = -1, pingStart = 0, pingTotal = 0, pingTimes = 0;
 
     private boolean encrypted = false, allowSettingState = true, running = false, serverSide = false, firstReceive = true,
-            firstSend = true, shouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true;
+            firstSend = true, shouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true, initialized = false, qrySent = false;
 
     private int readTimeout = 8000;
 
@@ -55,6 +59,12 @@ public class Connection {
     private PacketWriter packetWriter;
     private EncryptedPacketReader encryptedReader;
     private EncryptedPacketWriter encryptedWriter;
+
+    private Map<QueryType, QueryPolicy> policies = new ConcurrentHashMap<QueryType, QueryPolicy>();
+
+    private Map<String, Query> toQuery = new ConcurrentHashMap<String, Query>();
+    private Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
+    private Map<String, Object> completedQueries = new ConcurrentHashMap<String, Object>();
 
     /**
      * Creates a new {@code Connection} with the specified parameters
@@ -72,6 +82,19 @@ public class Connection {
         this(listenable, socket, state, serverSide, true);
     }
 
+    public Connection(Listenable listenable, Socket socket, State state, boolean serverSide, boolean allowSettingState, Map<QueryType, QueryPolicy> policies) {
+
+        this(listenable, socket, state, serverSide, allowSettingState);
+        this.policies = policies;
+    }
+
+    public Connection(Listenable listenable, Socket socket, State state,
+                      boolean serverSide, Map<QueryType, QueryPolicy> policies) {
+
+        this(listenable, socket, state, serverSide, true);
+        this.policies = policies;
+    }
+
     /**
      * Creates a new {@code Connection} with the specified parameters
      *
@@ -85,6 +108,7 @@ public class Connection {
      */
     public Connection(Listenable listenable, Socket socket, State state, boolean serverSide, boolean allowSettingState) {
 
+        this.initialized = true;
         this.listenable = listenable;
         this.socket = socket;
         this.mainState = state;
@@ -170,6 +194,21 @@ public class Connection {
         this.serverSide = false;
     }
 
+    public void setQueryPolicy(QueryType type, QueryPolicy policy) {
+
+        policies.put(type, policy);
+    }
+
+    public Map<QueryType, QueryPolicy> getQueryPolicies() {
+
+        return policies;
+    }
+
+    public QueryPolicy getQueryPolicy(QueryType type) {
+
+        return getQueryPolicies().get(type);
+    }
+
     /**
      * Sends a {@code Packet} across the connection
      *
@@ -197,6 +236,7 @@ public class Connection {
 
         waiting = p;
         this.shouldRespond = expectResponse;
+        qrySent = false;
     }
 
     /**
@@ -354,6 +394,11 @@ public class Connection {
         return encrypted;
     }
 
+    public boolean getInitialized() {
+
+        return initialized;
+    }
+
     private final void listenerRun() {
 
         try {
@@ -385,25 +430,41 @@ public class Connection {
 
                     if (canExecute && canOutput) {
 
-                        OutputStream stream = socket.getOutputStream();
+                        if (!(firstSend && serverSide) && vitalDropped.size() == 0 && waiting == null) {
 
-                        PrintWriter out = new PrintWriter(stream, true);
+                            try {
+
+                                while (waiting == null) {
+
+                                    Thread.sleep(100);
+                                }
+
+                            } catch (Exception e) {
+
+                                // Ignore interrupted sleep exceptions
+                            }
+                        }
 
                         if (firstSend && serverSide) {
 
                             Packet p;
 
-                            if(listenable instanceof Server){
+                            if (listenable instanceof Server) {
 
                                 p = ((Server) listenable).getInformationPacket();
 
-                            }else{
+                            } else {
 
                                 p = new Packet();
                             }
 
                             p = ((ServerListenable) listenable)
                                     .fireListenerOnConnect(this, p);
+
+                            if(p == null){
+
+                                p = new Packet();
+                            }
 
                             if (p.isEmpty()) {
 
@@ -412,6 +473,8 @@ public class Connection {
 
                             String toWrite;
                             Throwable[] errors;
+
+                            p = handleQueries(p);
 
                             if (p.getEncrypted() || encrypted) {
 
@@ -425,7 +488,12 @@ public class Connection {
                                 errors = packetWriter.getErrors();
                             }
 
-                            out.println(toWrite);
+                            send(toWrite);
+
+                            if (qrySent) {
+
+                                qrySent = false;
+                            }
 
                             if (shouldRespond) {
 
@@ -454,6 +522,8 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
+                            waiting = handleQueries(waiting);
+
                             if (waiting.getEncrypted() || encrypted) {
 
                                 toWrite = encryptedWriter.getPacketAsWriteableString(waiting);
@@ -466,7 +536,12 @@ public class Connection {
                                 errors = packetWriter.getErrors();
                             }
 
-                            out.println(toWrite);
+                            send(toWrite);
+
+                            if (qrySent) {
+
+                                qrySent = false;
+                            }
 
                             for (Throwable t : errors) {
 
@@ -490,19 +565,28 @@ public class Connection {
                             String toWrite;
                             Throwable[] errors;
 
-                            if (vitalDropped.get(0).getEncrypted() || encrypted) {
+                            Packet p = vitalDropped.get(0);
 
-                                toWrite = encryptedWriter.getPacketAsWriteableString(vitalDropped.get(0));
+                            p = handleQueries(p);
+
+                            if (p.getEncrypted() || encrypted) {
+
+                                toWrite = encryptedWriter.getPacketAsWriteableString(p);
                                 errors = encryptedWriter.getErrors();
 
                             } else {
 
                                 toWrite = packetWriter
-                                        .getPacketAsWriteableString(vitalDropped.get(0));
+                                        .getPacketAsWriteableString(p);
                                 errors = packetWriter.getErrors();
                             }
 
-                            out.println(toWrite);
+                            send(toWrite);
+
+                            if (qrySent) {
+
+                                qrySent = false;
+                            }
 
                             for (Throwable t : errors) {
 
@@ -567,6 +651,8 @@ public class Connection {
 
                             if (e instanceof SocketTimeoutException) {
 
+                                responseTimedOut = true;
+                                timeoutQueries();
                                 listenable.fireListenerOnTimeout(this);
 
                             } else if (!(e instanceof SocketException)) {
@@ -609,27 +695,117 @@ public class Connection {
                                     }
                                 }
 
-                                if (firstReceive && !serverSide) {
+                                Map<String, Object> requests = p.getAllForType(QueryRequest.class);
 
-                                    ((ClientListenable) listenable)
-                                            .fireListenerOnConnect(p);
+                                if (requests == null) {
 
-                                    state = State.SENDING;
+                                    requests = new ConcurrentHashMap<String, Object>();
+                                }
 
-                                    firstReceive = false;
+                                for (String s : requests.keySet()) {
 
-                                } else {
+                                    QueryRequest q = (QueryRequest) requests.get(s);
+                                    Object result;
 
-                                    listenable.fireListenerOnReceive(this, p);
+                                    QueryPolicy policy = policies.get(q.getType());
+                                    if (policy.getPolicyDecider().allow(getConnectionInfo())) {
 
-                                    if (nextState != null) {
-
-                                        state = nextState;
-                                        nextState = null;
+                                        result = q.getType().query(listenable);
 
                                     } else {
 
+                                        result = "qry-rej:" + policy.getMessage();
+                                    }
+
+                                    completedQueries.put(q.getId(), result);
+                                }
+
+                                p.removeAllForType(QueryRequest.class);
+
+                                if (completedQueries.size() > 0 && waiting == null) {
+
+                                    waiting = new Packet();
+                                    waiting.setVital(true);
+                                    shouldRespond = false;
+                                    qrySent = true;
+                                }
+
+                                Map<String, Object> completions = p.getAllForNamePrefix("qry-resp:");
+
+                                if (completions == null) {
+
+                                    completions = new ConcurrentHashMap<String, Object>();
+                                }
+
+                                for (String id : completions.keySet()) {
+
+                                    if (queries.containsKey(id)) {
+
+                                        Query q = queries.get(id);
+                                        Object result = completions.get(id);
+
+                                        if (result instanceof String) {
+
+                                            String resStr = (String) result;
+
+                                            if (resStr.startsWith("qry-rej:")) {
+
+                                                q.setValue(null);
+                                                q.setStatus(QueryStatus.getRejectedStatus(resStr.substring("qry-rej:".length())));
+
+                                            } else {
+
+                                                q.setValue(result);
+                                                q.setStatus(QueryStatus.getSuccessfulStatus(""));
+                                            }
+
+                                        } else {
+
+                                            q.setValue(result);
+                                            q.setStatus(QueryStatus.getSuccessfulStatus(""));
+                                        }
+
+                                        queries.remove(id);
+                                    }
+                                }
+
+                                p.removeAllForNamePrefix("qry-resp:");
+
+                                if (p.hasData(":QRYONLY:")) {
+
+                                    p.clearData();
+
+                                    state = State.SENDING;
+
+                                } else {
+
+                                    if (firstReceive && !serverSide) {
+
+                                        ((ClientListenable) listenable)
+                                                .fireListenerOnConnect(p);
+
                                         state = State.SENDING;
+
+                                        firstReceive = false;
+
+                                    } else {
+
+                                        if (shouldRespond) {
+
+                                            response = p;
+                                        }
+
+                                        listenable.fireListenerOnReceive(this, p);
+
+                                        if (nextState != null) {
+
+                                            state = nextState;
+                                            nextState = null;
+
+                                        } else {
+
+                                            state = State.SENDING;
+                                        }
                                     }
                                 }
                             }
@@ -640,11 +816,7 @@ public class Connection {
 
             close();
 
-        } catch (
-                Throwable e
-                )
-
-        {
+        } catch (Throwable e) {
 
             boolean close = true;
 
@@ -683,7 +855,87 @@ public class Connection {
                 }
             }
         }
+    }
 
+    private void timeoutQueries() {
+
+        for (String id : toQuery.keySet()) {
+
+            Query q = toQuery.get(id);
+            q.setStatus(QueryStatus.getTimedOutStatus((serverSide ? "Client" : "Server") + " timed out!"));
+            toQuery.remove(id);
+        }
+
+        for (String id : queries.keySet()) {
+
+            Query q = queries.get(id);
+            q.setStatus(QueryStatus.getTimedOutStatus((serverSide ? "Client" : "Server") + " timed out!"));
+            queries.remove(id);
+        }
+    }
+
+    private Packet handleQueries(Packet p) {
+
+        if (qrySent) {
+
+            p.putData(":QRYONLY:", "null");
+        }
+
+        for (String id : toQuery.keySet()) {
+
+            Query q = toQuery.get(id);
+            p.putData(q.getId(), new QueryRequest(q.getId(), q.getType()));
+            toQuery.remove(id);
+            queries.put(id, q);
+        }
+
+        for (String id : completedQueries.keySet()) {
+
+            Object result = completedQueries.get(id);
+            p.putData("qry-resp:" + id, result);
+            completedQueries.remove(id);
+        }
+
+        if (queries.size() > 0) {
+
+            shouldRespond = true;
+            p.setVital(true);
+        }
+
+        return p;
+    }
+
+    private void send(String data) throws IOException {
+
+        OutputStream stream = socket.getOutputStream();
+
+        PrintWriter out = new PrintWriter(stream, true);
+
+        response = null;
+        responseTimedOut = false;
+
+        out.println(data);
+    }
+
+    public Query query(String id, QueryType type) {
+
+        Query q = new Query(id, type);
+        toQuery.put(id, q);
+
+        if (waiting == null) {
+
+            waiting = new Packet();
+            waiting.setVital(true);
+            shouldRespond = true;
+            qrySent = true;
+        }
+
+        return q;
+    }
+
+    public ConnectionInfo getConnectionInfo() {
+
+        return new ConnectionInfo(getIp(), getEncrypted(), !socket.isClosed() && socket.isConnected() && !remoteClosed, getInitialized());
     }
 
     /**

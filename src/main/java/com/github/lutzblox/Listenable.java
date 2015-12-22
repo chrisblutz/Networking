@@ -1,13 +1,13 @@
 package com.github.lutzblox;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.lutzblox.exceptions.reporters.ErrorReporter;
 import com.github.lutzblox.listeners.NetworkListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.states.State;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

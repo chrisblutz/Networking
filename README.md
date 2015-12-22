@@ -6,7 +6,7 @@ Travis CI Build Status: <a href="https://travis-ci.org/LutzBlox/Networking"><img
 <p>LSNL uses the Gradle build management system, which streamlines the building process.  Below are instructions for building LSNL with Gradle for several operating systems.</p>
 <h2></h2>
 <h4>Windows</h4>
-<p>Open the command prompt (cmd.exe) and navigate to the folder where LSNL's build.gradle file is located.  Then, execute the following:</p>
+<p>Open the command prompt (<code>cmd.exe</code>) and navigate to the folder where LSNL's <code>build.gradle</code> file is located.  Then, execute the following:</p>
 <pre>
 gradlew build
 </pre>
@@ -14,7 +14,7 @@ gradlew build
 <p>If you have problems, consult the <a href="#troubleshooting">troubleshooting guide</a>.</p>
 <h2></h2>
 <h4>Unix/Linux</h4>
-<p>Open Terminal and navigate to the folder where LSNL's build.gradle file is located.  Then, execute the following:</p>
+<p>Open Terminal and navigate to the folder where LSNL's <code>build.gradle</code> file is located.  Then, execute the following:</p>
 <pre>
 bash ./gradlew build
 </pre>

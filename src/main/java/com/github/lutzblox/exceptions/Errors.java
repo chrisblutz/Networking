@@ -244,7 +244,69 @@ public class Errors {
 
     public static NullPointerException getMissingDataType(String type, String name, Throwable parent) {
 
-        NullPointerException exception = new NullPointerException(Localization.getMessage(Localization.DISALLOWED_FORCED_STATE_CHANGE, type, name) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+        NullPointerException exception = new NullPointerException(Localization.getMessage(Localization.MISSING_DATA_TYPE, type, name) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void noResponseExpected(Listenable listenable, String type, Throwable parent) {
+
+        NetworkException ex = getNoResponseExpected(type, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void noResponseExpected(String type, Throwable parent) {
+
+        noResponseExpected(null, type, parent);
+    }
+
+    public static NetworkException getNoResponseExpected(String type, Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.NO_RESPONSE_EXPECTED, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void responseTimedOut(Listenable listenable, String type, Throwable parent) {
+
+        NetworkException ex = getResponseTimedOut(type, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void responseTimedOut(String type, Throwable parent) {
+
+        responseTimedOut(null, type, parent);
+    }
+
+    public static NetworkException getResponseTimedOut(String type, Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.RESPONSE_TIMED_OUT, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
