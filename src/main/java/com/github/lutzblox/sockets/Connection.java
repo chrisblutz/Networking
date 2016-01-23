@@ -708,7 +708,7 @@ public class Connection {
                                     Object result;
 
                                     QueryPolicy policy = policies.get(q.getType());
-                                    if (policy.getPolicyDecider().allow(getConnectionInfo())) {
+                                    if (policy != null && policy.getPolicyDecider().allow(getConnectionInfo())) {
 
                                         result = q.getType().query(listenable);
 

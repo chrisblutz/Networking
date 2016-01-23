@@ -17,7 +17,7 @@ public class QueryType {
 
     private static Map<String, QueryType> types = new HashMap<String, QueryType>();
 
-    public static final QueryType CONNECTED_IPS = createQueryType("connected_ips", new QueryListener() {
+    public static final QueryType CONNECTED_IPS = createQueryType("net-default:connected_ips", new QueryListener() {
 
         @Override
         public Object onQuery(Listenable listenable) {
@@ -51,7 +51,7 @@ public class QueryType {
             return ips.toArray(new String[ips.size()]);
         }
     });
-    public static final QueryType NUMBER_OF_CURRENT_CONNECTIONS = createQueryType("num_connected", new QueryListener() {
+    public static final QueryType NUMBER_OF_CURRENT_CONNECTIONS = createQueryType("net-default:num_connected", new QueryListener() {
 
         @Override
         public Object onQuery(Listenable listenable) {
