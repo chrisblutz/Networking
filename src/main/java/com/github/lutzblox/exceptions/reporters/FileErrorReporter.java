@@ -52,14 +52,14 @@ public class FileErrorReporter extends ErrorReporter implements Closeable,
 		printStream.println(toReport);
 	}
 
-	/** {@inheritDoc} */
+	/** Flushes the reporter and writes any buffered bytes to the underlying {@code File} */
 	@Override
 	public void flush() throws IOException {
 
 		printStream.flush();
 	}
 
-	/** {@inheritDoc} */
+	/** Closes the stream to the underlying {@code File} and shuts down the reporter. */
 	@Override
 	public void close() {
 

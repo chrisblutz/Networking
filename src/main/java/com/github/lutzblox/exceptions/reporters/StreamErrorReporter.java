@@ -47,14 +47,14 @@ public class StreamErrorReporter extends ErrorReporter implements Closeable,
 		printStream.println(toReport);
 	}
 
-	/** {@inheritDoc} */
+	/** Flushes the reporter and writes any buffered bytes to the underlying {@code OutputStream} */
 	@Override
 	public void flush() throws IOException {
 
 		printStream.flush();
 	}
 
-	/** {@inheritDoc} */
+	/** Flushes the underlying {@code OutputStream} and closes this reporter.  This method will not close the {@code OutputStream}, it only closes the reporter.  The stream itself will need to be closed by calling its {@code close()} method. */
 	@Override
 	public void close() throws IOException {
 
