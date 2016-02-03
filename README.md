@@ -1,5 +1,5 @@
 <h1>LutzBlox's Simplified Networking Library (LSNL)</h1>
-Travis CI Build Status: <a href="https://travis-ci.org/LutzBlox/Networking"><img src="https://travis-ci.org/LutzBlox/Networking.svg?branch=master" /></a>
+Travis CI Build Status: <a href="https://travis-ci.org/LutzBlox/Networking" target="_blank"><img src="https://travis-ci.org/LutzBlox/Networking.svg?branch=master" alt="Travis CI Build Status"/></a>
 <h2>Obtaining the Library</h2>
 <p>If you want the most recent stable release build, click <a href="https://github.com/LutzBlox/Networking/releases">here</a> and download the most recent binaries.  To get the most recent version you'll have to download the source code and build it yourself.  To obtain the source code, click the <a href="https://github.com/LutzBlox/Networking/archive/master.zip">Download ZIP</a> button (or click that link).  Extract the ZIP file and you're ready to go.</p>
 <h2>Building the Library</h3>
@@ -20,9 +20,11 @@ bash ./gradlew build
 </pre>
 <p>The finished <code>.jar</code> files can be found in <code>/build/libs</code>, called <code>networking-X.X.X.jar</code>, <code>networking-X.X.X-sources.jar</code>, and <code>networking-X.X.X-javadoc.jar</code> for the compiled library, source code, and javadocs respectively.</p>
 <p>If you have problems, consult the <a href="#troubleshooting">troubleshooting guide</a>.</p>
+<h2>Using the Library</h2>
+<p>Consult the <a href="https://github.com/LutzBlox/Networking/wiki" target="_blank">LSNL Wiki</a> for tutorials and examples on how to use the library.  For a quick start, see the tutorial on <a href="https://github.com/LutzBlox/Networking/wiki/Creating-a-Basic-Connection" target="_blank">Creating a Basic Connection</a?.
 <h2></h2>
 <a name="troubleshooting"></a>
-<h4>Troubleshooting</h4></a>
+<h2>Troubleshooting</h2></a>
 <p>For more information about an error, append <code>--stacktrace</code> to your build command.  This will print out the stack trace of the error and other information cooresponding to the build process.  For specific errors, see below:</p>
 <ul>
     <li>
