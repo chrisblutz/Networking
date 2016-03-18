@@ -17,10 +17,13 @@ public class QueryType {
 
     private static Map<String, QueryType> types = new HashMap<String, QueryType>();
 
+    /**
+     * This {@code QueryType} requests the IPs currently connected to the remote {@code Connection}
+     */
     public static final QueryType CONNECTED_IPS = createQueryType("net-default:connected_ips", new QueryListener() {
 
         @Override
-        public Object onQuery(Listenable listenable) {
+        public Object onQuery(Connection connection, Listenable listenable) {
 
             ArrayList<String> ips = new ArrayList<String>();
 
@@ -51,10 +54,13 @@ public class QueryType {
             return ips.toArray(new String[ips.size()]);
         }
     });
+    /**
+     * This {@code QueryType} requests the number of current connections to the remote {@code Connection}
+     */
     public static final QueryType NUMBER_OF_CURRENT_CONNECTIONS = createQueryType("net-default:num_connected", new QueryListener() {
 
         @Override
-        public Object onQuery(Listenable listenable) {
+        public Object onQuery(Connection connection, Listenable listenable) {
 
             int num = 0;
 
@@ -70,6 +76,24 @@ public class QueryType {
             return num;
         }
     });
+    /**
+     * This {@code QueryType} requests that the encryption key for the remote {@code Connection} be changed
+     */
+    public static final QueryType RESET_ENCRYPTION_KEY = createQueryType("net-default:reset_encryption_key", new QueryListener() {
+
+        @Override
+        public Object onQuery(Connection connection, Listenable listenable) {
+
+            if(connection.getEncryptionKey() != null) {
+
+                return connection.getEncryptionKey().resetKey();
+
+            }else{
+
+                return false;
+            }
+        }
+    });
 
     private String id;
     private QueryListener listener;
@@ -80,16 +104,35 @@ public class QueryType {
         this.listener = listener;
     }
 
+    /**
+     * Gets the ID of this {@code QueryType}
+     *
+     * @return The ID of this {@code QueryType}
+     */
     public String getId() {
 
         return id;
     }
 
-    public Object query(Listenable listenable) {
+    /**
+     * Executes a query on this {@code QueryType}
+     *
+     * @param connection The {@code Connection} requesting the query
+     * @param listenable The {@code Listenable} for the {@code Connection}
+     * @return The result of the query on this {@code QueryType}
+     */
+    public Object query(Connection connection, Listenable listenable) {
 
-        return listener == null ? null : listener.onQuery(listenable);
+        return listener == null ? null : listener.onQuery(connection, listenable);
     }
 
+    /**
+     * Creates a new {@code QueryType} with the specified ID and {@code QueryListener}
+     *
+     * @param id The ID to use for this {@code QueryType}
+     * @param listener The {@code QueryListener} to use when a {@code Connection} receives a query for this {@code QueryType}
+     * @return The {@code QueryType} created with the specified ID and {@code QueryListener}
+     */
     public static QueryType createQueryType(String id, QueryListener listener) {
 
         if (!types.
@@ -102,16 +145,27 @@ public class QueryType {
         return types.get(id);
     }
 
+    /**
+     * Gets all of the currently registered {@code QueryTypes}
+     *
+     * @return A {@code Map} containing IDs as keys for their respective {@code QueryTypes}
+     */
     public static Map<String, QueryType> getTypes() {
 
         return types;
     }
 
-    public static QueryType getType(String name){
+    /**
+     * Gets the {@code QueryType} for the specified ID
+     *
+     * @param id The ID to use to retrieve the {@code QueryType}
+     * @return The {@code QueryType} with the specified ID, or {@code null} if no {@code QueryType} exists
+     */
+    public static QueryType getType(String id){
 
-        if(getTypes().containsKey(name)){
+        if(getTypes().containsKey(id)){
 
-            return getTypes().get(name);
+            return getTypes().get(id);
         }
 
         return null;

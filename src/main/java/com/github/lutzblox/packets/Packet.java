@@ -71,7 +71,7 @@ public class Packet {
 
     private ExtendedMap data = new ExtendedMap();
 
-    private boolean isVital = false, encrypt = false;
+    private boolean isVital = false;
 
     /**
      * Creates an empty {@code Packet}
@@ -244,16 +244,6 @@ public class Packet {
         return isVital;
     }
 
-    public void setEncrypted(boolean encrypt){
-
-        this.encrypt = encrypt;
-    }
-
-    public boolean getEncrypted(){
-
-        return encrypt;
-    }
-
     /**
      * Checks whether or not this {@code Packet} contains no data pieces
      *
@@ -280,20 +270,32 @@ public class Packet {
         return false;
     }
 
-    public Map<String, Object> getAllForType(Class<?> cl){
+    /**
+     * Gets all of the values of the specified type
+     *
+     * @param cl The type to retrieve
+     * @return A {@code Map} containing all values of the specified type and their respective keys
+     */
+    public Map<String, Object> getAllForType(Class<?> cl) {
 
         return data.getType(cl);
     }
 
-    public Map<String, Object> getAllForNamePrefix(String prefix){
+    /**
+     * Gets all of the keys that start with the specified prefix and their respective values
+     *
+     * @param prefix The prefix to check for
+     * @return A {@code Map} containing all keys that start with the specified prefix and their respective values
+     */
+    public Map<String, Object> getAllForNamePrefix(String prefix) {
 
         Map<String, Object> d = new HashMap<String, Object>();
 
-        for(Class<?> c : data.typeSet()){
+        for (Class<?> c : data.typeSet()) {
 
-            for(String name : data.keySet(c)){
+            for (String name : data.keySet(c)) {
 
-                if(name.startsWith(prefix)){
+                if (name.startsWith(prefix)) {
 
                     d.put(name.substring(prefix.length()), data.get(c, name));
                 }
@@ -303,18 +305,28 @@ public class Packet {
         return d;
     }
 
+    /**
+     * Removes all of the values of the specified type
+     *
+     * @param cl The type to remove
+     */
     public void removeAllForType(Class<?> cl) {
 
         data.clear(cl);
     }
 
+    /**
+     * Removes all of the keys that start with the specified prefix and their respective values
+     *
+     * @param prefix The prefix to check for
+     */
     public void removeAllForNamePrefix(String prefix) {
 
-        for(Class<?> c : data.typeSet()){
+        for (Class<?> c : data.typeSet()) {
 
-            for(String name : data.keySet(c)){
+            for (String name : data.keySet(c)) {
 
-                if(name.startsWith(prefix)){
+                if (name.startsWith(prefix)) {
 
                     data.removeKeyInType(c, name);
                 }

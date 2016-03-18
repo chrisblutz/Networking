@@ -4,6 +4,7 @@ import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
+import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.utils.ExtendedMap;
 
 import java.util.ArrayList;
@@ -46,10 +47,11 @@ public class PacketWriter {
      * Turns a {@code Packet} into a {@code String} following the
      * {@code PacketHandlerConfiguration} used by this {@code PacketWriter}
      *
+     * @param connection The {@code Connection} that sent the request
      * @param packet The {@code Packet} to turn into a {@code String}
      * @return The {@code String} form of the {@code Packet}
      */
-    public String getPacketAsWriteableString(Packet packet) {
+    public String getPacketAsWriteableString(Connection connection, Packet packet) {
 
         errors.clear();
 

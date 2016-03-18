@@ -1,51 +1,54 @@
 package com.github.lutzblox;
 
 import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
+import com.github.lutzblox.handshake.HandshakeClient;
+import com.github.lutzblox.handshake.HandshakeServer;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
-import com.github.lutzblox.packets.encryption.EncryptionKey;
 import com.github.lutzblox.sockets.Connection;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 
-public class EncryptedPacketTest extends TestCase {
+public class HandshakeTest extends TestCase {
 
+    private long communications = 0;
     private boolean finished = false, errored = false;
     private String errorMessage = "";
 
-    public EncryptedPacketTest(String name) {
+    public HandshakeTest(String name) {
 
         super(name);
     }
 
     public static TestSuite suite() {
 
-        return new TestSuite(EncryptedPacketTest.class);
+        return new TestSuite(HandshakeTest.class);
     }
 
-    public void testEncryptedPacket() {
+    public void testHandshake() {
 
-        EncryptionKey key = new EncryptionKey("THISISATESTKEY12", null);
-
-        final Server server = new Server(12354, "EncryptedPacketTest");
-        server.getConnections().setAllEncrypted(true, key);
+        final HandshakeServer server = new HandshakeServer(12356, "HandshakeTest");
         server.addErrorReporter(ErrorReporterFactory.newInstance());
         server.addNetworkListener(new ServerListener() {
 
             @Override
             public void onReceive(Connection connection, Packet packet) {
 
+                Packet p = new Packet();
+                p.putData("test", "test");
+
+                server.sendPacket(connection, p);
             }
 
             @Override
             public Packet onConnect(Connection c, Packet data) {
 
                 System.out.println("Server: Connection received from IP "
-                        + c.getIp());
+                        + c.getIp() + "!");
 
-                data.putData("testKey", "testValue");
+                data.putData("test", "test");
 
                 return data;
             }
@@ -53,6 +56,10 @@ public class EncryptedPacketTest extends TestCase {
             @Override
             public void onTimeout(Connection connection) {
 
+                System.out.println("Timed out!");
+
+                errored = true;
+                errorMessage = "Connection timed out!";
             }
 
             @Override
@@ -61,36 +68,40 @@ public class EncryptedPacketTest extends TestCase {
             }
         });
 
-        final Client client = new Client("0.0.0.0", 12354);
-        client.getConnection().setEncrypted(true, key);
+        final HandshakeClient client = new HandshakeClient("0.0.0.0", 12356);
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 
             @Override
             public void onReceive(Connection connection, Packet packet) {
 
+                communications++;
+
+                Packet p = new Packet();
+                p.putData("test", "test");
+
+                client.sendPacket(p, true);
             }
 
             @Override
             public void onConnect(Packet packet) {
 
-                if (packet.hasData("testKey") && packet.getData("testKey").equals("testValue")) {
+                System.out
+                        .println("Connected!");
 
-                    System.out
-                            .println("Client: Successfully received encrypted packet!");
+                Packet p = new Packet();
+                p.putData("test", "test");
 
-                } else {
-
-                    errored = true;
-                    errorMessage = packet.hasData("testKey") ? "Incorrect value received!" : "No 'testKey' in the packet!";
-                }
-
-                finished = true;
+                client.sendPacket(p, true);
             }
 
             @Override
             public void onTimeout(Connection connection) {
 
+                System.out.println("Timed out!");
+
+                errored = true;
+                errorMessage = "Connection timed out!";
             }
         });
 
@@ -103,6 +114,12 @@ public class EncryptedPacketTest extends TestCase {
             System.out.println("Starting client...");
 
             client.connect();
+
+            System.out.println("Waiting for 5 seconds...");
+
+            Thread.sleep(5000);
+
+            finished = true;
 
         } catch (Exception e) {
 
@@ -140,6 +157,14 @@ public class EncryptedPacketTest extends TestCase {
 
             errored = true;
             errorMessage = e.getClass().getName();
+        }
+
+        System.out.println("Number of Non-Empty Client-Server Communications: "+communications);
+
+        if(communications == 0){
+
+            errored = true;
+            errorMessage = "0 communications!";
         }
 
         if (errored) {

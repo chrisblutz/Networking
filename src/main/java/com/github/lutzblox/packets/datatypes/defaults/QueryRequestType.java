@@ -6,22 +6,33 @@ import com.github.lutzblox.query.QueryType;
 
 
 /**
+ * A {@code DataType} representing a {@code QueryRequest} object
+ *
  * @author Christopher Lutz
  */
 public class QueryRequestType extends DataType {
-    
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Class<?> getTypeClass() {
 
         return QueryRequest.class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
 
         return "qrq";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object readType(String toRead) {
 
@@ -42,6 +53,9 @@ public class QueryRequestType extends DataType {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String writeType(Object toWrite) {
 

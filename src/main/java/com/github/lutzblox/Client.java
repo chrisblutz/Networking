@@ -46,16 +46,33 @@ public class Client extends ClientListenable {
         this.port = port;
     }
 
+    /**
+     * Sets the {@code QueryPolicy} for the specified {@code QueryType} on this {@code Client}
+     *
+     * @param type The {@code QueryType} to set the policy for
+     * @param policy The {@code QueryPolicy} to set
+     */
     public void setQueryPolicy(QueryType type, QueryPolicy policy) {
 
         policies.put(type, policy);
     }
 
+    /**
+     * Gets all of the {@code QueryPolicies} for this {@code Client}
+     *
+     * @return A {@code Map} containing all of the {@code QueryPolicies} attached to this {@code Client} and their respective {@code QueryTypes}
+     */
     public Map<QueryType, QueryPolicy> getQueryPolicies() {
 
         return policies;
     }
 
+    /**
+     * Gets the {@code QueryPolicy} for the specified {@code QueryType}
+     *
+     * @param type The {@code QueryType} to retrieve the policy for
+     * @return The {@code QueryPolicy} associated with the specified {@code QueryType}
+     */
     public QueryPolicy getQueryPolicy(QueryType type) {
 
         return getQueryPolicies().get(type);

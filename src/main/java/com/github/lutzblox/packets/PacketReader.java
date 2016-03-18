@@ -4,6 +4,7 @@ import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
+import com.github.lutzblox.sockets.Connection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +46,11 @@ public class PacketReader {
      * Turns a {@code String} into a {@code Packet} following the
      * {@code PacketHandlerConfiguration} used by this {@code PacketReader}
      *
+     * @param connection The {@code Connection} that sent the request
      * @param toParse The {@code String} to turn into a {@code Packet}
      * @return The {@code Packet} form of the {@code String}
      */
-    public Packet getPacketFromString(String toParse) {
+    public Packet getPacketFromString(Connection connection, String toParse) {
 
         Packet p = new Packet();
 

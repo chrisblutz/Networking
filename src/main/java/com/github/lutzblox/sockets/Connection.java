@@ -11,6 +11,7 @@ import com.github.lutzblox.packets.PacketReader;
 import com.github.lutzblox.packets.PacketWriter;
 import com.github.lutzblox.packets.encryption.EncryptedPacketReader;
 import com.github.lutzblox.packets.encryption.EncryptedPacketWriter;
+import com.github.lutzblox.packets.encryption.EncryptionKey;
 import com.github.lutzblox.query.*;
 import com.github.lutzblox.states.State;
 
@@ -51,7 +52,7 @@ public class Connection {
     private long ping = -1, pingStart = 0, pingTotal = 0, pingTimes = 0;
 
     private boolean encrypted = false, allowSettingState = true, running = false, serverSide = false, firstReceive = true,
-            firstSend = true, shouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true, initialized = false, qrySent = false;
+            firstSend = true, shouldRespond = false, pingShouldRespond = false, remoteClosed = false, canExecute = true, canGetInput = true, canOutput = true, initialized = false, qrySent = false;
 
     private int readTimeout = 8000;
 
@@ -65,6 +66,8 @@ public class Connection {
     private Map<String, Query> toQuery = new ConcurrentHashMap<String, Query>();
     private Map<String, Query> queries = new ConcurrentHashMap<String, Query>();
     private Map<String, Object> completedQueries = new ConcurrentHashMap<String, Object>();
+
+    private EncryptionKey encryptionKey = null;
 
     /**
      * Creates a new {@code Connection} with the specified parameters
@@ -82,12 +85,35 @@ public class Connection {
         this(listenable, socket, state, serverSide, true);
     }
 
+    /**
+     * Creates a new {@code Connection} with the specified parameters
+     *
+     * @param listenable        The {@code Listenable} object that created this
+     *                          {@code Connection}
+     * @param socket            The {@code Socket} to wrap in this {@code Connection}
+     * @param state             The beginning {@code State} of this {@code Connection}
+     * @param serverSide        Whether or not this {@code Connection} represents a
+     *                          server-side connection
+     * @param allowSettingState Whether or not {@code setToSend()} or {@code setToReceive()} have any effect on this {@code Connection}'s {@code State}
+     * @param policies          The {@code QueryPolicies} to use when this server/client is queried
+     */
     public Connection(Listenable listenable, Socket socket, State state, boolean serverSide, boolean allowSettingState, Map<QueryType, QueryPolicy> policies) {
 
         this(listenable, socket, state, serverSide, allowSettingState);
         this.policies = policies;
     }
 
+    /**
+     * Creates a new {@code Connection} with the specified parameters
+     *
+     * @param listenable The {@code Listenable} object that created this
+     *                   {@code Connection}
+     * @param socket     The {@code Socket} to wrap in this {@code Connection}
+     * @param state      The beginning {@code State} of this {@code Connection}
+     * @param serverSide Whether or not this {@code Connection} represents a
+     *                   server-side connection
+     * @param policies   The {@code QueryPolicies} to use when this server/client is queried
+     */
     public Connection(Listenable listenable, Socket socket, State state,
                       boolean serverSide, Map<QueryType, QueryPolicy> policies) {
 
@@ -194,16 +220,33 @@ public class Connection {
         this.serverSide = false;
     }
 
+    /**
+     * Sets the {@code QueryPolicy} to use when this server receives a query of the specified {@code QueryType}
+     *
+     * @param type   The {@code QueryType} to assign the policy to
+     * @param policy The {@code QueryPolicy} to assign to the type
+     */
     public void setQueryPolicy(QueryType type, QueryPolicy policy) {
 
         policies.put(type, policy);
     }
 
+    /**
+     * Gets the {@code QueryPolicies} attached to this {@code Connection}
+     *
+     * @return A {@code Map} of the {@code QueryTypes} and their respective {@code QueryPolicies}
+     */
     public Map<QueryType, QueryPolicy> getQueryPolicies() {
 
         return policies;
     }
 
+    /**
+     * Gets the {@code QueryPolicy} attached to this {@code Connection} for the specified {@code QueryType}
+     *
+     * @param type The {@code QueryType} to retrieve the policy from
+     * @return The {@code QueryPolicy} for the specified {@code QueryType}
+     */
     public QueryPolicy getQueryPolicy(QueryType type) {
 
         return getQueryPolicies().get(type);
@@ -384,16 +427,43 @@ public class Connection {
         }
     }
 
-    public void setEncrypted(boolean encrypted) {
+    /**
+     * Sets this {@code Connection} to be encrypted with the specified {@code EncryptionKey}
+     *
+     * @param encrypted {@code true} to encrypt the {@code Connection}, {@code false} to stop encrypting
+     * @param key       The {@code EncryptionKey} to use for the encryption
+     */
+    public void setEncrypted(boolean encrypted, EncryptionKey key) {
 
+        this.encryptionKey = encrypted ? key : null;
         this.encrypted = encrypted;
     }
 
+    /**
+     * Gets whether or not the {@code Connection} is set to be encrypted
+     *
+     * @return Whether or not this {@code Connection} is set to be encrypted (i.e. the {@code setEncrypted(true, ...)} has been called)
+     */
     public boolean getEncrypted() {
 
         return encrypted;
     }
 
+    /**
+     * Gets the {@code EncryptionKey} used to encrypt this {@code Connection}
+     *
+     * @return The {@code EncryptionKey} used to encrypt this {@code Connection}, or {@code null} if the {@code Connection} is not being encrypted
+     */
+    public EncryptionKey getEncryptionKey() {
+
+        return encryptionKey;
+    }
+
+    /**
+     * Gets whether or not this {@code Connection} is initialized.  The only way this would return {@code false} is if the {@code Connection} was created using the default constructor
+     *
+     * @return Whether or not this {@code Connection} is initialized
+     */
     public boolean getInitialized() {
 
         return initialized;
@@ -461,7 +531,7 @@ public class Connection {
                             p = ((ServerListenable) listenable)
                                     .fireListenerOnConnect(this, p);
 
-                            if(p == null){
+                            if (p == null) {
 
                                 p = new Packet();
                             }
@@ -476,15 +546,15 @@ public class Connection {
 
                             p = handleQueries(p);
 
-                            if (p.getEncrypted() || encrypted) {
+                            if (encrypted) {
 
-                                toWrite = encryptedWriter.getPacketAsWriteableString(p);
+                                toWrite = encryptedWriter.getPacketAsWriteableString(this, p);
                                 errors = encryptedWriter.getErrors();
 
                             } else {
 
                                 toWrite = packetWriter
-                                        .getPacketAsWriteableString(p);
+                                        .getPacketAsWriteableString(this, p);
                                 errors = packetWriter.getErrors();
                             }
 
@@ -498,6 +568,7 @@ public class Connection {
                             if (shouldRespond) {
 
                                 pingStart = System.currentTimeMillis();
+                                pingShouldRespond = true;
                             }
 
                             for (Throwable t : errors) {
@@ -524,15 +595,15 @@ public class Connection {
 
                             waiting = handleQueries(waiting);
 
-                            if (waiting.getEncrypted() || encrypted) {
+                            if (encrypted) {
 
-                                toWrite = encryptedWriter.getPacketAsWriteableString(waiting);
+                                toWrite = encryptedWriter.getPacketAsWriteableString(this, waiting);
                                 errors = encryptedWriter.getErrors();
 
                             } else {
 
                                 toWrite = packetWriter
-                                        .getPacketAsWriteableString(waiting);
+                                        .getPacketAsWriteableString(this, waiting);
                                 errors = packetWriter.getErrors();
                             }
 
@@ -541,6 +612,12 @@ public class Connection {
                             if (qrySent) {
 
                                 qrySent = false;
+                            }
+
+                            if (shouldRespond) {
+
+                                pingStart = System.currentTimeMillis();
+                                pingShouldRespond = true;
                             }
 
                             for (Throwable t : errors) {
@@ -569,15 +646,15 @@ public class Connection {
 
                             p = handleQueries(p);
 
-                            if (p.getEncrypted() || encrypted) {
+                            if (encrypted) {
 
-                                toWrite = encryptedWriter.getPacketAsWriteableString(p);
+                                toWrite = encryptedWriter.getPacketAsWriteableString(this, p);
                                 errors = encryptedWriter.getErrors();
 
                             } else {
 
                                 toWrite = packetWriter
-                                        .getPacketAsWriteableString(p);
+                                        .getPacketAsWriteableString(this, p);
                                 errors = packetWriter.getErrors();
                             }
 
@@ -586,6 +663,12 @@ public class Connection {
                             if (qrySent) {
 
                                 qrySent = false;
+                            }
+
+                            if (shouldRespond) {
+
+                                pingStart = System.currentTimeMillis();
+                                pingShouldRespond = true;
                             }
 
                             for (Throwable t : errors) {
@@ -640,7 +723,7 @@ public class Connection {
                                 remoteClosed = true;
                             }
 
-                            if (shouldRespond) {
+                            if (pingShouldRespond) {
 
                                 ping = System.currentTimeMillis() - pingStart;
                                 pingTotal += ping;
@@ -672,13 +755,13 @@ public class Connection {
 
                                 if (readStr.startsWith(":ENC:")) {
 
-                                    p = encryptedReader.getPacketFromString(readStr);
+                                    p = encryptedReader.getPacketFromString(this, readStr);
                                     errors = encryptedReader.getErrors();
 
                                 } else {
 
                                     p = packetReader
-                                            .getPacketFromString(readStr);
+                                            .getPacketFromString(this, readStr);
                                     errors = packetReader.getErrors();
                                 }
 
@@ -710,7 +793,7 @@ public class Connection {
                                     QueryPolicy policy = policies.get(q.getType());
                                     if (policy != null && policy.getPolicyDecider().allow(getConnectionInfo())) {
 
-                                        result = q.getType().query(listenable);
+                                        result = q.getType().query(this, listenable);
 
                                     } else {
 
@@ -917,6 +1000,13 @@ public class Connection {
         out.println(data);
     }
 
+    /**
+     * Creates and executes a {@code Query} against the remote side of this {@code Connection}
+     *
+     * @param id The id to use for the {@code Query}
+     * @param type The type of query to request
+     * @return A {@code Query} object to be used to obtain the results of the query request
+     */
     public Query query(String id, QueryType type) {
 
         Query q = new Query(id, type);
@@ -933,9 +1023,19 @@ public class Connection {
         return q;
     }
 
+    /**
+     * Retrieves a {@code ConnectionInfo} object containing data about this {@code Connection}
+     * This data includes:
+     *  - The {@code IP} of this {@code Connection}
+     *  - Whether or not this {@code Connection} is encrypted
+     *  - Whether or not this {@code Connection} is open
+     *  - Whether or not this {@code Connection} is initialized ({@code true} unless this {@code Connection} was created by using the default constructor)
+     *
+     * @return A {@code ConnectionInfo} object containing data about this {@code Connection}
+     */
     public ConnectionInfo getConnectionInfo() {
 
-        return new ConnectionInfo(getIp(), getEncrypted(), !socket.isClosed() && socket.isConnected() && !remoteClosed, getInitialized());
+        return new ConnectionInfo(this);
     }
 
     /**

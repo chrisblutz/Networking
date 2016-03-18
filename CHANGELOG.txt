@@ -1,13 +1,14 @@
 ========[ 1.2.0 ]========
 + Added localizations for errors and other messages
 + Added central Errors class
-+ Added support for encrypted Packets and Connections
++ Added support for encrypted Connections
 + Added support to query the remote end for data
++ Added HandshakeClient/Server to replace their ConstantPing predecessors
 ~ Servers now hold Connections in ConnectionBundles rather than Connection[]s
 ~ Servers now include data on their name, maximum connection number, and number of current connections when the first packet is sent
 ~ Connections now more optimized: when set to SENDING, the thread waits until there is a waiting packet rather than looping through all of the statements every time
 - Removed DatabaseClient/Server because there are better alternatives out there for the same effect.
-- Removed ConstantPingClient/Server because they didn't work (tests passed but nothing ever happened).  Most likely will be added again later as HandshakeClient/Server.
+- Removed ConstantPingClient/Server because they didn't work (tests passed but nothing ever happened).
 
 ========[ 1.1.0 ]========
 + Added database server/client

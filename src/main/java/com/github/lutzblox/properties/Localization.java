@@ -7,6 +7,11 @@ import java.util.Locale;
 import java.util.Properties;
 
 
+/**
+ * This class holds all localization utilities
+ *
+ * @author Christopher Lutz
+ */
 public class Localization {
 
     public static final String THREAD_HAS_ERRORED = "thread_errored";
@@ -26,6 +31,13 @@ public class Localization {
     private static String locale = null;
     private static Properties properties = new Properties();
 
+    /**
+     * Gets the message associated with the specified ID
+     *
+     * @param id The ID to retrieve
+     * @param args The arguments to substitute into the message
+     * @return The message associated with the ID
+     */
     public static String getMessage(String id, String... args) {
 
         if (!loaded) {
@@ -50,6 +62,9 @@ public class Localization {
         }
     }
 
+    /**
+     * Loads the current locale's properties file
+     */
     public static void load() {
 
         Locale l = Locale.getDefault();
@@ -95,6 +110,11 @@ public class Localization {
         }
     }
 
+    /**
+     * Retrieves the current locale of the system and loads the localization for it
+     *
+     * @return The {@code String} representation of the current locale
+     */
     public static String getLocale() {
 
         if (!loaded || locale == null) {

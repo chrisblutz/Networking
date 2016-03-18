@@ -6,22 +6,33 @@ import java.util.ArrayList;
 
 
 /**
+ * A {@code DataType} representing a {@code String[]}
+ *
  * @author Christopher Lutz
  */
 public class StringArrayType extends DataType {
-    
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Class<?> getTypeClass() {
 
         return String[].class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
 
         return "strarr";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object readType(String toRead) {
 
@@ -35,6 +46,9 @@ public class StringArrayType extends DataType {
         return reading.toArray(new String[reading.size()]);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String writeType(Object toWrite) {
 

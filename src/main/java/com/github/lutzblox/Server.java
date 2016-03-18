@@ -25,10 +25,22 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Server extends ServerListenable {
 
+    /**
+     * Contains {@code Packet} keys for the initial server-to-client communication
+     */
     public static final class ConnectionKeys {
 
+        /**
+         * Represents the name of the {@code Server} (literal key is {@code 'server:name'})
+         */
         public static final String SERVER_NAME = "server:name";
+        /**
+         * Represents the maximum number of {@code Connections} possible to this {@code Server} (literal key is {@code 'server:maxcon'})
+         */
         public static final String MAX_CONNECTIONS = "server:maxcon";
+        /**
+         * Represents the current number of {@code Connections} to this {@code Server} (literal key is {@code 'server:curcon'})
+         */
         public static final String CURRENTLY_CONNECTED = "server:curcon";
     }
 
@@ -101,6 +113,12 @@ public class Server extends ServerListenable {
         this.failCheck = failCheck;
     }
 
+    /**
+     * Sets the {@code QueryPolicy} for the specified {@code QueryType} on this {@code Server}
+     *
+     * @param type The {@code QueryType} to set the policy for
+     * @param policy The {@code QueryPolicy} to set
+     */
     public void setQueryPolicy(QueryType type, QueryPolicy policy) {
 
         policies.put(type, policy);
@@ -111,11 +129,22 @@ public class Server extends ServerListenable {
         }
     }
 
+    /**
+     * Gets all of the {@code QueryPolicies} for this {@code Server}
+     *
+     * @return A {@code Map} containing all of the {@code QueryPolicies} attached to this {@code Server} and their respective {@code QueryTypes}
+     */
     public Map<QueryType, QueryPolicy> getQueryPolicies() {
 
         return policies;
     }
 
+    /**
+     * Gets the {@code QueryPolicy} for the specified {@code QueryType}
+     *
+     * @param type The {@code QueryType} to retrieve the policy for
+     * @return The {@code QueryPolicy} associated with the specified {@code QueryType}
+     */
     public QueryPolicy getQueryPolicy(QueryType type) {
 
         return getQueryPolicies().get(type);
@@ -270,6 +299,11 @@ public class Server extends ServerListenable {
                 true, policies);
     }
 
+    /**
+     * Gets the {@code Packet} containing the default information specified in the {@code ConnectionKeys} class
+     *
+     * @return The {@code Packet} with the default {@code Server} information
+     */
     public Packet getInformationPacket() {
 
         Packet p = new Packet();
