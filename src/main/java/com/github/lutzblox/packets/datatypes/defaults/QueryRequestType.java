@@ -44,7 +44,7 @@ public class QueryRequestType extends DataType {
             String reqType = parts[1].replace("$(cma);", ",");
             QueryType type = QueryType.getType(reqType);
 
-            if(type != null){
+            if (type != null) {
 
                 return new QueryRequest(id, type);
             }
@@ -61,6 +61,6 @@ public class QueryRequestType extends DataType {
 
         QueryRequest q = (QueryRequest) toWrite;
 
-        return q.getId().replace(",", "$(cma);")+","+q.getType().getId().replace(",", "$(cma);");
+        return q.getId().replace(",", "$(cma);") + "," + q.getType().getId().replace(",", "$(cma);");
     }
 }

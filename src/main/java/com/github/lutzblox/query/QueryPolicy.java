@@ -52,7 +52,7 @@ public class QueryPolicy {
     /**
      * Creates a new {@code QueryPolicy} with the specified {@code Action}, message, and {@code PolicyDecider}
      *
-     * @param action The {@code Action} that determines the acceptance/rejection of incoming {@code Queries}
+     * @param action  The {@code Action} that determines the acceptance/rejection of incoming {@code Queries}
      * @param message The message to display when the response is sent (if the {@code Action} is {@code ACCEPT}, this will never be seen)
      * @param decider The {@code PolicyDecider} to use when making the decision to accept/reject the {@code Query}
      */
@@ -113,7 +113,7 @@ public class QueryPolicy {
     /**
      * Creates a new {@code QueryPolicy} that decides to accept/reject {@code Queries} based on each unique {@code Query}
      *
-     * @param decider The {@code PolicyDecider} to use to decide whether to accept or reject {@code Queries}
+     * @param decider          The {@code PolicyDecider} to use to decide whether to accept or reject {@code Queries}
      * @param rejectionMessage The message to send in response to rejected {@code Queries}
      * @return A {@code QueryPolicy} with the {@code DECIDE} action
      */

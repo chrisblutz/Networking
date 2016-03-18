@@ -1,12 +1,12 @@
 package com.github.lutzblox;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.lutzblox.listeners.NetworkListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

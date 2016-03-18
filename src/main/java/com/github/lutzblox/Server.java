@@ -116,7 +116,7 @@ public class Server extends ServerListenable {
     /**
      * Sets the {@code QueryPolicy} for the specified {@code QueryType} on this {@code Server}
      *
-     * @param type The {@code QueryType} to set the policy for
+     * @param type   The {@code QueryType} to set the policy for
      * @param policy The {@code QueryPolicy} to set
      */
     public void setQueryPolicy(QueryType type, QueryPolicy policy) {

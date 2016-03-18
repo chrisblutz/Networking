@@ -13,10 +13,10 @@ public class QueryRequest {
     /**
      * Creates a new {@code QueryRequest} using the specified id and {@code QueryType}
      *
-     * @param id The id to use
+     * @param id   The id to use
      * @param type The {@code QueryType} to use
      */
-    public QueryRequest(String id, QueryType type){
+    public QueryRequest(String id, QueryType type) {
 
         this.id = id;
         this.type = type;
@@ -27,7 +27,7 @@ public class QueryRequest {
      *
      * @return The id of this {@code QueryRequest}
      */
-    public String getId(){
+    public String getId() {
 
         return id;
     }
@@ -37,7 +37,7 @@ public class QueryRequest {
      *
      * @return The {@code QueryType} of this {@code QueryRequest}
      */
-    public QueryType getType(){
+    public QueryType getType() {
 
         return type;
     }

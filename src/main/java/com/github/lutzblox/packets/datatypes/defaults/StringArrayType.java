@@ -38,7 +38,7 @@ public class StringArrayType extends DataType {
 
         ArrayList<String> reading = new ArrayList<String>();
 
-        for(String s : toRead.split(",")){
+        for (String s : toRead.split(",")) {
 
             reading.add(s.replace("$(cma);", ","));
         }

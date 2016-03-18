@@ -16,7 +16,7 @@ public class Query {
     /**
      * Creates a new {@code Query} of the specified {@code QueryType} using the specified id
      *
-     * @param id The id of the query
+     * @param id   The id of the query
      * @param type The {@code QueryType} of this query
      */
     public Query(String id, QueryType type) {
@@ -53,7 +53,7 @@ public class Query {
      *
      * @return Whether or not the status of this {@code Query} is {@code WORKING}
      */
-    public boolean isWorking(){
+    public boolean isWorking() {
 
         return getStatus() == QueryStatus.Status.WORKING;
     }
@@ -63,7 +63,7 @@ public class Query {
      *
      * @return The message associated with the current status
      */
-    public String getStatusMessage(){
+    public String getStatusMessage() {
 
         return statusMessage;
     }
@@ -103,7 +103,7 @@ public class Query {
      *
      * @return The {@code QueryType} of this {@code Query}
      */
-    public QueryType getType(){
+    public QueryType getType() {
 
         return type;
     }

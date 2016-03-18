@@ -48,7 +48,7 @@ public class PacketWriter {
      * {@code PacketHandlerConfiguration} used by this {@code PacketWriter}
      *
      * @param connection The {@code Connection} that sent the request
-     * @param packet The {@code Packet} to turn into a {@code String}
+     * @param packet     The {@code Packet} to turn into a {@code String}
      * @return The {@code String} form of the {@code Packet}
      */
     public String getPacketAsWriteableString(Connection connection, Packet packet) {

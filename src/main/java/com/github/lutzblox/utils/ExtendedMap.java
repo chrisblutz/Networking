@@ -5,8 +5,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.lutzblox.packets.datatypes.wrappers.Null;
-
 
 /**
  * A map class that encompasses a map within a map

@@ -1,13 +1,12 @@
 package com.github.lutzblox;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.sockets.Connection;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 public class TimeoutTest extends TestCase {

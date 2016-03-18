@@ -1003,7 +1003,7 @@ public class Connection {
     /**
      * Creates and executes a {@code Query} against the remote side of this {@code Connection}
      *
-     * @param id The id to use for the {@code Query}
+     * @param id   The id to use for the {@code Query}
      * @param type The type of query to request
      * @return A {@code Query} object to be used to obtain the results of the query request
      */
@@ -1026,10 +1026,10 @@ public class Connection {
     /**
      * Retrieves a {@code ConnectionInfo} object containing data about this {@code Connection}
      * This data includes:
-     *  - The {@code IP} of this {@code Connection}
-     *  - Whether or not this {@code Connection} is encrypted
-     *  - Whether or not this {@code Connection} is open
-     *  - Whether or not this {@code Connection} is initialized ({@code true} unless this {@code Connection} was created by using the default constructor)
+     * - The {@code IP} of this {@code Connection}
+     * - Whether or not this {@code Connection} is encrypted
+     * - Whether or not this {@code Connection} is open
+     * - Whether or not this {@code Connection} is initialized ({@code true} unless this {@code Connection} was created by using the default constructor)
      *
      * @return A {@code ConnectionInfo} object containing data about this {@code Connection}
      */

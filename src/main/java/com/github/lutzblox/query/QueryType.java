@@ -64,11 +64,11 @@ public class QueryType {
 
             int num = 0;
 
-            if(listenable instanceof Client){
+            if (listenable instanceof Client) {
 
                 num = ((Client) listenable).isOpen() ? 1 : 0;
 
-            }else if(listenable instanceof Server){
+            } else if (listenable instanceof Server) {
 
                 num = ((Server) listenable).getConnections().size();
             }
@@ -84,11 +84,11 @@ public class QueryType {
         @Override
         public Object onQuery(Connection connection, Listenable listenable) {
 
-            if(connection.getEncryptionKey() != null) {
+            if (connection.getEncryptionKey() != null) {
 
                 return connection.getEncryptionKey().resetKey();
 
-            }else{
+            } else {
 
                 return false;
             }
@@ -129,7 +129,7 @@ public class QueryType {
     /**
      * Creates a new {@code QueryType} with the specified ID and {@code QueryListener}
      *
-     * @param id The ID to use for this {@code QueryType}
+     * @param id       The ID to use for this {@code QueryType}
      * @param listener The {@code QueryListener} to use when a {@code Connection} receives a query for this {@code QueryType}
      * @return The {@code QueryType} created with the specified ID and {@code QueryListener}
      */
@@ -161,9 +161,9 @@ public class QueryType {
      * @param id The ID to use to retrieve the {@code QueryType}
      * @return The {@code QueryType} with the specified ID, or {@code null} if no {@code QueryType} exists
      */
-    public static QueryType getType(String id){
+    public static QueryType getType(String id) {
 
-        if(getTypes().containsKey(id)){
+        if (getTypes().containsKey(id)) {
 
             return getTypes().get(id);
         }

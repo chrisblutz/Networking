@@ -34,7 +34,7 @@ public class QueryStatus {
     private Status status;
     private String message;
 
-    private QueryStatus(Status status, String message){
+    private QueryStatus(Status status, String message) {
 
         this.status = status;
         this.message = message;
@@ -45,7 +45,7 @@ public class QueryStatus {
      *
      * @return The {@code Status} for this {@code QueryStatus}
      */
-    public Status getStatus(){
+    public Status getStatus() {
 
         return status;
     }
@@ -55,7 +55,7 @@ public class QueryStatus {
      *
      * @return The message associated with this {@code QueryStatus}
      */
-    public String getMessage(){
+    public String getMessage() {
 
         return message;
     }
@@ -66,7 +66,7 @@ public class QueryStatus {
      * @param message The message to assign to this {@code QueryStatus}.  Because this is a successful {@code QueryStatus}, this will never actually be seen.
      * @return The new {@code QueryStatus}
      */
-    public static QueryStatus getSuccessfulStatus(String message){
+    public static QueryStatus getSuccessfulStatus(String message) {
 
         return new QueryStatus(Status.SUCCESSFUL, message);
     }
@@ -77,7 +77,7 @@ public class QueryStatus {
      * @param message The message to assign to this {@code QueryStatus}.
      * @return The new {@code QueryStatus}
      */
-    public static QueryStatus getRejectedStatus(String message){
+    public static QueryStatus getRejectedStatus(String message) {
 
         return new QueryStatus(Status.REJECTED, message);
     }
@@ -88,7 +88,7 @@ public class QueryStatus {
      * @param message The message to assign to this {@code QueryStatus}.
      * @return The new {@code QueryStatus}
      */
-    public static QueryStatus getWorkingStatus(String message){
+    public static QueryStatus getWorkingStatus(String message) {
 
         return new QueryStatus(Status.WORKING, message);
     }
@@ -99,7 +99,7 @@ public class QueryStatus {
      * @param message The message to assign to this {@code QueryStatus}.
      * @return The new {@code QueryStatus}
      */
-    public static QueryStatus getTimedOutStatus(String message){
+    public static QueryStatus getTimedOutStatus(String message) {
 
         return new QueryStatus(Status.TIMED_OUT, message);
     }

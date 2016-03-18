@@ -2,54 +2,52 @@ package com.github.lutzblox.exceptions.reporters;
 
 /**
  * A class used to report errors from a {@code Listenable}
- * 
+ *
  * @author Christopher Lutz
  */
 public abstract class ErrorReporter {
 
-	/**
-	 * Called to actually report the data after formatting is completed
-	 * 
-	 * @param toReport
-	 *            The formatted message to report
-	 */
-	protected abstract void report(String toReport);
+    /**
+     * Called to actually report the data after formatting is completed
+     *
+     * @param toReport The formatted message to report
+     */
+    protected abstract void report(String toReport);
 
-	/**
-	 * Reports a {@code Throwable}
-	 * 
-	 * @param t
-	 *            The {@code Throwable} to report
-	 */
-	public void report(Throwable t) {
+    /**
+     * Reports a {@code Throwable}
+     *
+     * @param t The {@code Throwable} to report
+     */
+    public void report(Throwable t) {
 
-		String toReport = t.toString() + "\n";
+        String toReport = t.toString() + "\n";
 
-		for (StackTraceElement e : t.getStackTrace()) {
+        for (StackTraceElement e : t.getStackTrace()) {
 
-			toReport += "    " + e.toString() + "\n";
-		}
+            toReport += "    " + e.toString() + "\n";
+        }
 
-		if (t.getCause() != null) {
+        if (t.getCause() != null) {
 
-			reportCause(t.getCause(), toReport);
-		}
+            reportCause(t.getCause(), toReport);
+        }
 
-		report(toReport.trim());
-	}
+        report(toReport.trim());
+    }
 
-	private void reportCause(Throwable t, String toReport) {
+    private void reportCause(Throwable t, String toReport) {
 
-		toReport += "caused by " + t.toString() + "\n";
+        toReport += "caused by " + t.toString() + "\n";
 
-		for (StackTraceElement e : t.getStackTrace()) {
+        for (StackTraceElement e : t.getStackTrace()) {
 
-			toReport += "    " + e.toString() + "\n";
-		}
+            toReport += "    " + e.toString() + "\n";
+        }
 
-		if (t.getCause() != null) {
+        if (t.getCause() != null) {
 
-			reportCause(t.getCause(), toReport);
-		}
-	}
+            reportCause(t.getCause(), toReport);
+        }
+    }
 }

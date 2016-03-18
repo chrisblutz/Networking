@@ -43,7 +43,7 @@ public class QueryTest extends TestCase {
             public Packet onConnect(Connection c, Packet data) {
 
                 System.out.println("Server: Connection received from IP "
-                        + c.getIp()+"!");
+                        + c.getIp() + "!");
 
                 return data;
             }

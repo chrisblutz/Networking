@@ -70,7 +70,7 @@ public class EncryptedPacketWriter extends PacketWriter {
      * {@code PacketHandlerConfiguration} used by this {@code EncryptedPacketWriter}
      *
      * @param connection The {@code Connection} that sent the request
-     * @param packet The {@code Packet} to turn into an encrypted {@code String}
+     * @param packet     The {@code Packet} to turn into an encrypted {@code String}
      * @return The encrypted {@code String} form of the {@code Packet}
      */
     @Override

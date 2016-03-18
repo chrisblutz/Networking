@@ -70,7 +70,7 @@ public class ConnectionBundle implements Iterable<Connection> {
      *
      * @return The size of this {@code ConnectionBundle}
      */
-    public int size(){
+    public int size() {
 
         return connections.size();
     }
@@ -106,9 +106,9 @@ public class ConnectionBundle implements Iterable<Connection> {
     /**
      * Sets the state for all {@code Connections} in this {@code ConnectionBundle} to {@code RECEIVING}
      */
-    public void setAllToReceive(){
+    public void setAllToReceive() {
 
-        for(Connection c : connections){
+        for (Connection c : connections) {
 
             c.setToReceive();
         }
@@ -117,9 +117,9 @@ public class ConnectionBundle implements Iterable<Connection> {
     /**
      * Sets the state for all {@code Connections} in this {@code ConnectionBundle} to {@code SENDING}
      */
-    public void setAllToSend(){
+    public void setAllToSend() {
 
-        for(Connection c : connections){
+        for (Connection c : connections) {
 
             c.setToSend();
         }
@@ -129,11 +129,11 @@ public class ConnectionBundle implements Iterable<Connection> {
      * Sets all {@code Connections} in this {@code ConnectionBundle} to be encrypted with the specified {@code EncryptionKey}
      *
      * @param encrypted Whether or not to encrypt the {@code Connections}
-     * @param key The {@code EncryptionKey} to use for the encryption
+     * @param key       The {@code EncryptionKey} to use for the encryption
      */
-    public void setAllEncrypted(boolean encrypted, EncryptionKey key){
+    public void setAllEncrypted(boolean encrypted, EncryptionKey key) {
 
-        for(Connection c : connections){
+        for (Connection c : connections) {
 
             c.setEncrypted(encrypted, key);
         }

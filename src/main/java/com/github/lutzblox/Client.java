@@ -49,7 +49,7 @@ public class Client extends ClientListenable {
     /**
      * Sets the {@code QueryPolicy} for the specified {@code QueryType} on this {@code Client}
      *
-     * @param type The {@code QueryType} to set the policy for
+     * @param type   The {@code QueryType} to set the policy for
      * @param policy The {@code QueryPolicy} to set
      */
     public void setQueryPolicy(QueryType type, QueryPolicy policy) {
@@ -117,7 +117,7 @@ public class Client extends ClientListenable {
         open = true;
     }
 
-    protected Connection makeConnection(Socket socket){
+    protected Connection makeConnection(Socket socket) {
 
         return new Connection(this, socket,
                 this.getDefaultConnectionState() == null ? State.RECEIVING

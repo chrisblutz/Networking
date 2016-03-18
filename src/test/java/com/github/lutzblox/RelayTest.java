@@ -1,8 +1,5 @@
 package com.github.lutzblox;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import com.github.lutzblox.exceptions.reporters.ErrorReporterFactory;
 import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.packets.Packet;
@@ -10,6 +7,8 @@ import com.github.lutzblox.relay.RelayClient;
 import com.github.lutzblox.relay.RelayServer;
 import com.github.lutzblox.relay.listeners.RelayListener;
 import com.github.lutzblox.sockets.Connection;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 public class RelayTest extends TestCase {

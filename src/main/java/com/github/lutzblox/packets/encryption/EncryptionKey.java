@@ -18,10 +18,10 @@ public class EncryptionKey {
     /**
      * Creates a new {@code EncryptionKey} object using the specified key
      *
-     * @param key The encryption key to use
+     * @param key           The encryption key to use
      * @param resetListener The {@code EncryptionKeyResetListener} to use when a {@code Connection} receives a query to reset the key
      */
-    public EncryptionKey(String key, EncryptionKeyResetListener resetListener){
+    public EncryptionKey(String key, EncryptionKeyResetListener resetListener) {
 
         this.key = key;
         this.resetListener = resetListener;
@@ -30,10 +30,10 @@ public class EncryptionKey {
     /**
      * Sets the encryption key for this instance
      *
-     * @param key The key to use
+     * @param key           The key to use
      * @param resetListener The {@code EncryptionKeyResetListener} to use when a {@code Connection} receives a query to reset the key
      */
-    public void setKey(String key, EncryptionKeyResetListener resetListener){
+    public void setKey(String key, EncryptionKeyResetListener resetListener) {
 
         this.key = key;
         this.resetListener = resetListener;
@@ -44,7 +44,7 @@ public class EncryptionKey {
      *
      * @return The key used by this {@code EncryptionKey}
      */
-    public String getKey(){
+    public String getKey() {
 
         return key;
     }
@@ -54,9 +54,9 @@ public class EncryptionKey {
      *
      * @return Whether or not the key was reset successfully ({@code false} can either mean that the listener's {@code resetKey()} returned false or that this {@code EncryptionKey} did not have a listener to use)
      */
-    public boolean resetKey(){
+    public boolean resetKey() {
 
-        if(resetListener != null){
+        if (resetListener != null) {
 
             return resetListener.resetKey();
         }
@@ -70,37 +70,37 @@ public class EncryptionKey {
      * @param c The {@code Connection} to query
      * @return Whether or not the reset was successful
      */
-    public static boolean resetEncryptionKey(Connection c){
+    public static boolean resetEncryptionKey(Connection c) {
 
         Query query = c.query("reset-enc", QueryType.RESET_ENCRYPTION_KEY);
 
-        while(query.isWorking());
+        while (query.isWorking()) ;
 
-        if(query.getStatus() == QueryStatus.Status.SUCCESSFUL){
+        if (query.getStatus() == QueryStatus.Status.SUCCESSFUL) {
 
             Object obj = query.getValue();
 
-            if(obj instanceof Boolean){
+            if (obj instanceof Boolean) {
 
                 boolean b = (Boolean) obj;
 
-                if(b && c.getEncryptionKey() != null){
+                if (b && c.getEncryptionKey() != null) {
 
                     c.getEncryptionKey().resetKey();
 
                     return true;
 
-                }else{
+                } else {
 
                     return false;
                 }
 
-            }else{
+            } else {
 
                 return false;
             }
 
-        }else{
+        } else {
 
             return false;
         }

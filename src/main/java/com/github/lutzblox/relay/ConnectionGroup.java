@@ -1,11 +1,11 @@
 package com.github.lutzblox.relay;
 
+import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.sockets.Connection;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.github.lutzblox.packets.Packet;
-import com.github.lutzblox.sockets.Connection;
 
 
 /**

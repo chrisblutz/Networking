@@ -34,7 +34,7 @@ public class Localization {
     /**
      * Gets the message associated with the specified ID
      *
-     * @param id The ID to retrieve
+     * @param id   The ID to retrieve
      * @param args The arguments to substitute into the message
      * @return The message associated with the ID
      */

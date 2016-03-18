@@ -13,9 +13,9 @@ public class ConnectionInfo {
     /**
      * Creates a new {@code ConnectionInfo} object with the specified information
      *
-     * @param ip The IP of the {@code Connection}
-     * @param encrypted Whether or not the {@code Connection} is encrypted
-     * @param open Whether or not the {@code Connection} is open
+     * @param ip          The IP of the {@code Connection}
+     * @param encrypted   Whether or not the {@code Connection} is encrypted
+     * @param open        Whether or not the {@code Connection} is open
      * @param initialized Whether or not the {@code Connection} is initialized ({@code true} unless the {@code Connection} was created with the default {@code Connection} constructor)
      */
     public ConnectionInfo(String ip, boolean encrypted, boolean open, boolean initialized) {
@@ -31,7 +31,7 @@ public class ConnectionInfo {
      *
      * @param c The {@code Connection} to pull information from to create this {@code ConnectionInfo} object
      */
-    public ConnectionInfo(Connection c){
+    public ConnectionInfo(Connection c) {
 
         this(c.getIp(), c.getEncrypted(), !c.isClosed() && c.isConnected() && !c.isRemoteClosed(), c.getInitialized());
     }
@@ -41,7 +41,7 @@ public class ConnectionInfo {
      *
      * @return The IP of the {@code Connection}
      */
-    public String getIp(){
+    public String getIp() {
 
         return ip;
     }
@@ -51,7 +51,7 @@ public class ConnectionInfo {
      *
      * @return Whether or not the {@code Connection} is encrypted
      */
-    public boolean getEncrypted(){
+    public boolean getEncrypted() {
 
         return encrypted;
     }
@@ -61,7 +61,7 @@ public class ConnectionInfo {
      *
      * @return Whether or not the {@code Connection} is open
      */
-    public boolean getOpen(){
+    public boolean getOpen() {
 
         return open;
     }
@@ -71,7 +71,7 @@ public class ConnectionInfo {
      *
      * @return Whether or not the {@code Connection} is initialized ({@code true} unless the {@code Connection} was created with the default {@code Connection} constructor)
      */
-    public boolean getInitialized(){
+    public boolean getInitialized() {
 
         return initialized;
     }

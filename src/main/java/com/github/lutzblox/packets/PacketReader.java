@@ -47,7 +47,7 @@ public class PacketReader {
      * {@code PacketHandlerConfiguration} used by this {@code PacketReader}
      *
      * @param connection The {@code Connection} that sent the request
-     * @param toParse The {@code String} to turn into a {@code Packet}
+     * @param toParse    The {@code String} to turn into a {@code Packet}
      * @return The {@code Packet} form of the {@code String}
      */
     public Packet getPacketFromString(Connection connection, String toParse) {

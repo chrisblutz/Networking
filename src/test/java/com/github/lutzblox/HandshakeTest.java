@@ -159,9 +159,9 @@ public class HandshakeTest extends TestCase {
             errorMessage = e.getClass().getName();
         }
 
-        System.out.println("Number of Non-Empty Client-Server Communications: "+communications);
+        System.out.println("Number of Non-Empty Client-Server Communications: " + communications);
 
-        if(communications == 0){
+        if (communications == 0) {
 
             errored = true;
             errorMessage = "0 communications!";

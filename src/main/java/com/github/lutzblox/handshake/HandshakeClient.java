@@ -22,7 +22,7 @@ public class HandshakeClient extends Client {
     /**
      * Creates a new {@code HandshakeClient} with the specified IP and port
      *
-     * @param ip The IP to use
+     * @param ip   The IP to use
      * @param port The port to use
      */
     public HandshakeClient(String ip, int port) {
