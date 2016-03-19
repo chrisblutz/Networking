@@ -100,7 +100,7 @@ public class QueryTest extends TestCase {
 
             while (q.isWorking()) {
 
-                Thread.sleep(100);
+                Thread.sleep(1000);
             }
 
             if (q.getStatus() == QueryStatus.Status.REJECTED) {

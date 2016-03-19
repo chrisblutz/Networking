@@ -104,7 +104,7 @@ public class EmptyPacketTest extends TestCase {
 
             try {
 
-                Thread.sleep(100);
+                Thread.sleep(1000);
 
             } catch (InterruptedException e) {
             }
