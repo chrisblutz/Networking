@@ -1,5 +1,5 @@
 <h1>LutzBlox's Simplified Networking Library (LSNL)</h1>
-Travis CI Build Status: <a href="https://travis-ci.org/LutzBlox/Networking" target="_blank"><img src="https://travis-ci.org/LutzBlox/Networking.svg?branch=master" alt="Travis CI Build Status"/></a>
+<!--Travis CI Build Status: <a href="https://travis-ci.org/LutzBlox/Networking" target="_blank"><img src="https://travis-ci.org/LutzBlox/Networking.svg?branch=master" alt="Travis CI Build Status"/></a>-->
 <h2>Obtaining the Library</h2>
 <p>If you want the most recent stable release build, click <a href="https://github.com/LutzBlox/Networking/releases">here</a> and download the most recent binaries.  To get the most recent version you'll have to download the source code and build it yourself.  To obtain the source code, click the <a href="https://github.com/LutzBlox/Networking/archive/master.zip">Download ZIP</a> button (or click that link).  Extract the ZIP file and you're ready to go.</p>
 <h2>Building the Library</h3>
