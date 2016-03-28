@@ -1,7 +1,9 @@
 package com.github.lutzblox;
 
+import com.github.lutzblox.debugging.Debugger;
 import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.packets.encryption.EncryptionKey;
 import com.github.lutzblox.query.QueryPolicy;
 import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
@@ -54,6 +56,9 @@ public class Server extends ServerListenable {
     private boolean failed = false, open = false;
 
     private long failCheck;
+
+    private boolean encrypted = false;
+    private EncryptionKey encryptionKey = null;
 
     private Map<QueryType, QueryPolicy> policies = new ConcurrentHashMap<QueryType, QueryPolicy>();
 
@@ -111,6 +116,11 @@ public class Server extends ServerListenable {
         this.serverName = serverName;
         this.maxConnect = maxConnections;
         this.failCheck = failCheck;
+
+        if (Debugger.isEnabled()) {
+
+            Debugger.registerListenable(this);
+        }
     }
 
     /**
@@ -171,6 +181,38 @@ public class Server extends ServerListenable {
     }
 
     /**
+     * Sets this {@code Server}'s {@code Connection} to be encrypted
+     *
+     * @param encrypted     Whether or not to encrypt the {@code Server}
+     * @param encryptionKey The {@code EncryptionKey} to use for the encryption
+     */
+    public void setEncrypted(boolean encrypted, EncryptionKey encryptionKey) {
+
+        this.encrypted = encrypted;
+        this.encryptionKey = encryptionKey;
+    }
+
+    /**
+     * Gets whether or not this {@code Server}'s {@code Connection} is encrypted
+     *
+     * @return Whether or not this {@code Server} is encrypted
+     */
+    public boolean isEncrypted() {
+
+        return encrypted;
+    }
+
+    /**
+     * Retrieves the {@code EncryptionKey} used by this {@code Server} for encryption
+     *
+     * @return This {@code Server}'s {@code EncryptionKey}
+     */
+    public EncryptionKey getEncryptionKey() {
+
+        return encryptionKey;
+    }
+
+    /**
      * Attempts to open this {@code Server} onto the specified port
      *
      * @throws IOException If an I/O error occurs while starting the {@code Server}
@@ -195,6 +237,11 @@ public class Server extends ServerListenable {
                             Connection connection = makeConnection(connect);
 
                             connections.add(connection);
+
+                            if (Debugger.isEnabled()) {
+
+                                Debugger.updateListenable(Server.this);
+                            }
                         }
                     }
 
@@ -294,9 +341,16 @@ public class Server extends ServerListenable {
 
     protected Connection makeConnection(Socket socket) {
 
-        return new Connection(Server.this, socket,
+        Connection c = new Connection(Server.this, socket,
                 Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING : Server.this.getDefaultConnectionState(),
                 true, policies);
+
+        if (isEncrypted()) {
+
+            c.setEncrypted(encrypted, encryptionKey);
+        }
+
+        return c;
     }
 
     /**
@@ -343,6 +397,12 @@ public class Server extends ServerListenable {
     public void close() throws IOException {
 
         open = false;
+
+        if (Debugger.isEnabled()) {
+
+            Debugger.updateListenable(this);
+        }
+
         incoming.interrupt();
         checkFailed.interrupt();
 

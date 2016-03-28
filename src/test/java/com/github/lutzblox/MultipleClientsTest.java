@@ -56,7 +56,7 @@ public class MultipleClientsTest extends TestCase {
             }
         });
 
-        final Client client1 = new Client("0.0.0.0", 12346);
+        final Client client1 = new Client("0.0.0.0", 12346, "TestClient1");
         client1.addErrorReporter(ErrorReporterFactory.newInstance());
         client1.addNetworkListener(new ClientListener() {
 
@@ -79,7 +79,7 @@ public class MultipleClientsTest extends TestCase {
             }
         });
 
-        final Client client2 = new Client("0.0.0.0", 12346);
+        final Client client2 = new Client("0.0.0.0", 12346, "TestClient2");
         client2.addErrorReporter(ErrorReporterFactory.newInstance());
         client2.addNetworkListener(new ClientListener() {
 

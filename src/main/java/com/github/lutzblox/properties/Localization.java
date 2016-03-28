@@ -63,15 +63,13 @@ public class Localization {
     }
 
     /**
-     * Loads the current locale's properties file
+     * Loads the current resources.resources.locale's properties file
      */
     public static void load() {
 
-        Locale l = Locale.getDefault();
+        locale = getDefaultLocale();
 
-        locale = l.getLanguage() + "_" + l.getCountry();
-
-        InputStream propInput = Localization.class.getResourceAsStream("/locale/" + locale + ".properties");
+        InputStream propInput = Localization.class.getResourceAsStream("/resources/locale/" + locale + ".properties");
 
         if (propInput != null) {
 
@@ -88,7 +86,7 @@ public class Localization {
 
         } else {
 
-            propInput = Localization.class.getResourceAsStream("/locale/default.properties");
+            propInput = Localization.class.getResourceAsStream("/resources/locale/default.properties");
 
             if (propInput != null) {
 
@@ -105,15 +103,37 @@ public class Localization {
 
             } else {
 
-                new FileNotFoundException("Localization was not loaded correctly!  No localization for '" + getLocale() + "' and no default localizations could be found!").printStackTrace();
+                new FileNotFoundException("Networking localization was not loaded correctly!  No localization for '" + getDefaultLocale() + "' and no default localizations could be found!").printStackTrace();
             }
         }
     }
 
     /**
-     * Retrieves the current locale of the system and loads the localization for it
+     * Retrieves whether or not the localization is loaded
      *
-     * @return The {@code String} representation of the current locale
+     * @return Whether or not the localization is loaded
+     */
+    public static boolean isLoaded() {
+
+        return loaded;
+    }
+
+    /**
+     * Gets the default locale for this machine
+     *
+     * @return The default locale for this machine
+     */
+    public static String getDefaultLocale() {
+
+        Locale l = Locale.getDefault();
+
+        return l.getLanguage() + "_" + l.getCountry();
+    }
+
+    /**
+     * Retrieves the current resources.resources.locale of the system and loads the localization for it
+     *
+     * @return The {@code String} representation of the current resources.resources.locale
      */
     public static String getLocale() {
 

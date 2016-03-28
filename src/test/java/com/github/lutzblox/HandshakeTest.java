@@ -68,7 +68,7 @@ public class HandshakeTest extends TestCase {
             }
         });
 
-        final HandshakeClient client = new HandshakeClient("0.0.0.0", 12356);
+        final HandshakeClient client = new HandshakeClient("0.0.0.0", 12356, "TestClient");
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 

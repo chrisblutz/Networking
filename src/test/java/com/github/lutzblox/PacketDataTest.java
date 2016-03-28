@@ -57,7 +57,7 @@ public class PacketDataTest extends TestCase {
             }
         });
 
-        final Client client = new Client("0.0.0.0", 12347);
+        final Client client = new Client("0.0.0.0", 12347, "TestClient");
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 

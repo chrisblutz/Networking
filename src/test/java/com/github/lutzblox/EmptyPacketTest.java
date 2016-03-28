@@ -56,7 +56,7 @@ public class EmptyPacketTest extends TestCase {
             }
         });
 
-        final Client client = new Client("0.0.0.0", 12345);
+        final Client client = new Client("0.0.0.0", 12345, "TestClient");
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 

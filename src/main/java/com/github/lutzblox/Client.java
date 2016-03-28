@@ -1,6 +1,8 @@
 package com.github.lutzblox;
 
+import com.github.lutzblox.debugging.Debugger;
 import com.github.lutzblox.packets.Packet;
+import com.github.lutzblox.packets.encryption.EncryptionKey;
 import com.github.lutzblox.query.QueryPolicy;
 import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
@@ -23,7 +25,11 @@ public class Client extends ClientListenable {
 
     private int port;
     private String ip;
+    private String clientName;
     private Socket socket;
+
+    private boolean encrypted = false;
+    private EncryptionKey encryptionKey = null;
 
     private Connection connection = Connection.getUninitializedConnection();
 
@@ -35,15 +41,22 @@ public class Client extends ClientListenable {
      * Creates a {@code Client} instance that is set up to connect to the
      * specified port on the specified IP
      *
-     * @param ip   The IP of the server to connect to when {@code connect()} is
-     *             called
-     * @param port The port of the server to connect to when {@code connect()} is
-     *             called
+     * @param ip         The IP of the server to connect to when {@code connect()} is
+     *                   called
+     * @param port       The port of the server to connect to when {@code connect()} is
+     *                   called
+     * @param clientName The name of this {@code Client}
      */
-    public Client(String ip, int port) {
+    public Client(String ip, int port, String clientName) {
 
         this.ip = ip;
         this.port = port;
+        this.clientName = clientName;
+
+        if (Debugger.isEnabled()) {
+
+            Debugger.registerListenable(this);
+        }
     }
 
     /**
@@ -79,6 +92,16 @@ public class Client extends ClientListenable {
     }
 
     /**
+     * Retrieves the name of this {@code Client} object
+     *
+     * @return The {@code Client}'s name
+     */
+    public String getClientName() {
+
+        return clientName;
+    }
+
+    /**
      * Returns the IP that this {@code Client} will connect to when
      * {@code connect()} is called
      *
@@ -101,6 +124,38 @@ public class Client extends ClientListenable {
     }
 
     /**
+     * Sets this {@code Client}'s {@code Connection} to be encrypted
+     *
+     * @param encrypted     Whether or not to encrypt the {@code Client}
+     * @param encryptionKey The {@code EncryptionKey} to use for the encryption
+     */
+    public void setEncrypted(boolean encrypted, EncryptionKey encryptionKey) {
+
+        this.encrypted = encrypted;
+        this.encryptionKey = encryptionKey;
+    }
+
+    /**
+     * Gets whether or not this {@code Client}'s {@code Connection} is encrypted
+     *
+     * @return Whether or not this {@code Client} is encrypted
+     */
+    public boolean isEncrypted() {
+
+        return encrypted;
+    }
+
+    /**
+     * Retrieves the {@code EncryptionKey} used by this {@code Client} for encryption
+     *
+     * @return This {@code Client}'s {@code EncryptionKey}
+     */
+    public EncryptionKey getEncryptionKey() {
+
+        return encryptionKey;
+    }
+
+    /**
      * Attempts to connect this {@code Client} to a server on the IP and port
      * specified
      *
@@ -114,14 +169,26 @@ public class Client extends ClientListenable {
 
         connection = makeConnection(socket);
 
+        if (Debugger.isEnabled()) {
+
+            Debugger.updateListenable(this);
+        }
+
         open = true;
     }
 
     protected Connection makeConnection(Socket socket) {
 
-        return new Connection(this, socket,
+        Connection c = new Connection(this, socket,
                 this.getDefaultConnectionState() == null ? State.RECEIVING
                         : this.getDefaultConnectionState(), false, policies);
+
+        if (isEncrypted()) {
+
+            c.setEncrypted(encrypted, encryptionKey);
+        }
+
+        return c;
     }
 
     /**
@@ -159,6 +226,11 @@ public class Client extends ClientListenable {
     public void close() throws IOException {
 
         open = false;
+
+        if (Debugger.isEnabled()) {
+
+            Debugger.updateListenable(this);
+        }
 
         connection.close();
     }

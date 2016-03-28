@@ -4,6 +4,9 @@ import com.github.lutzblox.Listenable;
 import com.github.lutzblox.properties.Localization;
 
 
+/**
+ * A utility class for creating {@code Exceptions} based on localizations
+ */
 public class Errors {
 
     public static void threadErrored(String threadName, Listenable listenable, Throwable parent) {
@@ -182,7 +185,12 @@ public class Errors {
 
     public static NetworkException getDecryptionFailed(String type, Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.DECRYPTION_FAILED, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+        NetworkException exception = new NetworkException(
+                Localization.getMessage(Localization.DECRYPTION_FAILED, type)
+                        + (parent != null && parent.getMessage() != null && !parent.getMessage().equals("")
+                        ? " (" + Localization.getMessage(Localization.CAUSED_BY,
+                        parent.getClass().getName(), parent.getMessage()) + ")"
+                        : ""));
 
         if (parent != null) {
 

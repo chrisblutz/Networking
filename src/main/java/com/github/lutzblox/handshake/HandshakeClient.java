@@ -22,18 +22,26 @@ public class HandshakeClient extends Client {
     /**
      * Creates a new {@code HandshakeClient} with the specified IP and port
      *
-     * @param ip   The IP to use
-     * @param port The port to use
+     * @param ip         The IP to use
+     * @param port       The port to use
+     * @param clientName The name of this {@code HandshakeClient}
      */
-    public HandshakeClient(String ip, int port) {
+    public HandshakeClient(String ip, int port, String clientName) {
 
-        super(ip, port);
+        super(ip, port, clientName);
     }
 
     @Override
     protected Connection makeConnection(Socket socket) {
 
-        return new Connection(this, socket, State.RECEIVING, false, false, getQueryPolicies());
+        Connection c = new Connection(this, socket, State.RECEIVING, false, false, getQueryPolicies());
+
+        if (isEncrypted()) {
+
+            c.setEncrypted(isEncrypted(), getEncryptionKey());
+        }
+
+        return c;
     }
 
     /**

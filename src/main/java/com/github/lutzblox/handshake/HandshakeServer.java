@@ -76,7 +76,14 @@ public class HandshakeServer extends Server {
     @Override
     protected Connection makeConnection(Socket socket) {
 
-        return new Connection(this, socket, State.SENDING, true, false, getQueryPolicies());
+        Connection c = new Connection(this, socket, State.SENDING, true, false, getQueryPolicies());
+
+        if (isEncrypted()) {
+
+            c.setEncrypted(isEncrypted(), getEncryptionKey());
+        }
+
+        return c;
     }
 
     /**

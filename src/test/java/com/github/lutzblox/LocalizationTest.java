@@ -22,6 +22,16 @@ public class LocalizationTest extends TestCase {
 
         System.out.println("Current Locale: " + Localization.getLocale());
         System.out.println("Test message (unreadable_packet): " + Localization.getMessage(Localization.UNREADABLE_PACKET));
-        System.out.println("Success!");
+        //System.out.println("Exists: "+Localization.class.getResourceAsStream("/resources.locale/icon.png"));
+
+        if(Localization.isLoaded()) {
+
+            System.out.println("Success!");
+
+        }else{
+
+            System.out.println("Failure!");
+            fail("Localization did not load correctly!");
+        }
     }
 }

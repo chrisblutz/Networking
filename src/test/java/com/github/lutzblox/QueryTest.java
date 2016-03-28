@@ -61,7 +61,7 @@ public class QueryTest extends TestCase {
         server.setQueryPolicy(QueryType.CONNECTED_IPS, QueryPolicy.getAcceptancePolicy());
         server.setQueryPolicy(QueryType.NUMBER_OF_CURRENT_CONNECTIONS, QueryPolicy.getRejectionPolicy("Test rejection!"));
 
-        final Client client = new Client("0.0.0.0", 12355);
+        final Client client = new Client("0.0.0.0", 12355, "TestClient");
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 

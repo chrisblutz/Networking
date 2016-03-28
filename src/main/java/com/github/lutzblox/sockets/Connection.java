@@ -174,21 +174,31 @@ public class Connection {
 
                 Socket socket = Connection.this.socket;
 
-                if (socket != null) {
+                while (running) {
 
-                    if (socket.isClosed() || !socket.isConnected()) {
+                    if (socket != null) {
 
-                        canExecute = false;
+                        if (socket.isClosed() || !socket.isConnected()) {
+
+                            canExecute = false;
+                        }
+
+                        if (socket.isInputShutdown()) {
+
+                            canGetInput = false;
+                        }
+
+                        if (socket.isOutputShutdown()) {
+
+                            canOutput = false;
+                        }
                     }
 
-                    if (socket.isInputShutdown()) {
+                    try {
 
-                        canGetInput = false;
-                    }
+                        Thread.sleep(1000);
 
-                    if (socket.isOutputShutdown()) {
-
-                        canOutput = false;
+                    } catch (Exception e) {
                     }
                 }
             }
@@ -209,7 +219,13 @@ public class Connection {
     }
 
     /**
-     * Creates an uninitialized Connection with default values
+     * Creates an uninitialized Connection with default values<br><br>
+     * <p>
+     * Default values:<br>
+     * - Listenable: {@code null}<br>
+     * - Socket: {@code null}<br>
+     * - State: {@code MUTUAL}<br>
+     * - Side: Client ({@code false})<br>
      */
     private Connection() {
 
@@ -299,7 +315,23 @@ public class Connection {
      */
     public String getIp() {
 
-        return socket.getInetAddress().getHostAddress();
+        if (socket != null) {
+
+            InetAddress address = socket.getInetAddress();
+
+            if (address != null) {
+
+                return address.getHostAddress();
+
+            } else {
+
+                return "null";
+            }
+
+        } else {
+
+            return "null";
+        }
     }
 
     /**
@@ -391,10 +423,23 @@ public class Connection {
      */
     public void close() throws IOException {
 
+        close(false);
+    }
+
+    /**
+     * Attempts to close this {@code Connection}
+     *
+     * @param socketClosed Whether or not the socket is already closed (closing it again will cause an error)
+     * @throws IOException If an I/O error occurs while shutting down this
+     *                     {@code Connection}
+     */
+    public void close(boolean socketClosed) throws IOException {
+
         running = false;
         listener.interrupt();
+        connCheck.interrupt();
 
-        if (!socket.isClosed()) {
+        if (!socket.isClosed() && !socketClosed) {
 
             socket.close();
         }
@@ -457,6 +502,16 @@ public class Connection {
     public EncryptionKey getEncryptionKey() {
 
         return encryptionKey;
+    }
+
+    /**
+     * Retrieves the current {@code State} of this {@code Connection}
+     *
+     * @return This {@code Connection}'s current {@code State}
+     */
+    public State getCurrentState() {
+
+        return state;
     }
 
     /**
@@ -901,14 +956,14 @@ public class Connection {
 
         } catch (Throwable e) {
 
-            boolean close = true;
+            boolean close = false;
 
             if (e instanceof SocketException) {
 
                 if (socket.isClosed()
                         || e.getMessage().equalsIgnoreCase("socket closed")) {
 
-                    close = false;
+                    close = true;
                 }
 
             } else if (e instanceof IOException) {
@@ -916,7 +971,8 @@ public class Connection {
                 if (socket.isClosed()
                         || e.getMessage().equalsIgnoreCase("socket closed")) {
 
-                    close = false;
+                    close = true;
+
 
                 } else {
 
@@ -924,18 +980,15 @@ public class Connection {
                 }
             }
 
-            if (close) {
+            listenable.report(e);
 
-                listenable.report(e);
+            try {
 
-                try {
+                close(close);
 
-                    close();
+            } catch (Exception e1) {
 
-                } catch (Exception e1) {
-
-                    listenable.report(e1);
-                }
+                listenable.report(e1);
             }
         }
     }
@@ -1024,12 +1077,12 @@ public class Connection {
     }
 
     /**
-     * Retrieves a {@code ConnectionInfo} object containing data about this {@code Connection}
-     * This data includes:
-     * - The {@code IP} of this {@code Connection}
-     * - Whether or not this {@code Connection} is encrypted
-     * - Whether or not this {@code Connection} is open
-     * - Whether or not this {@code Connection} is initialized ({@code true} unless this {@code Connection} was created by using the default constructor)
+     * Retrieves a {@code ConnectionInfo} object containing data about this {@code Connection}<br>
+     * This data includes:<br>
+     * - The {@code IP} of this {@code Connection}<br>
+     * - Whether or not this {@code Connection} is encrypted<br>
+     * - Whether or not this {@code Connection} is open<br>
+     * - Whether or not this {@code Connection} is initialized ({@code true} unless this {@code Connection} was created by using the default constructor)<br>
      *
      * @return A {@code ConnectionInfo} object containing data about this {@code Connection}
      */
