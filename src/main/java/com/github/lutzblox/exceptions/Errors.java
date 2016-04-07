@@ -102,9 +102,9 @@ public class Errors {
         return exception;
     }
 
-    public static void unreadablePacket(Listenable listenable, Throwable parent) {
+    public static void unreadableData(Listenable listenable, Throwable parent) {
 
-        NetworkException ex = getUnreadablePacket(parent);
+        NetworkException ex = getUnreadableData(parent);
 
         if (listenable != null) {
 
@@ -116,14 +116,14 @@ public class Errors {
         }
     }
 
-    public static void unreadablePacket(Throwable parent) {
+    public static void unreadableData(Throwable parent) {
 
-        unreadablePacket(null, parent);
+        unreadableData(null, parent);
     }
 
-    public static NetworkException getUnreadablePacket(Throwable parent) {
+    public static NetworkException getUnreadableData(Throwable parent) {
 
-        NetworkException exception = new NetworkException(Localization.getMessage(Localization.UNREADABLE_PACKET) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.UNREADABLE_DATA) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 
@@ -315,6 +315,68 @@ public class Errors {
     public static NetworkException getResponseTimedOut(String type, Throwable parent) {
 
         NetworkException exception = new NetworkException(Localization.getMessage(Localization.RESPONSE_TIMED_OUT, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void malformedQuery(Listenable listenable, String id, String type, Throwable parent) {
+
+        NetworkException ex = getMalformedQuery(id, type, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void malformedQuery(String id, String type, Throwable parent) {
+
+        malformedQuery(null, id, type, parent);
+    }
+
+    public static NetworkException getMalformedQuery(String id, String type, Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.MALFORMED_QUERY, id, type) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void genericFatalConnection(Listenable listenable, String ip, int port, Throwable parent) {
+
+        NetworkException ex = getGenericFatalConnection(ip, port, parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void genericFatalConnection(String ip, int port, Throwable parent) {
+
+        genericFatalConnection(null, ip, port, parent);
+    }
+
+    public static NetworkException getGenericFatalConnection(String ip, int port, Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.GENERIC_FATAL_CONNECTION, ip, Integer.toString(port)) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
 
         if (parent != null) {
 

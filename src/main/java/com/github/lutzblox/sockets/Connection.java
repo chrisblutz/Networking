@@ -1,9 +1,6 @@
 package com.github.lutzblox.sockets;
 
-import com.github.lutzblox.ClientListenable;
-import com.github.lutzblox.Listenable;
-import com.github.lutzblox.Server;
-import com.github.lutzblox.ServerListenable;
+import com.github.lutzblox.*;
 import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.Packet;
@@ -12,7 +9,10 @@ import com.github.lutzblox.packets.PacketWriter;
 import com.github.lutzblox.packets.encryption.EncryptedPacketReader;
 import com.github.lutzblox.packets.encryption.EncryptedPacketWriter;
 import com.github.lutzblox.packets.encryption.EncryptionKey;
-import com.github.lutzblox.query.*;
+import com.github.lutzblox.query.Query;
+import com.github.lutzblox.query.QueryPolicy;
+import com.github.lutzblox.query.QueryStatus;
+import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.states.State;
 
 import java.io.*;
@@ -68,6 +68,8 @@ public class Connection {
     private Map<String, Object> completedQueries = new ConcurrentHashMap<String, Object>();
 
     private EncryptionKey encryptionKey = null;
+
+    private static final String EMPTY_PLACEHOLDER = "::REMCL";
 
     /**
      * Creates a new {@code Connection} with the specified parameters
@@ -132,7 +134,7 @@ public class Connection {
      *                          server-side connection
      * @param allowSettingState Whether or not {@code setToSend()} or {@code setToReceive()} have any effect on this {@code Connection}'s {@code State}
      */
-    public Connection(Listenable listenable, Socket socket, State state, boolean serverSide, boolean allowSettingState) {
+    public Connection(final Listenable listenable, Socket socket, State state, boolean serverSide, boolean allowSettingState) {
 
         this.initialized = true;
         this.listenable = listenable;
@@ -191,6 +193,20 @@ public class Connection {
                         if (socket.isOutputShutdown()) {
 
                             canOutput = false;
+                        }
+
+                        // If the Connection can no longer execute correctly, interrupt the listener Thread to stop SocketExceptions/IOExceptions being thrown
+                        if (!canExecute) {
+
+                            try {
+
+                                listener.interrupt();
+                                close();
+
+                            } catch (Exception e) {
+
+                                Errors.genericFatalConnection(listenable, getIp(), getPort(), e);
+                            }
                         }
                     }
 
@@ -331,6 +347,23 @@ public class Connection {
         } else {
 
             return "null";
+        }
+    }
+
+    /**
+     * Gets the port of this {@code Connection}
+     *
+     * @return The port of this {@code Connection}, or -1 if the underlying {@code Socket} is null
+     */
+    public int getPort() {
+
+        if (socket != null) {
+
+            return socket.getPort();
+
+        } else {
+
+            return -1;
         }
     }
 
@@ -480,7 +513,7 @@ public class Connection {
      */
     public void setEncrypted(boolean encrypted, EncryptionKey key) {
 
-        this.encryptionKey = encrypted ? key : null;
+        this.encryptionKey = key;
         this.encrypted = encrypted;
     }
 
@@ -524,7 +557,7 @@ public class Connection {
         return initialized;
     }
 
-    private final void listenerRun() {
+    private void listenerRun() {
 
         try {
 
@@ -532,419 +565,320 @@ public class Connection {
 
                 if (mainState == State.MUTUAL) {
 
+                    // Check if this is a server connection and the first packet sent
                     if (firstSend && serverSide) {
 
                         state = State.SENDING;
 
+                        // Check if there are packets waiting to be read
                     } else if (new InputStreamReader(
                             socket.getInputStream()).ready()) {
 
                         state = State.RECEIVING;
 
+                        // Check if there are packets waiting to be written
                     } else if (waiting != null) {
 
                         state = State.SENDING;
 
+                        // Default the state back to mutual
                     } else {
 
                         state = State.MUTUAL;
                     }
                 }
 
-                if (state == State.SENDING) {
+                if (state == State.SENDING && canOutput) {
 
-                    if (canExecute && canOutput) {
+                    // Add a delay between attempts to send packages to avoid locking the thread
+                    if (!(firstSend && serverSide) && waiting == null && vitalDropped.size() == 0) {
 
-                        if (!(firstSend && serverSide) && vitalDropped.size() == 0 && waiting == null) {
+                        // Wait until there is a waiting packet (there cannot be any vital dropped packets until there is a waiting one, which is why this check is all we need)
+                        while (waiting == null) {
 
                             try {
 
-                                while (waiting == null) {
+                                Thread.sleep(100);
 
-                                    Thread.sleep(100);
-                                }
+                            } catch (InterruptedException e) {
 
-                            } catch (Exception e) {
-
-                                // Ignore interrupted sleep exceptions
-                            }
-                        }
-
-                        if (firstSend && serverSide) {
-
-                            Packet p;
-
-                            if (listenable instanceof Server) {
-
-                                p = ((Server) listenable).getInformationPacket();
-
-                            } else {
-
-                                p = new Packet();
-                            }
-
-                            p = ((ServerListenable) listenable)
-                                    .fireListenerOnConnect(this, p);
-
-                            if (p == null) {
-
-                                p = new Packet();
-                            }
-
-                            if (p.isEmpty()) {
-
-                                p.putData(Packet.EMPTY_PACKET);
-                            }
-
-                            String toWrite;
-                            Throwable[] errors;
-
-                            p = handleQueries(p);
-
-                            if (encrypted) {
-
-                                toWrite = encryptedWriter.getPacketAsWriteableString(this, p);
-                                errors = encryptedWriter.getErrors();
-
-                            } else {
-
-                                toWrite = packetWriter
-                                        .getPacketAsWriteableString(this, p);
-                                errors = packetWriter.getErrors();
-                            }
-
-                            send(toWrite);
-
-                            if (qrySent) {
-
-                                qrySent = false;
-                            }
-
-                            if (shouldRespond) {
-
-                                pingStart = System.currentTimeMillis();
-                                pingShouldRespond = true;
-                            }
-
-                            for (Throwable t : errors) {
-
-                                listenable.report(t);
-                            }
-
-                            if (nextState != null) {
-
-                                state = nextState;
-                                nextState = null;
-
-                            } else {
-
-                                state = State.RECEIVING;
-                            }
-
-                            firstSend = false;
-
-                        } else if (waiting != null) {
-
-                            String toWrite;
-                            Throwable[] errors;
-
-                            waiting = handleQueries(waiting);
-
-                            if (encrypted) {
-
-                                toWrite = encryptedWriter.getPacketAsWriteableString(this, waiting);
-                                errors = encryptedWriter.getErrors();
-
-                            } else {
-
-                                toWrite = packetWriter
-                                        .getPacketAsWriteableString(this, waiting);
-                                errors = packetWriter.getErrors();
-                            }
-
-                            send(toWrite);
-
-                            if (qrySent) {
-
-                                qrySent = false;
-                            }
-
-                            if (shouldRespond) {
-
-                                pingStart = System.currentTimeMillis();
-                                pingShouldRespond = true;
-                            }
-
-                            for (Throwable t : errors) {
-
-                                listenable.report(t);
-                            }
-
-                            waiting = null;
-
-                            if (nextState != null) {
-
-                                state = nextState;
-                                nextState = null;
-
-                            } else {
-
-                                state = State.RECEIVING;
-                            }
-
-                        } else if (waiting == null && vitalDropped.size() > 0) {
-
-                            String toWrite;
-                            Throwable[] errors;
-
-                            Packet p = vitalDropped.get(0);
-
-                            p = handleQueries(p);
-
-                            if (encrypted) {
-
-                                toWrite = encryptedWriter.getPacketAsWriteableString(this, p);
-                                errors = encryptedWriter.getErrors();
-
-                            } else {
-
-                                toWrite = packetWriter
-                                        .getPacketAsWriteableString(this, p);
-                                errors = packetWriter.getErrors();
-                            }
-
-                            send(toWrite);
-
-                            if (qrySent) {
-
-                                qrySent = false;
-                            }
-
-                            if (shouldRespond) {
-
-                                pingStart = System.currentTimeMillis();
-                                pingShouldRespond = true;
-                            }
-
-                            for (Throwable t : errors) {
-
-                                listenable.report(t);
-                            }
-
-                            vitalDropped.remove(0);
-
-                        } else {
-
-                            if (nextState != null) {
-
-                                state = nextState;
-                                nextState = null;
+                                // Ignore sleep interruptions
                             }
                         }
                     }
 
-                } else if (state == State.RECEIVING) {
+                    Packet p = new Packet();
+                    boolean skip = false;
 
-                    if (canExecute && canGetInput) {
+                    if (firstSend && serverSide) {
 
-                        InputStream stream = socket.getInputStream();
+                        if (listenable instanceof Server) {
 
-                        BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(stream));
+                            p = ((Server) listenable).getInformationPacket();
+                        }
 
-                        String inTemp = null;
+                        p = ((ServerListenable) listenable).fireListenerOnConnect(this, p);
 
-                        StringBuilder read = new StringBuilder();
+                        if(p == null){
 
-                        try {
+                            p = new Packet();
+                        }
 
-                            if (shouldRespond) {
+                        firstSend = false;
 
-                                shouldRespond = false;
-                                socket.setSoTimeout(readTimeout);
+                    } else if (waiting != null) {
+
+                        p = waiting;
+                        waiting = null;
+
+                    } else if (vitalDropped.size() > 0) {
+
+                        p = vitalDropped.get(0);
+                        vitalDropped.remove(0);
+
+                    } else {
+
+                        skip = true;
+
+                        if (nextState != null) {
+
+                            state = nextState;
+                            nextState = null;
+                        }
+                    }
+
+                    // Check to make sure that one of the above conditions was true
+                    if (!skip) {
+
+                        if(p.isEmpty()){
+
+                            p.putData(Packet.EMPTY_PACKET);
+                        }
+
+                        String toWrite;
+                        Throwable[] errors;
+
+                        p = handleQueries(p);
+
+                        if (getEncrypted()) {
+
+                            toWrite = encryptedWriter.getPacketAsWriteableString(this, p);
+                            errors = encryptedWriter.getErrors();
+
+                        } else {
+
+                            toWrite = packetWriter.getPacketAsWriteableString(this, p);
+                            errors = packetWriter.getErrors();
+                        }
+
+                        send(toWrite);
+
+                        if (qrySent) {
+
+                            qrySent = false;
+                        }
+
+                        if (shouldRespond) {
+
+                            pingStart = System.currentTimeMillis();
+                            pingShouldRespond = true;
+                        }
+
+                        for (Throwable t : errors) {
+
+                            listenable.report(t);
+                        }
+
+                        if(nextState != null){
+
+                            state = nextState;
+                            nextState = null;
+
+                        }else{
+
+                            state = State.RECEIVING;
+                        }
+                    }
+
+                } else if (state == State.RECEIVING && canGetInput) {
+
+                    InputStream stream = socket.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+                    String inTemp = null;
+                    StringBuilder read = new StringBuilder();
+
+                    try {
+
+                        if (shouldRespond) {
+
+                            shouldRespond = false;
+                            socket.setSoTimeout(readTimeout);
+
+                        } else {
+
+                            socket.setSoTimeout(0);
+                        }
+
+                        if ((inTemp = reader.readLine()) != null) {
+
+                            read.append(inTemp);
+
+                        } else {
+
+                            remoteClosed = true;
+                        }
+
+                        if (pingShouldRespond) {
+
+                            ping = System.currentTimeMillis() - pingStart;
+                            pingTotal += ping;
+                            pingTimes++;
+                        }
+
+                    } catch (Exception e) {
+
+                        if (e instanceof SocketTimeoutException) {
+
+                            responseTimedOut = true;
+                            timeoutQueries();
+                            listenable.fireListenerOnTimeout(this);
+
+                        } else if (!(e instanceof SocketException)) {
+
+                            listenable.report(e);
+                        }
+                    }
+
+                    String readStr = read.toString();
+
+                    if (!readStr.equals(EMPTY_PLACEHOLDER) && !readStr.equals("")) {
+
+                        Packet p;
+                        Throwable[] errors;
+
+                        if (readStr.startsWith(":ENC:")) {
+
+                            p = encryptedReader.getPacketFromString(this, readStr);
+                            errors = encryptedReader.getErrors();
+
+                        } else {
+
+                            p = packetReader.getPacketFromString(this, readStr);
+                            errors = packetReader.getErrors();
+                        }
+
+                        for (Throwable t : errors) {
+
+                            listenable.report(t);
+                        }
+
+                        if (p.getData().length == 1 && p.getData()[0] == Packet.EMPTY_PACKET) {
+
+                            p.clearData();
+                        }
+
+                        // Handle queries
+                        Map<String, Object> requests = p.getAllForType(Query.class);
+
+                        if (requests == null) {
+
+                            requests = new ConcurrentHashMap<String, Object>();
+                        }
+
+                        for (String s : requests.keySet()) {
+
+                            Query q = (Query) requests.get(s);
+                            Object result;
+                            QueryPolicy policy = policies.get(q.getType());
+
+                            if (policy == null || (policy != null && policy.getPolicyDecider().allow(getConnectionInfo()))) {
+
+                                result = q.getType().query(this, listenable, q.getParameters());
 
                             } else {
 
-                                socket.setSoTimeout(0);
+                                result = "qry-rej:" + policy.getMessage();
                             }
 
-                            if (canExecute && canGetInput
-                                    && (inTemp = reader.readLine()) != null) {
+                            completedQueries.put(q.getId(), result);
+                        }
 
-                                read.append(inTemp);
+                        p.removeAllForType(Query.class);
 
-                            } else if (inTemp == null) {
+                        if (completedQueries.size() > 0 && waiting == null) {
 
-                                remoteClosed = true;
-                            }
+                            waiting = new Packet();
+                            waiting.setVital(true);
+                            shouldRespond = false;
+                            qrySent = true;
+                        }
 
-                            if (pingShouldRespond) {
+                        Map<String, Object> completions = p.getAllForNamePrefix("qry-resp:");
 
-                                ping = System.currentTimeMillis() - pingStart;
-                                pingTotal += ping;
-                                pingTimes++;
-                            }
+                        if(completions == null){
 
-                        } catch (Exception e) {
+                            completions = new ConcurrentHashMap<String, Object>();
+                        }
 
-                            if (e instanceof SocketTimeoutException) {
+                        for(String id : completions.keySet()){
 
-                                responseTimedOut = true;
-                                timeoutQueries();
-                                listenable.fireListenerOnTimeout(this);
+                            if(queries.containsKey(id)){
 
-                            } else if (!(e instanceof SocketException)) {
+                                Query q = queries.get(id);
 
-                                listenable.report(e);
+                                if(q != null){
+
+                                    Object result = completions.get(id);
+
+                                    if(result instanceof String && ((String) result).startsWith("qry-rej:")){
+
+                                        q.setValue(null);
+                                        q.setStatus(QueryStatus.getRejectedStatus(((String) result).substring("qry-rej:".length())));
+
+                                    }else{
+
+                                        q.setValue(result);
+                                        q.setStatus(QueryStatus.getSuccessfulStatus(""));
+                                    }
+                                }
+
+                                queries.remove(id);
                             }
                         }
 
-                        String readStr = read.toString();
+                        p.removeAllForNamePrefix("qry-resp:");
 
-                        if (!readStr.equals("::REMCL")) {
+                        if(p.hasData(":QRYONLY:")){
 
-                            if (!readStr.toString().equals("")) {
+                            p.clearData();
+                            state = State.SENDING;
 
-                                Packet p;
-                                Throwable[] errors;
+                        } else {
 
-                                if (readStr.startsWith(":ENC:")) {
+                            if(firstReceive && !serverSide){
 
-                                    p = encryptedReader.getPacketFromString(this, readStr);
-                                    errors = encryptedReader.getErrors();
+                                ((ClientListenable) listenable).fireListenerOnConnect(p);
 
-                                } else {
+                                state = State.SENDING;
+                                firstReceive = false;
 
-                                    p = packetReader
-                                            .getPacketFromString(this, readStr);
-                                    errors = packetReader.getErrors();
+                            }else{
+
+                                if(shouldRespond){
+
+                                    response = p;
                                 }
 
-                                for (Throwable t : errors) {
+                                listenable.fireListenerOnReceive(this, p);
 
-                                    listenable.report(t);
-                                }
+                                if(nextState != null) {
 
-                                if (p.getData().length == 1) {
+                                    state = nextState;
+                                    nextState = null;
 
-                                    if (p.getData()[0] == Packet.EMPTY_PACKET) {
-
-                                        p.clearData();
-                                    }
-                                }
-
-                                Map<String, Object> requests = p.getAllForType(QueryRequest.class);
-
-                                if (requests == null) {
-
-                                    requests = new ConcurrentHashMap<String, Object>();
-                                }
-
-                                for (String s : requests.keySet()) {
-
-                                    QueryRequest q = (QueryRequest) requests.get(s);
-                                    Object result;
-
-                                    QueryPolicy policy = policies.get(q.getType());
-                                    if (policy != null && policy.getPolicyDecider().allow(getConnectionInfo())) {
-
-                                        result = q.getType().query(this, listenable);
-
-                                    } else {
-
-                                        result = "qry-rej:" + policy.getMessage();
-                                    }
-
-                                    completedQueries.put(q.getId(), result);
-                                }
-
-                                p.removeAllForType(QueryRequest.class);
-
-                                if (completedQueries.size() > 0 && waiting == null) {
-
-                                    waiting = new Packet();
-                                    waiting.setVital(true);
-                                    shouldRespond = false;
-                                    qrySent = true;
-                                }
-
-                                Map<String, Object> completions = p.getAllForNamePrefix("qry-resp:");
-
-                                if (completions == null) {
-
-                                    completions = new ConcurrentHashMap<String, Object>();
-                                }
-
-                                for (String id : completions.keySet()) {
-
-                                    if (queries.containsKey(id)) {
-
-                                        Query q = queries.get(id);
-                                        Object result = completions.get(id);
-
-                                        if (result instanceof String) {
-
-                                            String resStr = (String) result;
-
-                                            if (resStr.startsWith("qry-rej:")) {
-
-                                                q.setValue(null);
-                                                q.setStatus(QueryStatus.getRejectedStatus(resStr.substring("qry-rej:".length())));
-
-                                            } else {
-
-                                                q.setValue(result);
-                                                q.setStatus(QueryStatus.getSuccessfulStatus(""));
-                                            }
-
-                                        } else {
-
-                                            q.setValue(result);
-                                            q.setStatus(QueryStatus.getSuccessfulStatus(""));
-                                        }
-
-                                        queries.remove(id);
-                                    }
-                                }
-
-                                p.removeAllForNamePrefix("qry-resp:");
-
-                                if (p.hasData(":QRYONLY:")) {
-
-                                    p.clearData();
+                                }else{
 
                                     state = State.SENDING;
-
-                                } else {
-
-                                    if (firstReceive && !serverSide) {
-
-                                        ((ClientListenable) listenable)
-                                                .fireListenerOnConnect(p);
-
-                                        state = State.SENDING;
-
-                                        firstReceive = false;
-
-                                    } else {
-
-                                        if (shouldRespond) {
-
-                                            response = p;
-                                        }
-
-                                        listenable.fireListenerOnReceive(this, p);
-
-                                        if (nextState != null) {
-
-                                            state = nextState;
-                                            nextState = null;
-
-                                        } else {
-
-                                            state = State.SENDING;
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -954,27 +888,24 @@ public class Connection {
 
             close();
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
 
             boolean close = false;
 
-            if (e instanceof SocketException) {
+            if(e instanceof SocketException){
 
-                if (socket.isClosed()
-                        || e.getMessage().equalsIgnoreCase("socket closed")) {
+                if(socket.isClosed() || e.getMessage().equalsIgnoreCase("socket closed")) {
 
                     close = true;
                 }
 
-            } else if (e instanceof IOException) {
+            }else if(e instanceof IOException){
 
-                if (socket.isClosed()
-                        || e.getMessage().equalsIgnoreCase("socket closed")) {
+                if(socket.isClosed() || e.getMessage().equalsIgnoreCase("socket closed")){
 
                     close = true;
 
-
-                } else {
+                }else{
 
                     remoteClosed = true;
                 }
@@ -982,11 +913,11 @@ public class Connection {
 
             listenable.report(e);
 
-            try {
+            try{
 
                 close(close);
 
-            } catch (Exception e1) {
+            }catch (Exception e1){
 
                 listenable.report(e1);
             }
@@ -1020,9 +951,14 @@ public class Connection {
         for (String id : toQuery.keySet()) {
 
             Query q = toQuery.get(id);
-            p.putData(q.getId(), new QueryRequest(q.getId(), q.getType()));
+
+            if (q != null) {
+
+                p.putData(q.getId(), q);
+                queries.put(id, q);
+            }
+
             toQuery.remove(id);
-            queries.put(id, q);
         }
 
         for (String id : completedQueries.keySet()) {
@@ -1056,13 +992,14 @@ public class Connection {
     /**
      * Creates and executes a {@code Query} against the remote side of this {@code Connection}
      *
-     * @param id   The id to use for the {@code Query}
-     * @param type The type of query to request
+     * @param id     The id to use for the {@code Query}
+     * @param type   The type of query to request
+     * @param params The parameters to pass to the {@code Query}
      * @return A {@code Query} object to be used to obtain the results of the query request
      */
-    public Query query(String id, QueryType type) {
+    public Query query(String id, QueryType type, Map<String, Object> params) {
 
-        Query q = new Query(id, type);
+        Query q = new Query(id, type, params);
         toQuery.put(id, q);
 
         if (waiting == null) {

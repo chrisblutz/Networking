@@ -8,6 +8,7 @@ import com.github.lutzblox.query.QueryPolicy;
 import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
 import com.github.lutzblox.sockets.ConnectionBundle;
+import com.github.lutzblox.states.State;
 
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -341,11 +342,11 @@ public class Server extends ServerListenable {
 
     protected Connection makeConnection(Socket socket) {
 
-        Connection c = new Connection(Server.this, socket,
-                Server.this.getDefaultConnectionState() == null ? com.github.lutzblox.states.State.SENDING : Server.this.getDefaultConnectionState(),
+        Connection c = new Connection(this, socket,
+                this.getDefaultConnectionState() == null ? State.SENDING : this.getDefaultConnectionState(),
                 true, policies);
 
-        if (isEncrypted()) {
+        if (isEncrypted() || getEncryptionKey() != null) {
 
             c.setEncrypted(encrypted, encryptionKey);
         }

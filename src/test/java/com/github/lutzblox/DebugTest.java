@@ -6,7 +6,6 @@ import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.encryption.EncryptionKey;
-import com.github.lutzblox.packets.encryption.EncryptionKeyResetListener;
 import com.github.lutzblox.sockets.Connection;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -18,7 +17,7 @@ import java.util.List;
 public class DebugTest extends TestCase {
 
     private int timesConnected = 0;
-    private boolean finished = false, errored = false;
+    private boolean errored = false;
     private String errorMessage = "";
 
     private List<Client> clientList = new ArrayList<Client>();
@@ -37,17 +36,11 @@ public class DebugTest extends TestCase {
 
         System.setProperty("networkingdebug", "true");
 
-        final EncryptionKey encKey = new EncryptionKey("THISISATESTKEY12", new EncryptionKeyResetListener() {
-
-            @Override
-            public boolean resetKey() {
-
-                return false;
-            }
-        });
+        final EncryptionKey encKey = new EncryptionKey("THISISATESTKEY12", null);
 
         final Server server = new Server(12357, "DebugTest");
         server.addErrorReporter(ErrorReporterFactory.newInstance());
+        server.setEncrypted(false, encKey);
         server.addNetworkListener(new ServerListener() {
 
             @Override
@@ -56,6 +49,8 @@ public class DebugTest extends TestCase {
                 if (timesConnected % 2 == 0) {
 
                     c.setEncrypted(true, encKey);
+
+                    data.putData("encrypted", true);
                 }
 
                 timesConnected++;
@@ -84,16 +79,17 @@ public class DebugTest extends TestCase {
 
             final Client client = new Client("0.0.0.0", 12357, "TestClient" + (clientList.size() + 1));
 
-            if (clientList.size() % 2 == 0) {
-
-                client.setEncrypted(true, encKey);
-            }
-
             client.addErrorReporter(ErrorReporterFactory.newInstance());
+            client.setEncrypted(false, encKey);
             client.addNetworkListener(new ClientListener() {
 
                 @Override
                 public void onConnect(Packet packet) {
+
+                    if(packet.hasData("encrypted") && (Boolean) packet.getData("encrypted") == true){
+
+                        client.getConnection().setEncrypted(true, encKey);
+                    }
 
                     client.sendPacket(new Packet(), true);
                 }
@@ -135,7 +131,8 @@ public class DebugTest extends TestCase {
 
             } catch (Exception e) {
 
-                e.printStackTrace();
+                // Ignore AES decryption errors.  They are a side effect of this test and do not appear anywhere else in the testing process
+                // This block also ignores sleep interrupt exceptions
             }
         }
 
@@ -150,6 +147,7 @@ public class DebugTest extends TestCase {
 
         } catch (Exception e) {
 
+            e.printStackTrace();
         }
 
         System.setProperty("networkingdebug", "false");

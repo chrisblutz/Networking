@@ -27,7 +27,7 @@ public class EncryptedPacketTest extends TestCase {
 
     public void testEncryptedPacket() {
 
-        EncryptionKey key = new EncryptionKey("THISISATESTKEY12", null);
+        final EncryptionKey key = new EncryptionKey("THISISATESTKEY12", null);
 
         final Server server = new Server(12354, "EncryptedPacketTest");
         server.getConnections().setAllEncrypted(true, key);

@@ -1,3 +1,12 @@
+========[ 1.3.0 ]========
++ Added parameters to queries
+~ Changed UNREADABLE_PACKET to UNREADABLE_DATA and migrated code for conversion of Objects into packet-ready strings to the DataTypes class
+~ If the fail detector thread in Connection detects a failure in the Connection's ability to execute properly, it will interrupt the listener thread to prevent further errors
+~ Simplified the code for the listenerRun() method in Connection
+~ Instead of throwing an error when there is no DataType for an object, the type is just automatically converted to a String (i.e. if there is no DataType for a class, it will return the result of a call to toString() on the object)
+~ Removed QueryRequests and converted their relative DataType to QueryType (handles Query class instead of QueryRequest)
+* Connections now allow encryption keys even when they are not set to be encrypted.  This makes sure that in case the Connection does receive an encrypted packet, it can decrypt it without throwing errors.
+
 ========[ 1.2.0 ]========
 + Added localizations for errors and other messages
 + Added central Errors class

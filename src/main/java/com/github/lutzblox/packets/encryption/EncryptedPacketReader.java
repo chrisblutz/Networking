@@ -1,7 +1,6 @@
 package com.github.lutzblox.packets.encryption;
 
 import com.github.lutzblox.Listenable;
-import com.github.lutzblox.exceptions.Errors;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.PacketHandlerConfiguration;
 import com.github.lutzblox.packets.PacketReader;
@@ -84,7 +83,7 @@ public class EncryptedPacketReader extends PacketReader {
 
                 EncryptionKey encryptionKey = connection.getEncryptionKey();
 
-                if (encryptionKey.getKey() == null) {
+                if (encryptionKey == null || encryptionKey.getKey() == null) {
 
                     throw new NullPointerException(Localization.getMessage(Localization.ENCRYPTION_KEY_NULL));
                 }
@@ -104,7 +103,8 @@ public class EncryptedPacketReader extends PacketReader {
 
             } catch (Exception e) {
 
-                Errors.decryptionFailed(listenable, "AES", e);
+                //Errors.decryptionFailed(listenable, "AES", null);
+                e.printStackTrace();
 
                 return new Packet();
             }

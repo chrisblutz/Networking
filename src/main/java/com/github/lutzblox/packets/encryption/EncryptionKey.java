@@ -6,6 +6,8 @@ import com.github.lutzblox.query.QueryStatus;
 import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
 
+import java.util.HashMap;
+
 
 /**
  * A class representing an encryption key to use for encrypting a {@code Connection}
@@ -72,7 +74,7 @@ public class EncryptionKey {
      */
     public static boolean resetEncryptionKey(Connection c) {
 
-        Query query = c.query("reset-enc", QueryType.RESET_ENCRYPTION_KEY);
+        Query query = c.query("reset-enc", QueryType.RESET_ENCRYPTION_KEY, new HashMap<String, Object>());
 
         while (query.isWorking()) ;
 

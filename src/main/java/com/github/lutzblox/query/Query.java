@@ -1,5 +1,8 @@
 package com.github.lutzblox.query;
 
+import java.util.Map;
+
+
 /**
  * A class representing a query across a {@code Connection}
  *
@@ -12,6 +15,7 @@ public class Query {
     private Object value;
     private String id;
     private QueryType type;
+    private Map<String, Object> params;
 
     /**
      * Creates a new {@code Query} of the specified {@code QueryType} using the specified id
@@ -19,12 +23,13 @@ public class Query {
      * @param id   The id of the query
      * @param type The {@code QueryType} of this query
      */
-    public Query(String id, QueryType type) {
+    public Query(String id, QueryType type, Map<String, Object> params) {
 
         setStatus(QueryStatus.getWorkingStatus("Working..."));
         this.value = null;
         this.id = id;
         this.type = type;
+        this.params = params;
     }
 
     /**
@@ -106,5 +111,10 @@ public class Query {
     public QueryType getType() {
 
         return type;
+    }
+
+    public Map<String, Object> getParameters(){
+
+        return params;
     }
 }

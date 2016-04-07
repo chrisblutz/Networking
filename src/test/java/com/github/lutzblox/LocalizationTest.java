@@ -21,8 +21,7 @@ public class LocalizationTest extends TestCase {
     public void testLocalization() {
 
         System.out.println("Current Locale: " + Localization.getLocale());
-        System.out.println("Test message (unreadable_packet): " + Localization.getMessage(Localization.UNREADABLE_PACKET));
-        //System.out.println("Exists: "+Localization.class.getResourceAsStream("/resources.locale/icon.png"));
+        System.out.println("Test message (unreadable_data): " + Localization.getMessage(Localization.UNREADABLE_DATA));
 
         if(Localization.isLoaded()) {
 

@@ -5,7 +5,7 @@ import com.github.lutzblox.listeners.ClientListener;
 import com.github.lutzblox.listeners.ServerListener;
 import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.query.Query;
-import com.github.lutzblox.query.QueryPolicy;
+import com.github.lutzblox.query.QueryListener;
 import com.github.lutzblox.query.QueryStatus;
 import com.github.lutzblox.query.QueryType;
 import com.github.lutzblox.sockets.Connection;
@@ -13,26 +13,54 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
-public class QueryTest extends TestCase {
+public class QueryParameterTest extends TestCase {
 
     private boolean errored = false;
     private String errorMessage = "";
 
-    public QueryTest(String name) {
+    public QueryParameterTest(String name) {
 
         super(name);
     }
 
     public static TestSuite suite() {
 
-        return new TestSuite(QueryTest.class);
+        return new TestSuite(QueryParameterTest.class);
     }
 
-    public void testQuery() {
+    public void testQueryParameter() {
 
-        final Server server = new Server(12355, "QueryTest");
+        final QueryType TEST_TYPE = QueryType.createQueryType("test_query", new QueryListener() {
+
+            @Override
+            public Object onQuery(Connection connection, Listenable listenable, Map<String, Object> params) {
+
+                if (params.containsKey("testparam")) {
+
+                    if(params.get("testparam").equals("testvalue")){
+
+                        return true;
+
+                    }else {
+
+                        errorMessage = "Parameters contained 'testparam' but the value was not 'testvalue'!";
+
+                        return false;
+                    }
+
+                } else {
+
+                    errorMessage = "Parameters did not contain 'testparam'!";
+
+                    return false;
+                }
+            }
+        });
+
+        final Server server = new Server(12358, "QueryParameterTest");
         server.addErrorReporter(ErrorReporterFactory.newInstance());
         server.addNetworkListener(new ServerListener() {
 
@@ -60,10 +88,8 @@ public class QueryTest extends TestCase {
 
             }
         });
-        server.setQueryPolicy(QueryType.CONNECTED_IPS, QueryPolicy.getAcceptancePolicy());
-        server.setQueryPolicy(QueryType.NUMBER_OF_CURRENT_CONNECTIONS, QueryPolicy.getRejectionPolicy("Test rejection!"));
 
-        final Client client = new Client("0.0.0.0", 12355, "TestClient");
+        final Client client = new Client("0.0.0.0", 12358, "TestClient");
         client.addErrorReporter(ErrorReporterFactory.newInstance());
         client.addNetworkListener(new ClientListener() {
 
@@ -96,9 +122,12 @@ public class QueryTest extends TestCase {
 
             client.connect();
 
-            System.out.println("Attempting query CONNECTED_IPS, expecting acceptance...");
+            System.out.println("Attempting test query...");
 
-            Query q = client.getConnection().query("test-query", QueryType.CONNECTED_IPS, new HashMap<String, Object>());
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("testparam", "testvalue");
+
+            Query q = client.getConnection().query("test-query", TEST_TYPE, params);
 
             while (q.isWorking()) {
 
@@ -119,84 +148,14 @@ public class QueryTest extends TestCase {
 
             } else if (q.getStatus() == QueryStatus.Status.SUCCESSFUL) {
 
-                System.out.println("Success!");
+                if (q.getValue() instanceof Boolean && (Boolean) q.getValue() == true) {
 
-                Object result = q.getValue();
-
-                if (result instanceof String[]) {
-
-                    String[] ips = (String[]) result;
-
-                    System.out.print("Result: ");
-
-                    for (int i = 0; i < ips.length; i++) {
-
-                        System.out.print(ips[i]);
-
-                        if (i < ips.length - 1) {
-
-                            System.out.print(", ");
-                        }
-                    }
-
-                    System.out.println();
+                    System.out.println("Query returned true!");
 
                 } else {
 
-                    System.out.println("Incorrect type!  Expected: String[], Received: " + result.getClass().getSimpleName());
+                    System.out.println("Query returned false!");
                     errored = true;
-                    errorMessage = "Incorrect type received!";
-                }
-            }
-
-            System.out.println("Attempting query NUMBER_OF_CURRENT_CONNECTIONS, expecting rejection...");
-
-            Query q2 = client.getConnection().query("test-query2", QueryType.NUMBER_OF_CURRENT_CONNECTIONS, new HashMap<String, Object>());
-
-            while (q2.isWorking()) {
-
-                Thread.sleep(100);
-            }
-
-            if (q2.getStatus() == QueryStatus.Status.REJECTED) {
-
-                System.out.println("Rejected (Test success): " + q2.getStatusMessage());
-
-            } else if (q2.getStatus() == QueryStatus.Status.TIMED_OUT) {
-
-                System.out.println("Timed Out: " + q2.getStatusMessage());
-                errored = true;
-                errorMessage = "Connection timed out!";
-
-            } else if (q2.getStatus() == QueryStatus.Status.SUCCESSFUL) {
-
-                System.out.println("Success (test fail)!");
-
-                Object result = q2.getValue();
-
-                if (result instanceof String[]) {
-
-                    String[] ips = (String[]) result;
-
-                    for (int i = 0; i < ips.length; i++) {
-
-                        System.out.print(ips[i]);
-
-                        if (i < ips.length - 1) {
-
-                            System.out.print(", ");
-                        }
-                    }
-
-                    System.out.println();
-                    errored = true;
-                    errorMessage = "Expected rejection!";
-
-                } else {
-
-                    System.out.println("Incorrect type!  Expected: String[], Received: " + result.getClass().getSimpleName());
-                    errored = true;
-                    errorMessage = "Incorrect type received, expected rejection!";
                 }
             }
 

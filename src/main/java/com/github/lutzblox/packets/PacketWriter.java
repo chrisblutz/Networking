@@ -61,7 +61,7 @@ public class PacketWriter {
 
         for (int typeInt = 0; typeInt < data.typeSet().size(); typeInt++) {
 
-            Class<?> type = data.typeSet().toArray(new Class<?>[]{})[typeInt];
+            Class<?> type = data.typeSet().toArray(new Class<?>[data.typeSet().size()])[typeInt];
 
             DataType dataType = DataTypes.getDataType(type);
 
@@ -71,18 +71,7 @@ public class PacketWriter {
 
                     String key = data.keySet(type).toArray(new String[]{})[i];
 
-                    toWrite += dataType.getAbbreviation().toUpperCase()
-                            .replace("\n", "$(nl);").replace("\r", "$(cr);")
-                            .replace("|", "$(vl);")
-                            + ":"
-                            + key.replace("\n", "$(nl);")
-                            .replace("\r", "$(cr);")
-                            .replace("|", "$(vl);")
-                            + "="
-                            + dataType.writeType(data.get(type, key))
-                            .replace("\n", "$(nl);")
-                            .replace("\r", "$(cr);")
-                            .replace("|", "$(vl);");
+                    toWrite += DataTypes.writeType(dataType, key, data.get(key)).replace("|", "$(vl);");
 
                     if (i < data.keySet(type).size() - 1
                             || (i == data.keySet(type).size() - 1 && typeInt < data

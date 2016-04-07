@@ -1,7 +1,5 @@
 package com.github.lutzblox.packets;
 
-import com.github.lutzblox.exceptions.Errors;
-import com.github.lutzblox.exceptions.NetworkException;
 import com.github.lutzblox.packets.datatypes.DataType;
 import com.github.lutzblox.packets.datatypes.DataTypes;
 import com.github.lutzblox.sockets.Connection;
@@ -58,76 +56,14 @@ public class PacketReader {
 
         for (int i = 0; i < lines.length; i++) {
 
-            String line = lines[i];
+            String line = lines[i].replace("$(vl);", "|");
 
-            if (line.contains("=")) {
+            DataType type = DataTypes.readType(line);
+            Packet.PacketData data = DataTypes.readValue(type, line);
 
-                String[] parts = line.split("=", 2);
+            if(data != null){
 
-                if (parts[0].contains(":")) {
-
-                    String value = parts[1];
-
-                    String[] declParts = parts[0].split(":", 2);
-
-                    DataType type = DataTypes.getDataType(declParts[0]
-                            .replace("$(nl);", "\n").replace("$(cr);", "\r")
-                            .replace("$(vl);", "|"));
-
-                    if (type != null) {
-
-                        Object parsedValue = type
-                                .readType(value.replace("$(nl);", "\n")
-                                        .replace("$(cr);", "\r")
-                                        .replace("$(vl);", "|"));
-
-                        String key = declParts[1].replace("$(nl);", "\n")
-                                .replace("$(cr);", "\r").replace("$(vl);", "|");
-
-                        p.putData(key, parsedValue);
-
-                    } else {
-
-                        NullPointerException e = Errors.getMissingDataType("data type abbreviation",
-                                declParts[0].replace("$(nl);", "\n").replace("$(cr);", "\r")
-                                        .replace("$(vl);", "|").toUpperCase(), new NetworkException(""));
-
-                        if (config.getIgnoreErrors()) {
-
-                            errors.add(e);
-
-                        } else {
-
-                            throw e;
-                        }
-                    }
-
-                } else {
-
-                    NetworkException e = Errors.getUnreadablePacket(new NetworkException(""));
-
-                    if (config.getIgnoreErrors()) {
-
-                        errors.add(e);
-
-                    } else {
-
-                        throw e;
-                    }
-                }
-
-            } else {
-
-                NetworkException e = Errors.getUnreadablePacket(new NetworkException(""));
-
-                if (config.getIgnoreErrors()) {
-
-                    errors.add(e);
-
-                } else {
-
-                    throw e;
-                }
+                p.putData(data);
             }
         }
 

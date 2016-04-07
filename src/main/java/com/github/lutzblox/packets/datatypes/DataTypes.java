@@ -1,5 +1,8 @@
 package com.github.lutzblox.packets.datatypes;
 
+import com.github.lutzblox.exceptions.Errors;
+import com.github.lutzblox.exceptions.NetworkException;
+import com.github.lutzblox.packets.Packet;
 import com.github.lutzblox.packets.datatypes.defaults.*;
 
 import java.util.HashMap;
@@ -55,7 +58,7 @@ public class DataTypes {
             return dataTypes.get(c);
         }
 
-        return null;
+        return new StringType();
     }
 
     /**
@@ -73,6 +76,104 @@ public class DataTypes {
 
                 return type;
             }
+        }
+
+        return new StringType();
+    }
+
+    public static String writeType(DataType type, String key, Object value) {
+
+        return type.getAbbreviation().toUpperCase()
+                .replace("\n", "$(nl);").replace("\r", "$(cr);")
+                + ":"
+                + key.replace("\n", "$(nl);")
+                .replace("\r", "$(cr);")
+                + "="
+                + type.writeType(value)
+                .replace("\n", "$(nl);")
+                .replace("\r", "$(cr);");
+    }
+
+    public static DataType readType(String line) {
+
+        if (line.contains("=")) {
+
+            String[] parts = line.split("=", 2);
+
+            if (parts[0].contains(":")) {
+
+                String[] declParts = parts[0].split(":", 2);
+
+                DataType type = DataTypes.getDataType(declParts[0]
+                        .replace("$(nl);", "\n").replace("$(cr);", "\r"));
+
+                if (type != null) {
+
+                    return type;
+
+                } else {
+
+                    NullPointerException e = Errors.getMissingDataType("data type abbreviation",
+                            declParts[0].replace("$(nl);", "\n").replace("$(cr);", "\r")
+                                    .replace("$(vl);", "|").toUpperCase(), new NetworkException(""));
+
+                    throw e;
+                }
+
+            } else {
+
+                Errors.unreadableData(new NetworkException(""));
+            }
+
+        } else {
+
+            Errors.unreadableData(new NetworkException(""));
+        }
+
+        return null;
+    }
+
+    public static Packet.PacketData readValue(DataType type, String line) {
+
+        if (line.contains("=")) {
+
+            String[] parts = line.split("=", 2);
+
+            if (parts[0].contains(":")) {
+
+                String value = parts[1];
+
+                String[] declParts = parts[0].split(":", 2);
+
+                if (type != null) {
+
+                    Object parsedValue = type
+                            .readType(value.replace("$(nl);", "\n")
+                                    .replace("$(cr);", "\r")
+                                    .replace("$(vl);", "|"));
+
+                    String key = declParts[1].replace("$(nl);", "\n")
+                            .replace("$(cr);", "\r").replace("$(vl);", "|");
+
+                    return new Packet.PacketData(key, parsedValue);
+
+                } else {
+
+                    NullPointerException e = Errors.getMissingDataType("data type abbreviation",
+                            declParts[0].replace("$(nl);", "\n").replace("$(cr);", "\r")
+                                    .replace("$(vl);", "|").toUpperCase(), new NetworkException(""));
+
+                    throw e;
+                }
+
+            } else {
+
+                Errors.unreadableData(new NetworkException(""));
+            }
+
+        } else {
+
+            Errors.unreadableData(new NetworkException(""));
         }
 
         return null;
@@ -94,7 +195,7 @@ public class DataTypes {
         DataTypes.registerDataType(new ByteType());
         DataTypes.registerDataType(new NullType());
         DataTypes.registerDataType(new StringArrayType());
-        DataTypes.registerDataType(new QueryRequestType());
+        DataTypes.registerDataType(new QueryDataType());
     }
 
     static {

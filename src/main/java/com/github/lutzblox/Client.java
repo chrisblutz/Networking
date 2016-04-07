@@ -183,7 +183,7 @@ public class Client extends ClientListenable {
                 this.getDefaultConnectionState() == null ? State.RECEIVING
                         : this.getDefaultConnectionState(), false, policies);
 
-        if (isEncrypted()) {
+        if (isEncrypted() || getEncryptionKey() != null) {
 
             c.setEncrypted(encrypted, encryptionKey);
         }

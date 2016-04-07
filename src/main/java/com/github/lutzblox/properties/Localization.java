@@ -17,7 +17,7 @@ public class Localization {
     public static final String THREAD_HAS_ERRORED = "thread_errored";
     public static final String SERVER_TIMEOUT = "server_timeout";
     public static final String PACKET_CONSTRUCTOR = "packet_constructor";
-    public static final String UNREADABLE_PACKET = "unreadable_packet";
+    public static final String UNREADABLE_DATA = "unreadable_data";
     public static final String ENCRYPTION_FAILED = "encryption_failed";
     public static final String DECRYPTION_FAILED = "decryption_failed";
     public static final String CAUSED_BY = "caused_by";
@@ -26,6 +26,8 @@ public class Localization {
     public static final String MISSING_DATA_TYPE = "missing_data_type";
     public static final String NO_RESPONSE_EXPECTED = "no_response_expected";
     public static final String RESPONSE_TIMED_OUT = "response_timed_out";
+    public static final String MALFORMED_QUERY = "malformed_query";
+    public static final String GENERIC_FATAL_CONNECTION = "generic_fatal_connection";
 
     private static boolean loaded = false;
     private static String locale = null;

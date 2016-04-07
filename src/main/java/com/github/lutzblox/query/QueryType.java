@@ -18,12 +18,13 @@ public class QueryType {
     private static Map<String, QueryType> types = new HashMap<String, QueryType>();
 
     /**
-     * This {@code QueryType} requests the IPs currently connected to the remote {@code Connection}
+     * This {@code QueryType} requests the IPs currently connected to the remote {@code Connection}<br>
+     * <strong>*NOTE: This {@code QueryType} does not require any parameters</strong>
      */
     public static final QueryType CONNECTED_IPS = createQueryType("net-default:connected_ips", new QueryListener() {
 
         @Override
-        public Object onQuery(Connection connection, Listenable listenable) {
+        public Object onQuery(Connection connection, Listenable listenable, Map<String, Object> params) {
 
             ArrayList<String> ips = new ArrayList<String>();
 
@@ -55,12 +56,13 @@ public class QueryType {
         }
     });
     /**
-     * This {@code QueryType} requests the number of current connections to the remote {@code Connection}
+     * This {@code QueryType} requests the number of current connections to the remote {@code Connection}<br>
+     * <strong>*NOTE: This {@code QueryType} does not require any parameters</strong>
      */
     public static final QueryType NUMBER_OF_CURRENT_CONNECTIONS = createQueryType("net-default:num_connected", new QueryListener() {
 
         @Override
-        public Object onQuery(Connection connection, Listenable listenable) {
+        public Object onQuery(Connection connection, Listenable listenable, Map<String, Object> params) {
 
             int num = 0;
 
@@ -77,12 +79,13 @@ public class QueryType {
         }
     });
     /**
-     * This {@code QueryType} requests that the encryption key for the remote {@code Connection} be changed
+     * This {@code QueryType} requests that the encryption key for the remote {@code Connection} be changed<br>
+     * <strong>*NOTE: This {@code QueryType} does not require any parameters</strong>
      */
     public static final QueryType RESET_ENCRYPTION_KEY = createQueryType("net-default:reset_encryption_key", new QueryListener() {
 
         @Override
-        public Object onQuery(Connection connection, Listenable listenable) {
+        public Object onQuery(Connection connection, Listenable listenable, Map<String, Object> params) {
 
             if (connection.getEncryptionKey() != null) {
 
@@ -119,11 +122,12 @@ public class QueryType {
      *
      * @param connection The {@code Connection} requesting the query
      * @param listenable The {@code Listenable} for the {@code Connection}
+     * @param params     The parameters for the {@code Query}
      * @return The result of the query on this {@code QueryType}
      */
-    public Object query(Connection connection, Listenable listenable) {
+    public Object query(Connection connection, Listenable listenable, Map<String, Object> params) {
 
-        return listener == null ? null : listener.onQuery(connection, listenable);
+        return listener == null ? null : listener.onQuery(connection, listenable, params);
     }
 
     /**
