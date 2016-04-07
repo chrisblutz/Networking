@@ -46,8 +46,7 @@ public class Connection {
 
     private List<Packet> vitalDropped = new ArrayList<Packet>();
 
-    private Packet waiting = null, response = null;
-    private boolean responseTimedOut = false;
+    private Packet waiting = null;
 
     private long ping = -1, pingStart = 0, pingTotal = 0, pingTimes = 0;
 
@@ -182,22 +181,6 @@ public class Connection {
 
                         if (socket.isClosed() || !socket.isConnected()) {
 
-                            canExecute = false;
-                        }
-
-                        if (socket.isInputShutdown()) {
-
-                            canGetInput = false;
-                        }
-
-                        if (socket.isOutputShutdown()) {
-
-                            canOutput = false;
-                        }
-
-                        // If the Connection can no longer execute correctly, interrupt the listener Thread to stop SocketExceptions/IOExceptions being thrown
-                        if (!canExecute) {
-
                             try {
 
                                 listener.interrupt();
@@ -215,6 +198,8 @@ public class Connection {
                         Thread.sleep(1000);
 
                     } catch (Exception e) {
+
+                        // Ignore sleep interruptions
                     }
                 }
             }
@@ -229,7 +214,7 @@ public class Connection {
         });
         connCheck.setName("Connection Check: " + (serverSide ? "Server" : "Client") + " on IP " + getIp());
         running = true;
-        shouldRespond = serverSide ? false : true;
+        shouldRespond = !serverSide;
         listener.start();
         connCheck.start();
     }
@@ -561,7 +546,7 @@ public class Connection {
 
         try {
 
-            while (running && canExecute) {
+            while (running && socket != null && socket.isConnected() && !socket.isClosed() && !remoteClosed) {
 
                 if (mainState == State.MUTUAL) {
 
@@ -588,7 +573,7 @@ public class Connection {
                     }
                 }
 
-                if (state == State.SENDING && canOutput) {
+                if (state == State.SENDING && socket != null && !socket.isOutputShutdown()) {
 
                     // Add a delay between attempts to send packages to avoid locking the thread
                     if (!(firstSend && serverSide) && waiting == null && vitalDropped.size() == 0) {
@@ -700,12 +685,12 @@ public class Connection {
                         }
                     }
 
-                } else if (state == State.RECEIVING && canGetInput) {
+                } else if (state == State.RECEIVING && socket != null && !socket.isInputShutdown()) {
 
                     InputStream stream = socket.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-                    String inTemp = null;
                     StringBuilder read = new StringBuilder();
+                    String inTemp;
 
                     try {
 
@@ -739,7 +724,6 @@ public class Connection {
 
                         if (e instanceof SocketTimeoutException) {
 
-                            responseTimedOut = true;
                             timeoutQueries();
                             listenable.fireListenerOnTimeout(this);
 
@@ -791,7 +775,7 @@ public class Connection {
                             Object result;
                             QueryPolicy policy = policies.get(q.getType());
 
-                            if (policy == null || (policy != null && policy.getPolicyDecider().allow(getConnectionInfo()))) {
+                            if (policy == null || policy.getPolicyDecider().allow(getConnectionInfo())) {
 
                                 result = q.getType().query(this, listenable, q.getParameters());
 
@@ -863,11 +847,6 @@ public class Connection {
                                 firstReceive = false;
 
                             }else{
-
-                                if(shouldRespond){
-
-                                    response = p;
-                                }
 
                                 listenable.fireListenerOnReceive(this, p);
 
@@ -979,14 +958,14 @@ public class Connection {
 
     private void send(String data) throws IOException {
 
-        OutputStream stream = socket.getOutputStream();
+        if(socket != null && !socket.isOutputShutdown()) {
 
-        PrintWriter out = new PrintWriter(stream, true);
+            OutputStream stream = socket.getOutputStream();
 
-        response = null;
-        responseTimedOut = false;
+            PrintWriter out = new PrintWriter(stream, true);
 
-        out.println(data);
+            out.println(data);
+        }
     }
 
     /**
