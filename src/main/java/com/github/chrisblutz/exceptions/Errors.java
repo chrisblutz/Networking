@@ -385,4 +385,66 @@ public class Errors {
 
         return exception;
     }
+
+    public static void branchingNotServerSide(Listenable listenable, Throwable parent) {
+
+        NetworkException ex = getBranchingNotServerSide(parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void branchingNotServerSide(Throwable parent) {
+
+        branchingNotServerSide(null, parent);
+    }
+
+    public static NetworkException getBranchingNotServerSide(Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.BRANCHING_NOT_SERVER_SIDE) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
+
+    public static void branchingFailed(Listenable listenable, Throwable parent) {
+
+        NetworkException ex = getBranchingFailed(parent);
+
+        if (listenable != null) {
+
+            listenable.report(ex);
+
+        } else {
+
+            throw ex;
+        }
+    }
+
+    public static void branchingFailed(Throwable parent) {
+
+        branchingFailed(null, parent);
+    }
+
+    public static NetworkException getBranchingFailed(Throwable parent) {
+
+        NetworkException exception = new NetworkException(Localization.getMessage(Localization.BRANCHING_FAILED) + (parent != null && !parent.getMessage().equals("") ? " (" + Localization.getMessage(Localization.CAUSED_BY, parent.getClass().getName(), parent.getMessage()) + ")" : ""));
+
+        if (parent != null) {
+
+            exception.setStackTrace(parent.getStackTrace());
+        }
+
+        return exception;
+    }
 }

@@ -28,6 +28,8 @@ public class Localization {
     public static final String RESPONSE_TIMED_OUT = "response_timed_out";
     public static final String MALFORMED_QUERY = "malformed_query";
     public static final String GENERIC_FATAL_CONNECTION = "generic_fatal_connection";
+    public static final String BRANCHING_NOT_SERVER_SIDE = "branching_not_server_side";
+    public static final String BRANCHING_FAILED = "branching_failed";
 
     private static boolean loaded = false;
     private static String locale = null;

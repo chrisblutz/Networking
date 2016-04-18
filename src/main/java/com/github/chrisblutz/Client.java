@@ -7,6 +7,7 @@ import com.github.chrisblutz.query.QueryPolicy;
 import com.github.chrisblutz.query.QueryType;
 import com.github.chrisblutz.sockets.Connection;
 import com.github.chrisblutz.states.State;
+import com.github.chrisblutz.utils.PacketKeys;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -261,5 +262,12 @@ public class Client extends ClientListenable {
 
             connection.sendPacket(p, expectResponse);
         }
+    }
+
+    public static Packet addBranchCommandPacketData(Packet packet, String branchId){
+
+        packet.putData(PacketKeys.BRANCH_CONNECTION, branchId);
+
+        return packet;
     }
 }

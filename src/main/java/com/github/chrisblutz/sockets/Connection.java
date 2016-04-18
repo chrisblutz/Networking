@@ -1,8 +1,13 @@
 package com.github.chrisblutz.sockets;
 
-import com.github.chrisblutz.*;
+import com.github.chrisblutz.ClientListenable;
+import com.github.chrisblutz.Listenable;
+import com.github.chrisblutz.Server;
+import com.github.chrisblutz.ServerListenable;
 import com.github.chrisblutz.exceptions.Errors;
 import com.github.chrisblutz.exceptions.NetworkException;
+import com.github.chrisblutz.listeners.branching.BranchRegistry;
+import com.github.chrisblutz.listeners.branching.BranchingServerListener;
 import com.github.chrisblutz.packets.Packet;
 import com.github.chrisblutz.packets.PacketReader;
 import com.github.chrisblutz.packets.PacketWriter;
@@ -14,6 +19,7 @@ import com.github.chrisblutz.query.QueryPolicy;
 import com.github.chrisblutz.query.QueryStatus;
 import com.github.chrisblutz.query.QueryType;
 import com.github.chrisblutz.states.State;
+import com.github.chrisblutz.utils.PacketKeys;
 
 import java.io.*;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -67,6 +73,9 @@ public class Connection {
     private Map<String, Object> completedQueries = new ConcurrentHashMap<String, Object>();
 
     private EncryptionKey encryptionKey = null;
+
+    private boolean branched = false;
+    private BranchingServerListener branchingListener = null;
 
     private static final String EMPTY_PLACEHOLDER = "::REMCL";
 
@@ -542,6 +551,47 @@ public class Connection {
         return initialized;
     }
 
+    public boolean isServerSide() {
+
+        return serverSide;
+    }
+
+    public boolean isBranched() {
+
+        return branched;
+    }
+
+    public BranchingServerListener getBranchingListener() {
+
+        return branchingListener;
+    }
+
+    public boolean branchConnection(String id) {
+
+        if (serverSide) {
+
+            BranchingServerListener l = BranchRegistry.getBranchingListener(id);
+
+            if (l != null) {
+
+                branched = true;
+                branchingListener = l;
+
+                return true;
+
+            } else {
+
+                Errors.branchingFailed(listenable, new NullPointerException("Listener was null!"));
+            }
+
+        } else {
+
+            Errors.branchingNotServerSide(listenable, new NetworkException(""));
+        }
+
+        return false;
+    }
+
     private void listenerRun() {
 
         try {
@@ -604,7 +654,7 @@ public class Connection {
 
                         p = ((ServerListenable) listenable).fireListenerOnConnect(this, p);
 
-                        if(p == null){
+                        if (p == null) {
 
                             p = new Packet();
                         }
@@ -635,7 +685,7 @@ public class Connection {
                     // Check to make sure that one of the above conditions was true
                     if (!skip) {
 
-                        if(p.isEmpty()){
+                        if (p.isEmpty()) {
 
                             p.putData(Packet.EMPTY_PACKET);
                         }
@@ -674,12 +724,12 @@ public class Connection {
                             listenable.report(t);
                         }
 
-                        if(nextState != null){
+                        if (nextState != null) {
 
                             state = nextState;
                             nextState = null;
 
-                        }else{
+                        } else {
 
                             state = State.RECEIVING;
                         }
@@ -761,6 +811,12 @@ public class Connection {
                             p.clearData();
                         }
 
+                        // Handle branching requests
+                        if (p.hasData(PacketKeys.BRANCH_CONNECTION)) {
+
+                            branchConnection(p.getData(PacketKeys.BRANCH_CONNECTION).toString());
+                        }
+
                         // Handle queries
                         Map<String, Object> requests = p.getAllForType(Query.class);
 
@@ -799,27 +855,27 @@ public class Connection {
 
                         Map<String, Object> completions = p.getAllForNamePrefix("qry-resp:");
 
-                        if(completions == null){
+                        if (completions == null) {
 
                             completions = new ConcurrentHashMap<String, Object>();
                         }
 
-                        for(String id : completions.keySet()){
+                        for (String id : completions.keySet()) {
 
-                            if(queries.containsKey(id)){
+                            if (queries.containsKey(id)) {
 
                                 Query q = queries.get(id);
 
-                                if(q != null){
+                                if (q != null) {
 
                                     Object result = completions.get(id);
 
-                                    if(result instanceof String && ((String) result).startsWith("qry-rej:")){
+                                    if (result instanceof String && ((String) result).startsWith("qry-rej:")) {
 
                                         q.setValue(null);
                                         q.setStatus(QueryStatus.getRejectedStatus(((String) result).substring("qry-rej:".length())));
 
-                                    }else{
+                                    } else {
 
                                         q.setValue(result);
                                         q.setStatus(QueryStatus.getSuccessfulStatus(""));
@@ -832,30 +888,30 @@ public class Connection {
 
                         p.removeAllForNamePrefix("qry-resp:");
 
-                        if(p.hasData(":QRYONLY:")){
+                        if (p.hasData(":QRYONLY:")) {
 
                             p.clearData();
                             state = State.SENDING;
 
                         } else {
 
-                            if(firstReceive && !serverSide){
+                            if (firstReceive && !serverSide) {
 
                                 ((ClientListenable) listenable).fireListenerOnConnect(p);
 
                                 state = State.SENDING;
                                 firstReceive = false;
 
-                            }else{
+                            } else {
 
                                 listenable.fireListenerOnReceive(this, p);
 
-                                if(nextState != null) {
+                                if (nextState != null) {
 
                                     state = nextState;
                                     nextState = null;
 
-                                }else{
+                                } else {
 
                                     state = State.SENDING;
                                 }
@@ -871,20 +927,20 @@ public class Connection {
 
             boolean close = false;
 
-            if(e instanceof SocketException){
+            if (e instanceof SocketException) {
 
-                if(socket.isClosed() || e.getMessage().equalsIgnoreCase("socket closed")) {
+                if (socket.isClosed() || e.getMessage().equalsIgnoreCase("socket closed")) {
 
                     close = true;
                 }
 
-            }else if(e instanceof IOException){
+            } else if (e instanceof IOException) {
 
-                if(socket.isClosed() || e.getMessage().equalsIgnoreCase("socket closed")){
+                if (socket.isClosed() || e.getMessage().equalsIgnoreCase("socket closed")) {
 
                     close = true;
 
-                }else{
+                } else {
 
                     remoteClosed = true;
                 }
@@ -892,11 +948,11 @@ public class Connection {
 
             listenable.report(e);
 
-            try{
+            try {
 
                 close(close);
 
-            }catch (Exception e1){
+            } catch (Exception e1) {
 
                 listenable.report(e1);
             }
@@ -958,7 +1014,7 @@ public class Connection {
 
     private void send(String data) throws IOException {
 
-        if(socket != null && !socket.isOutputShutdown()) {
+        if (socket != null && !socket.isClosed() && !socket.isOutputShutdown()) {
 
             OutputStream stream = socket.getOutputStream();
 

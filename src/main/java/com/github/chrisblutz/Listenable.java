@@ -2,6 +2,7 @@ package com.github.chrisblutz;
 
 import com.github.chrisblutz.exceptions.reporters.ErrorReporter;
 import com.github.chrisblutz.listeners.NetworkListener;
+import com.github.chrisblutz.listeners.branching.BranchingServerListener;
 import com.github.chrisblutz.packets.Packet;
 import com.github.chrisblutz.sockets.Connection;
 import com.github.chrisblutz.states.State;
@@ -103,30 +104,54 @@ public class Listenable {
 
     /**
      * Fires the {@code onRecieve()} method in all of the attached
-     * {@code NetworkListener} objects
+     * {@code NetworkListener} objects (or the appropriate {@code BranchingServerListener} if the {@code Connection} is server-side and branched)
      *
      * @param connection The {@code Connection} responsible for the {@code Packet}
      * @param packet     The {@code Packet} to pass to the listeners
      */
     public void fireListenerOnReceive(Connection connection, Packet packet) {
 
-        for (NetworkListener l : getNetworkListeners()) {
+        if (connection.isServerSide() && connection.isBranched()) {
 
-            l.onReceive(connection, packet);
+            BranchingServerListener branchingListener = connection.getBranchingListener();
+
+            if (branchingListener != null) {
+
+                branchingListener.onReceive(connection, packet);
+            }
+
+        } else {
+
+            for (NetworkListener l : getNetworkListeners()) {
+
+                l.onReceive(connection, packet);
+            }
         }
     }
 
     /**
      * Fires the {@code onTimeout()} method in all of the attached
-     * {@code NetworkListener} objects
+     * {@code NetworkListener} objects (or the appropriate {@code BranchingServerListener} if the {@code Connection} is server-side and branched)
      *
      * @param connection The {@code Connection} responsible for the timeout
      */
     public void fireListenerOnTimeout(Connection connection) {
 
-        for (NetworkListener l : getNetworkListeners()) {
+        if (connection.isServerSide() && connection.isBranched()) {
 
-            l.onTimeout(connection);
+            BranchingServerListener branchingListener = connection.getBranchingListener();
+
+            if (branchingListener != null) {
+
+                branchingListener.onTimeout(connection);
+            }
+
+        } else {
+
+            for (NetworkListener l : getNetworkListeners()) {
+
+                l.onTimeout(connection);
+            }
         }
     }
 }

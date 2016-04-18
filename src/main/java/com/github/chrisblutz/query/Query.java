@@ -20,8 +20,9 @@ public class Query {
     /**
      * Creates a new {@code Query} of the specified {@code QueryType} using the specified id
      *
-     * @param id   The id of the query
-     * @param type The {@code QueryType} of this query
+     * @param id     The id of the query
+     * @param type   The {@code QueryType} of this query
+     * @param params The parameters for the query
      */
     public Query(String id, QueryType type, Map<String, Object> params) {
 
@@ -113,7 +114,7 @@ public class Query {
         return type;
     }
 
-    public Map<String, Object> getParameters(){
+    public Map<String, Object> getParameters() {
 
         return params;
     }

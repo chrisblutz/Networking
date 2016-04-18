@@ -2,6 +2,7 @@ package com.github.chrisblutz;
 
 import com.github.chrisblutz.listeners.NetworkListener;
 import com.github.chrisblutz.listeners.ServerListener;
+import com.github.chrisblutz.listeners.branching.BranchingServerListener;
 import com.github.chrisblutz.packets.Packet;
 import com.github.chrisblutz.sockets.Connection;
 
@@ -59,15 +60,27 @@ public class ServerListenable extends Listenable {
 
     /**
      * Fires the {@code onClientFailure()} method in all of the
-     * {@code ServerListener} objects attached to the {@code Server}
+     * {@code ServerListener} objects attached to the {@code Server} (or the appropriate {@code BranchingServerListener} if the {@code Connection} is branched)
      *
      * @param c The {@code Connection} that failed
      */
     public void fireListenerOnClientFailure(Connection c) {
 
-        for (ServerListener l : getServerListeners()) {
+        if (c.isServerSide() && c.isBranched()) {
 
-            l.onClientFailure(c);
+            BranchingServerListener branchingListener = c.getBranchingListener();
+
+            if (branchingListener != null) {
+
+                branchingListener.onClientFailure(c);
+            }
+
+        } else {
+
+            for (ServerListener l : getServerListeners()) {
+
+                l.onClientFailure(c);
+            }
         }
     }
 }
