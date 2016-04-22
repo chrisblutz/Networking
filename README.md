@@ -1,34 +1,30 @@
-<h1>Lutz's Simplified Networking Library (LSNL)</h1>
-<h2>Obtaining the Library</h2>
-<p>If you want the most recent stable release build, click <a href="https://github.com/chrisblutz/Networking/releases">here</a> and download the most recent binaries.  To get the most recent version you'll have to download the source code and build it yourself.  To obtain the source code, click the <a href="https://github.com/chrisblutz/Networking/archive/master.zip">Download ZIP</a> button (or click that link).  Extract the ZIP file and you're ready to go.</p>
-<h2>Building the Library</h3>
-<p>LSNL uses the Gradle build management system, which streamlines the building process.  Below are instructions for building LSNL with Gradle for several operating systems.</p>
-<h2></h2>
-<h4>Windows</h4>
-<p>Open the command prompt (<code>cmd.exe</code>) and navigate to the folder where LSNL's <code>build.gradle</code> file is located.  Then, execute the following:</p>
-<pre>
+![SNL Logo](https://raw.githubusercontent.com/chrisblutz/Networking/master/images/logo-name-half.png)
+## Obtaining the Library ##
+If you want the most recent stable release build, click [here](https://github.com/chrisblutz/Networking/releases) and download the most recent binaries.  To get the most recent version you'll have to download the source code and build it yourself.  To obtain the source code, click the [Download ZIP](https://github.com/chrisblutz/Networking/archive/master.zip) button (or click that link).  Extract the ZIP file and you're ready to go.
+## Building the Library ##
+The Simplified Networking Library (SNL) uses the Gradle build management system, which streamlines the building process.  Below are instructions for building SNL with Gradle for several operating systems.
+
+-
+#### Windows ####
+Open the command prompt (`cmd.exe`) and navigate to the folder where SNL's `build.gradle` file is located.  Then, execute the following:
+```batchfile
 gradlew build
-</pre>
-<p>The finished <code>.jar</code> files can be found in <code>/build/libs</code>, called <code>networking-X.X.X.jar</code>, <code>networking-X.X.X-sources.jar</code>, and <code>networking-X.X.X-javadoc.jar</code> for the compiled library, source code, and javadocs respectively.</p>
-<p>If you have problems, consult the <a href="#troubleshooting">troubleshooting guide</a>.</p>
-<h2></h2>
-<h4>Unix/Linux</h4>
-<p>Open Terminal and navigate to the folder where LSNL's <code>build.gradle</code> file is located.  Then, execute the following:</p>
-<pre>
+```
+The finished `.jar` files can be found in `/build/libs`, called `networking-X.X.X.jar`, `networking-X.X.X-sources.jar`, and `networking-X.X.X-javadoc.jar` for the compiled library, source code, and JavaDocs respectively.
+If you have problems, consult the [troubleshooting guide](#troubleshooting).
+
+-
+#### Unix/Linux ####
+Open Terminal and navigate to the folder where SNL's `build.gradle` file is located.  Then, execute the following:
+```shell
 bash ./gradlew build
-</pre>
-<p>The finished <code>.jar</code> files can be found in <code>/build/libs</code>, called <code>networking-X.X.X.jar</code>, <code>networking-X.X.X-sources.jar</code>, and <code>networking-X.X.X-javadoc.jar</code> for the compiled library, source code, and javadocs respectively.</p>
-<p>If you have problems, consult the <a href="#troubleshooting">troubleshooting guide</a>.</p>
-<h2>Using the Library</h2>
-<p>Consult the <a href="https://github.com/chrisblutz/Networking/wiki" target="_blank">LSNL Wiki</a> for tutorials and examples on how to use the library.  For a quick start, see the tutorial on <a href="https://github.com/chrisblutz/Networking/wiki/Creating-a-Basic-Connection" target="_blank">Creating a Basic Connection</a?.
-<h2></h2>
-<a name="troubleshooting"></a>
-<h2>Troubleshooting</h2></a>
-<p>For more information about an error, append <code>--stacktrace</code> to your build command.  This will print out the stack trace of the error and other information cooresponding to the build process.  For specific errors, see below:</p>
-<ul>
-    <li>
-    <h5>Missing <code>tools.jar</code>:</h5>
-    <p>This usually means there is no JDK installed on your system, or if there is, it is not installed correctly or the $JAVA_HOME environmental variable is not set correctly.  Make sure you have installed the JDK (Java Development Kit), not the JRE (Java Runtime Environment).  The JDK is the only one with the files Gradle needs.  If you have installed the JDK, make sure there is an environmental variable called JAVA_HOME and that it is set to the home directory of your JDK (<code>.../java/jdkX.X.X_XX/</code>).</p>
-    </li>
-</ul>
-<i>If you encounter any other issues, please post them in the <a href="https://github.com/chrisblutz/Networking/issues">Issues</a> section.</i>
+```
+The finished `.jar` files can be found in `/build/libs`, called `networking-X.X.X.jar`, `networking-X.X.X-sources.jar`, and `networking-X.X.X-javadoc.jar` for the compiled library, source code, and JavaDocs respectively.
+If you have problems, consult the [troubleshooting guide](#troubleshooting).
+## Using the Library ##
+Consult the [SNL Wiki](https://github.com/chrisblutz/Networking/wiki) for instructions and tutorials for using the library.
+##Troubleshooting ##
+For more information about an error, append `--stacktrace` to your build command.  This will print out the stack trace of the error and other information cooresponding to the build process.  For specific errors, see below:
+ - **Missing `tools.jar`:**
+    This usually means there is no JDK installed on your system, or if there is, it is not installed correctly or the JAVA_HOME environmental variable is not set correctly.  Make sure you have installed the JDK (Java Development Kit), not the JRE (Java Runtime Environment).  The JDK is the only one with the files Gradle needs.  If you have installed the JDK, make sure there is an environmental variable called JAVA_HOME and that it is set to the home directory of your JDK (`.../java/jdkX.X.X_XX/`).
+_If you encounter any other issues, please post them in the [Issues](https://github.com/chrisblutz/Networking/issues) section._
