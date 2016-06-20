@@ -3,7 +3,8 @@
 #################
 
 Notes.txt
-/work/
+work/
+.gradle/
 
 #################
 ## GRADLE
