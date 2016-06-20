@@ -1,4 +1,4 @@
-![SNL Logo](https://raw.githubusercontent.com/chrisblutz/Networking/master/images/logo-name-half.png)
+![SNL Logo](https://raw.githubusercontent.com/chrisblutz/Networking/master/images/logo-name.png)
 ## Obtaining the Library ##
 If you want the most recent stable release build, click [here](https://github.com/chrisblutz/Networking/releases) and download the most recent binaries.  To get the most recent version you'll have to download the source code and build it yourself.  To obtain the source code, click the [Download ZIP](https://github.com/chrisblutz/Networking/archive/master.zip) button (or click that link).  Extract the ZIP file and you're ready to go.
 ## Building the Library ##
